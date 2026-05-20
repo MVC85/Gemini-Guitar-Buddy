@@ -1,0 +1,2133 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GTR Scales 7-String, Metrônomo & Banda Virtual</title>
+    <!-- Tailwind CSS para estilização moderna -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons para ícones -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        .fretboard-scroll::-webkit-scrollbar {
+            height: 10px;
+        }
+        .fretboard-scroll::-webkit-scrollbar-track {
+            background: #0f172a;
+            border-radius: 6px;
+        }
+        .fretboard-scroll::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 6px;
+        }
+        .fretboard-scroll::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+        /* Efeitos de brilho nas notas selecionadas */
+        .note-glow-root {
+            box-shadow: 0 0 14px rgba(244, 63, 94, 0.7);
+        }
+        .note-glow-scale {
+            box-shadow: 0 0 12px rgba(99, 102, 241, 0.6);
+        }
+        /* Forçar cores escuras nos seletores para evitar texto invisível */
+        #scaleSelector, #scaleSelector option, #scaleSelector optgroup, #trackGenre, #trackGenre option {
+            background-color: #0f172a !important;
+            color: #f1f5f9 !important;
+        }
+        
+        /* Estilos do Pêndulo do Metrônomo */
+        .pendulum-wrap {
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            height: 70px;
+            position: relative;
+        }
+        .pendulum-arc {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 140px;
+            height: 70px;
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            border-bottom: none;
+            border-radius: 70px 70px 0 0;
+        }
+        .pendulum-line {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            width: 2px;
+            height: 60px;
+            background: linear-gradient(to top, #6366f1, transparent);
+            transform-origin: bottom center;
+            transform: translateX(-50%) rotate(0deg);
+            transition: transform 0.05s linear;
+            border-radius: 1px;
+        }
+        .pendulum-bob {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 8px; height: 8px;
+            background: #6366f1;
+            border-radius: 50%;
+            box-shadow: 0 0 8px #6366f1;
+        }
+        
+        /* Input de BPM customizado para arrasto */
+        #bpmInput {
+            cursor: ns-resize;
+            user-select: none;
+            -moz-appearance: textfield;
+        }
+        #bpmInput::-webkit-outer-spin-button,
+        #bpmInput::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+        }
+
+        /* Beat flash overlay rápido */
+        #beatFlash {
+            position: fixed; inset: 0; pointer-events: none; z-index: 999;
+            background: #6366f1;
+            opacity: 0;
+            transition: opacity 0.05s;
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans flex flex-col justify-between">
+
+    <div id="beatFlash"></div>
+
+    <!-- Cabeçalho -->
+    <header class="border-b border-slate-800 bg-slate-900/50 backdrop-blur sticky top-0 z-10 px-2 sm:px-4 py-3">
+        <div class="w-full mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <div class="bg-indigo-600 p-2 rounded-lg text-white">
+                    <i data-lucide="music" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-tight bg-gradient-to-r from-indigo-400 to-rose-400 bg-clip-text text-transparent">GTR Scales & Banda Virtual</h1>
+                    <p class="text-xs text-slate-400 font-medium">Guitarra de 7 Cordas • Metrônomo • Backing Tracks</p>
+                </div>
+            </div>
+            
+            <div class="flex flex-wrap gap-2 justify-center">
+                <div id="silBadge" class="hidden font-mono text-xs bg-red-950/40 border border-red-700/50 text-red-400 px-2 py-1 rounded-md tracking-wider">SILÊNCIO</div>
+                <!-- Botão Manter Ecrã Ligado -->
+                <button id="btnToggleWakeLock" class="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-slate-200 py-1.5 px-3 rounded-lg border border-slate-700 transition text-xs font-semibold">
+                    <i data-lucide="sun" class="w-3.5 h-3.5"></i> Ecrã Ativo: <span id="wakeLockStatus" class="font-bold text-slate-450">Não</span>
+                </button>
+                <!-- Botão Ecrã Inteiro -->
+                <button id="btnToggleFullscreen" class="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-slate-200 py-1.5 px-3 rounded-lg border border-slate-700 transition text-xs font-semibold">
+                    <i data-lucide="maximize" class="w-3.5 h-3.5"></i> Ecrã Inteiro
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Conteúdo Principal -->
+    <main class="w-full mx-auto p-2 sm:p-4 flex-grow space-y-4">
+        
+        <!-- Painel de Controlos de Escala (12 Colunas) -->
+        <section class="grid grid-cols-1 md:grid-cols-12 gap-3 bg-slate-900 p-3.5 rounded-xl border border-slate-800 shadow-xl items-end">
+            <!-- 1. Tom Fundamental -->
+            <div class="md:col-span-5 space-y-1.5">
+                <label class="block text-xs font-semibold text-slate-400 flex items-center gap-1.5">
+                    <i data-lucide="key" class="w-3.5 h-3.5 text-indigo-400"></i> TOM FUNDAMENTAL
+                </label>
+                <div class="grid grid-cols-12 gap-0.5" id="rootNoteSelector">
+                    <!-- Gerado dinamicamente via JS -->
+                </div>
+            </div>
+
+            <!-- 2. Tipo de Escala -->
+            <div class="md:col-span-4 space-y-1.5">
+                <label for="scaleSelector" class="block text-xs font-semibold text-slate-400 flex items-center gap-1.5">
+                    <i data-lucide="activity" class="w-3.5 h-3.5 text-indigo-400"></i> ESCALA / MODO
+                </label>
+                <select id="scaleSelector" class="w-full bg-slate-900 border border-slate-700 rounded-lg py-1.5 px-3 text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium text-xs sm:text-sm">
+                    <optgroup label="Escalas Comuns">
+                        <option value="major" selected>Maior Natural (Jónio)</option>
+                        <option value="minor">Menor Natural (Eólio)</option>
+                        <option value="majorPentatonic">Pentatónica Maior</option>
+                        <option value="minorPentatonic">Pentatónica Menor</option>
+                        <option value="blues">Blues</option>
+                    </optgroup>
+                    <optgroup label="Modos Gregos">
+                        <option value="dorian">Dórico</option>
+                        <option value="phrygian">Frígio</option>
+                        <option value="lydian">Lídio</option>
+                        <option value="mixolydian">Mixolídio</option>
+                        <option value="locrian">Lócrio</option>
+                    </optgroup>
+                    <optgroup label="Menores Especiais">
+                        <option value="harmonicMinor">Menor Harmónica</option>
+                        <option value="melodicMinor">Menor Melódica</option>
+                    </optgroup>
+                </select>
+            </div>
+
+            <!-- 3. Opções de Visualização -->
+            <div class="md:col-span-3 space-y-1.5">
+                <label class="block text-xs font-semibold text-slate-400 flex items-center gap-1.5">
+                    <i data-lucide="eye" class="w-3.5 h-3.5 text-indigo-400"></i> EXIBIÇÃO NO BRAÇO
+                </label>
+                <div class="grid grid-cols-3 gap-1">
+                    <button id="viewNoteNames" class="py-1.5 px-1 text-center rounded-lg text-xs font-bold border border-slate-700 bg-slate-800 text-slate-400 hover:bg-slate-755 transition">
+                        Notas
+                    </button>
+                    <button id="viewIntervals" class="py-1.5 px-1 text-center rounded-lg text-xs font-bold border border-slate-700 bg-slate-800 text-slate-400 hover:bg-slate-755 transition">
+                        Graus
+                    </button>
+                    <button id="viewFrets" class="py-1.5 px-1 text-center rounded-lg text-xs font-bold border bg-indigo-600 border-indigo-500 text-white transition">
+                        Casas
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Braço da Guitarra de 7 Cordas e 24 Trastes -->
+        <section id="fretboardSection" class="bg-slate-900 border border-slate-800 rounded-xl p-3 sm:p-4 shadow-xl space-y-3">
+            <div class="flex items-center justify-between">
+                <h2 class="text-sm sm:text-base font-bold text-slate-200 flex items-center gap-2">
+                    <i data-lucide="layers" class="w-4 h-4 text-indigo-400"></i> Braço Virtual (7 Cordas, 24 Trastes)
+                </h2>
+                <div class="flex items-center gap-3 text-[10px] sm:text-xs text-slate-400">
+                    <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-rose-500 inline-block border border-rose-300/40"></span> Tônica</span>
+                    <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-indigo-600 inline-block border border-indigo-400/40"></span> Notas</span>
+                </div>
+            </div>
+
+            <!-- Braço totalmente fluido -->
+            <div class="w-full overflow-hidden pb-2 pt-1">
+                <div class="relative w-full select-none" id="fretboardContainer">
+                    <div id="fretboard" class="relative bg-amber-950/15 border-t border-b border-slate-700/60 rounded overflow-hidden">
+                        <!-- Gerado dinamicamente via JS -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Área Dividida de Prática e Harmonia -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+            
+            <!-- ESQUERDA: Informações da Escala (lg:col-span-4) -->
+            <section class="lg:col-span-4 bg-slate-900 border border-slate-800 rounded-xl p-4 sm:p-5 shadow-xl flex flex-col justify-between space-y-4">
+                <div class="space-y-3">
+                    <h3 class="text-base font-bold text-slate-200 flex items-center gap-2">
+                        <span id="scaleInfoTitle" class="text-indigo-400">Dó Maior</span>
+                        <span class="text-[10px] bg-indigo-900/50 text-indigo-300 border border-indigo-700/50 px-2 py-0.5 rounded-full font-medium">Notas</span>
+                    </h3>
+                    <div class="flex flex-wrap gap-1.5 items-center" id="scaleNotesContainer">
+                        <!-- Notas geradas via JS -->
+                    </div>
+                </div>
+                
+                <div class="border-t border-slate-800 pt-3 space-y-2 text-xs">
+                    <div class="flex justify-between">
+                        <span class="text-slate-400">Quantidade de Notas:</span>
+                        <span class="font-bold text-slate-200" id="scaleLength">7</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-slate-400">Fórmula de Tons:</span>
+                        <span class="font-mono text-indigo-300 font-semibold" id="scaleFormula">T - T - ST - T - T - T - ST</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-slate-400">Nota Tônica Central:</span>
+                        <span class="font-bold text-rose-400" id="scaleRootDisplay">C</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- MEIO: Gerador de Backing Tracks (lg:col-span-4) -->
+            <section class="lg:col-span-4 bg-slate-900 border border-slate-800 rounded-xl p-4 sm:p-5 shadow-xl flex flex-col justify-between space-y-4">
+                <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+                    <h3 class="text-base font-bold text-indigo-400 flex items-center gap-1.5">
+                        <i data-lucide="disc" class="w-4 h-4"></i> BANDA VIRTUAL
+                    </h3>
+                    <div id="trackStatusPill" class="text-[10px] font-mono border border-slate-700 text-slate-500 px-2 py-0.5 rounded tracking-wider uppercase">PARADA</div>
+                </div>
+
+                <div class="space-y-3.5">
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-[9px] font-bold text-slate-400 tracking-wider mb-1">GÉNERO / ESTILO</label>
+                            <select id="trackGenre" class="w-full bg-slate-950 border border-slate-700 rounded py-1.5 px-2 text-xs text-slate-300 focus:outline-none">
+                                <option value="rock" selected>Rock / Metal</option>
+                                <option value="balada">Balada Clássica</option>
+                                <option value="jazz">Ambient Jazz / Fusion</option>
+                                <option value="blues">Blues (12 Compassos)</option>
+                            </select>
+                        </div>
+                        <div class="flex items-end">
+                            <button id="btnPlayTrack" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-1.5 px-3 rounded text-xs transition flex items-center justify-center gap-1">
+                                <i data-lucide="play" class="w-3.5 h-3.5"></i> Play Track
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Volume da Backing Track -->
+                    <div class="bg-slate-950/20 p-2.5 rounded-lg border border-slate-800/80 space-y-1">
+                        <span class="block text-[9px] font-bold text-slate-400 tracking-wider">VOLUME DA BANDA (ACOMPANHAMENTO)</span>
+                        <div class="flex items-center gap-2">
+                            <i data-lucide="volume-1" class="w-3.5 h-3.5 text-slate-500"></i>
+                            <input type="range" id="trackVolumeSlider" min="0" max="1" step="0.05" value="0.65" class="flex-1 accent-indigo-500 bg-slate-800 h-1 rounded-lg cursor-pointer"/>
+                            <i data-lucide="volume-2" class="w-3.5 h-3.5 text-indigo-400"></i>
+                        </div>
+                    </div>
+
+                    <!-- Visualização da Progressão de Chords -->
+                    <div class="space-y-1.5">
+                        <span class="block text-[9px] font-bold text-slate-400 tracking-wider">PROGRESSÃO ATIVA</span>
+                        <div id="chordProgressionContainer" class="grid gap-1.5">
+                            <!-- Gerado dinamicamente -->
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="text-[9px] text-slate-500 italic text-center">
+                    Dica: A banda acompanha e sincroniza-se perfeitamente com os BPMs e o compasso do Metrônomo!
+                </div>
+            </section>
+
+            <!-- DIREITA: O Metrônomo Profissional (lg:col-span-4) -->
+            <section class="lg:col-span-4 bg-slate-900 border border-slate-800 rounded-xl p-4 sm:p-5 shadow-xl space-y-4">
+                
+                <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+                    <h3 class="text-base font-bold text-indigo-400 flex items-center gap-1.5">
+                        <i data-lucide="timer" class="w-4 h-4"></i> METRÔNOMO
+                    </h3>
+                    <div id="statusPill" class="text-[10px] font-mono border border-slate-700 text-slate-500 px-2 py-0.5 rounded tracking-wider uppercase">PARADO</div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
+                    <!-- Esquerda do Metrônomo: BPM, Pêndulo e Controles Rápidos -->
+                    <div class="space-y-3 text-center md:text-left">
+                        <div>
+                            <span class="text-[10px] tracking-widest text-slate-400 font-bold block mb-1">BATIDAS POR MINUTO</span>
+                            <div class="flex items-center justify-center md:justify-start gap-1">
+                                <button class="bg-slate-800 hover:bg-slate-750 text-slate-300 font-mono text-xs px-2 py-1 rounded" id="decreaseBpm10" title="−10">−10</button>
+                                <button class="bg-slate-800 hover:bg-slate-750 text-slate-300 text-xs px-2.5 py-1 rounded" id="decreaseBpm" title="−1">−</button>
+                                
+                                <input id="bpmInput" type="number" min="20" max="400" step="1" value="120" class="bg-transparent border-b border-slate-700 text-3xl font-black text-indigo-400 w-16 text-center focus:outline-none focus:border-indigo-500 font-mono" title="Arraste verticalmente ou use scroll para ajustar"/>
+                                
+                                <button class="bg-slate-800 hover:bg-slate-750 text-slate-300 text-xs px-2.5 py-1 rounded" id="increaseBpm" title="+1">+</button>
+                                <button class="bg-slate-800 hover:bg-slate-750 text-slate-300 font-mono text-xs px-2 py-1 rounded" id="increaseBpm10" title="+10">+10</button>
+                            </div>
+                            <span class="text-[8px] tracking-wider text-slate-500 block mt-1">ARRANSTE · SCROLL · DIGITE</span>
+                        </div>
+
+                        <!-- Pêndulo Compacto -->
+                        <div class="pendulum-wrap">
+                            <div class="pendulum-arc"></div>
+                            <div class="pendulum-line" id="pendulumLine">
+                                <div class="pendulum-bob"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Direita do Metrônomo: Botões de Ação e Definições de Tempo -->
+                    <div class="space-y-3">
+                        <div class="flex gap-2">
+                            <button id="toggleBtn" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 px-4 rounded-lg transition tracking-wider text-sm flex items-center justify-center gap-2">
+                                <i data-lucide="play" class="w-4 h-4"></i> START
+                            </button>
+                            <button id="tapBtn" class="bg-slate-800 hover:bg-slate-750 text-slate-300 border border-slate-700 py-2.5 px-3 rounded-lg transition text-xs font-mono font-bold tracking-wider">
+                                TAP [T]
+                            </button>
+                        </div>
+                        
+                        <div id="measureCounter" class="text-center bg-slate-950/40 py-1 rounded border border-slate-800/60 font-mono text-xs text-slate-400">
+                            —
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-[9px] font-bold text-slate-400 tracking-wider mb-1">COMPASSO</label>
+                                <select id="timeSignature" class="w-full bg-slate-950 border border-slate-700 rounded py-1 px-1.5 text-xs text-slate-300 focus:outline-none">
+                                    <option value="4/4" selected>4 / 4</option>
+                                    <option value="3/4">3 / 4</option>
+                                    <option value="6/8">6 / 8</option>
+                                    <option value="7/8">7 / 8</option>
+                                    <option value="5/4">5 / 4</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-[9px] font-bold text-slate-400 tracking-wider mb-1">SUBDIVISÃO</label>
+                                <select id="subdivision" class="w-full bg-slate-950 border border-slate-700 rounded py-1 px-1.5 text-xs text-slate-300 focus:outline-none">
+                                    <option value="1" selected>Semínima (1)</option>
+                                    <option value="2">Colcheias (2)</option>
+                                    <option value="3">Tercinas (3)</option>
+                                    <option value="4">Semicolcheias (4)</option>
+                                    <option value="6">Sextinas (6)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Acentuações por Beat -->
+                <div class="space-y-1.5 pt-1 border-t border-slate-800">
+                    <span class="block text-[9px] font-bold text-slate-400 tracking-wider">PADRÃO DE ACENTUAÇÃO (BATA NOS BOTÕES)</span>
+                    <div id="accents" class="flex gap-1 flex-wrap justify-between">
+                        <!-- Gerado dinamicamente via JS -->
+                    </div>
+                </div>
+
+                <!-- Painel de Controlos Físicos Rápidos -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2">
+                    <!-- Volume do Clique -->
+                    <div class="bg-slate-950/20 p-2 rounded-lg border border-slate-800/80 space-y-1">
+                        <span class="block text-[9px] font-bold text-slate-400 tracking-wider">VOLUME DO CLIQUE</span>
+                        <div class="flex items-center gap-2">
+                            <i data-lucide="volume-1" class="w-3.5 h-3.5 text-slate-500"></i>
+                            <input type="range" id="metroVolumeSlider" min="0" max="1" step="0.05" value="0.7" class="flex-1 accent-indigo-500 bg-slate-800 h-1 rounded-lg cursor-pointer"/>
+                            <i data-lucide="volume-2" class="w-3.5 h-3.5 text-indigo-400"></i>
+                        </div>
+                    </div>
+                    <!-- Tipo de Som do Metrônomo -->
+                    <div class="bg-slate-950/20 p-2 rounded-lg border border-slate-800/80 space-y-1">
+                        <span class="block text-[9px] font-bold text-slate-400 tracking-wider">TIMBRE DO CLIQUE</span>
+                        <div class="grid grid-cols-4 gap-1 text-[9px] font-mono">
+                            <button class="sound-chip active bg-indigo-950/40 border border-indigo-700/50 text-indigo-300 px-1 py-1 rounded" data-sound="sine">Sine</button>
+                            <button class="sound-chip bg-slate-850 border border-slate-700 text-slate-400 px-1 py-1 rounded hover:bg-slate-755 transition" data-sound="click">Seco</button>
+                            <button class="sound-chip bg-slate-850 border border-slate-700 text-slate-400 px-1 py-1 rounded hover:bg-slate-755 transition" data-sound="woodblock">Wood</button>
+                            <button class="sound-chip bg-slate-850 border border-slate-700 text-slate-400 px-1 py-1 rounded hover:bg-slate-755 transition" data-sound="beep">Beep</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Configurações Avançadas Colapsáveis (BPM Progressivo & Silêncio) -->
+                <details class="bg-slate-950/40 border border-slate-800 rounded-lg group">
+                    <summary class="flex items-center justify-between p-2.5 cursor-pointer text-xs font-semibold text-slate-400 hover:text-slate-200 select-none">
+                        <span class="flex items-center gap-1.5">
+                            <i data-lucide="settings-2" class="w-3.5 h-3.5 text-indigo-455"></i> Treinos Avançados (Silêncio & Aceleração)
+                        </span>
+                        <i data-lucide="chevron-down" class="w-3.5 h-3.5 transition group-open:rotate-180"></i>
+                    </summary>
+                    <div class="p-3 border-t border-slate-800 space-y-3 text-xs">
+                        
+                        <!-- 1. BPM Progressivo (Speed Up) -->
+                        <div class="bg-slate-900/40 p-2.5 rounded border border-slate-850 space-y-2">
+                            <div class="flex items-center justify-between">
+                                <label class="flex items-center gap-2 font-bold text-[10px] text-slate-300 tracking-wide cursor-pointer">
+                                    <input type="checkbox" id="progressiveToggle" class="accent-indigo-500 rounded"/>
+                                    ATIVAR ACELERAÇÃO GRADUAL (BPM PROGRESSIVO)
+                                </label>
+                                <span id="progressiveBpmDisplay" class="hidden text-[10px] bg-indigo-950 border border-indigo-800/40 px-1.5 py-0.5 rounded font-mono text-indigo-300">BPM ATUAL: <strong id="progressiveBpmNow">—</strong></span>
+                            </div>
+                            <div class="grid grid-cols-3 gap-2 text-[10px]">
+                                <div>
+                                    <span class="text-slate-500 block mb-0.5">BPM INICIAL</span>
+                                    <input id="bpmStart" type="number" min="20" max="400" value="100" class="w-full bg-slate-950 border border-slate-800 rounded p-1 text-slate-300 font-mono text-center focus:outline-none"/>
+                                </div>
+                                <div>
+                                    <span class="text-slate-500 block mb-0.5">BPM FINAL</span>
+                                    <input id="bpmEnd" type="number" min="20" max="400" value="140" class="w-full bg-slate-950 border border-slate-800 rounded p-1 text-slate-300 font-mono text-center focus:outline-none"/>
+                                </div>
+                                <div>
+                                    <span class="text-slate-500 block mb-0.5">DURAÇÃO (SEG)</span>
+                                    <input id="progressiveDuration" type="number" min="5" value="120" class="w-full bg-slate-950 border border-slate-800 rounded p-1 text-slate-300 font-mono text-center focus:outline-none"/>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 2. Modo de Silêncio (Treino de Precisão Interna) -->
+                        <div class="bg-slate-900/40 p-2.5 rounded border border-slate-850 space-y-2">
+                            <span class="block font-bold text-[10px] text-slate-300 tracking-wide">TREINO DE MEMÓRIA RÍTMICA (MODO SILÊNCIO)</span>
+                            <div class="grid grid-cols-6 gap-1 text-[10px] text-center font-semibold">
+                                <button class="sil-chip active bg-red-950/10 border border-red-900/10 text-slate-500 py-1 rounded" data-mode="none">Off</button>
+                                <button class="sil-chip bg-slate-850 border border-slate-800 text-slate-400 py-1 rounded" data-mode="fixed">Fixo</button>
+                                <button class="sil-chip bg-slate-850 border border-slate-800 text-slate-400 py-1 rounded" data-mode="progressive">Prog.</button>
+                                <button class="sil-chip bg-slate-850 border border-slate-800 text-slate-400 py-1 rounded" data-mode="random">Aleat.</button>
+                                <button class="sil-chip bg-slate-850 border border-slate-800 text-slate-400 py-1 rounded" data-mode="partial">Parcial</button>
+                                <button class="sil-chip bg-slate-850 border border-slate-800 text-slate-400 py-1 rounded" data-mode="fade">Fade</button>
+                            </div>
+                            
+                            <!-- Parametros Variáveis do Silêncio -->
+                            <div id="silence-params-container" class="hidden grid grid-cols-2 gap-2 text-[10px] border-t border-slate-800/60 pt-2">
+                                <div class="sil-param col-span-1 hidden" data-mode="fixed progressive">
+                                    <span class="text-slate-500 block mb-0.5">TOCAR (COMPASSOS)</span>
+                                    <input id="playMeasures" type="number" min="1" value="3" class="w-full bg-slate-950 border border-slate-800 rounded p-1 font-mono text-center focus:outline-none"/>
+                                </div>
+                                <div class="sil-param col-span-1 hidden" data-mode="fixed progressive">
+                                    <span class="text-slate-500 block mb-0.5">MUDO (COMPASSOS)</span>
+                                    <input id="muteMeasures" type="number" min="0" value="1" class="w-full bg-slate-950 border border-slate-800 rounded p-1 font-mono text-center focus:outline-none"/>
+                                </div>
+                                <div class="sil-param col-span-2 hidden" data-mode="random">
+                                    <span class="text-slate-500 block mb-0.5">PROBABILIDADE DE MUTAR (%)</span>
+                                    <input id="randomProb" type="number" min="0" max="100" value="30" class="w-full bg-slate-950 border border-slate-800 rounded p-1 font-mono text-center focus:outline-none"/>
+                                </div>
+                                <div class="sil-param col-span-2 hidden" data-mode="partial">
+                                    <span class="text-slate-500 block mb-0.5">SUBDIVISÃO SILENCIADA</span>
+                                    <select id="partialTarget" class="w-full bg-slate-950 border border-slate-800 rounded p-1 focus:outline-none text-[10px]">
+                                        <option value="1">Apenas Batida Principal</option>
+                                        <option value="2">Apenas Colcheias</option>
+                                        <option value="3">Apenas Tercinas</option>
+                                        <option value="4">Apenas Semicolcheias</option>
+                                        <option value="6">Apenas Sextinas</option>
+                                    </select>
+                                </div>
+                                <div class="sil-param col-span-2 hidden" data-mode="fade">
+                                    <span class="text-slate-500 block mb-0.5">FADE OUT (SEGUNDOS)</span>
+                                    <input id="fadeSeconds" type="number" min="0" value="2" step="0.5" class="w-full bg-slate-950 border border-slate-800 rounded p-1 font-mono text-center focus:outline-none"/>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 3. Humanizar (Micro atrasos) -->
+                        <div class="bg-slate-900/40 p-2.5 rounded border border-slate-850 flex items-center justify-between text-[10px]">
+                            <label class="flex items-center gap-2 font-bold text-slate-300 tracking-wide cursor-pointer select-none">
+                                <input type="checkbox" id="humanizeToggle" class="accent-indigo-500 rounded"/>
+                                TIMING HUMANO (MICRO ATRASOS DE PALHETA)
+                            </label>
+                            <div class="flex items-center gap-2 w-1/3">
+                                <input type="range" id="humanizeMs" min="1" max="30" value="8" class="flex-1 h-1 bg-slate-800 rounded-lg cursor-pointer accent-indigo-500"/>
+                                <span id="humanizeMsLabel" class="font-mono text-indigo-400 font-bold">8ms</span>
+                            </div>
+                        </div>
+
+                        <!-- 4. Sistema de Presets Rápidos -->
+                        <div class="bg-slate-900/40 p-2.5 rounded border border-slate-850 space-y-1.5">
+                            <span class="block font-bold text-[10px] text-slate-300 tracking-wide">PRESETS SALVOS NO SEU DISPOSITIVO</span>
+                            <div class="flex gap-2">
+                                <select id="presetSelect" class="flex-1 bg-slate-950 border border-slate-850 rounded px-2 py-1 text-[10px] focus:outline-none">
+                                    <option value="">— Selecionar —</option>
+                                </select>
+                                <button id="presetLoad" class="bg-slate-800 hover:bg-slate-750 text-slate-300 border border-slate-700 px-3 py-1 rounded text-[10px] font-bold">LOAD</button>
+                                <button id="presetSave" class="bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-300 border border-indigo-550/30 px-3 py-1 rounded text-[10px] font-bold">SAVE</button>
+                                <button id="presetDelete" class="hover:bg-red-900/20 text-slate-450 border border-slate-800 px-2 py-1 rounded text-[10px] hover:border-red-900/40 transition">✕</button>
+                            </div>
+                            <div id="presetStatus" class="text-[9px] font-mono font-bold text-emerald-400 text-right h-2"></div>
+                        </div>
+
+                    </div>
+                </details>
+
+            </section>
+        </div>
+
+    </main>
+
+    <!-- Rodapé -->
+    <footer class="border-t border-slate-800 py-4 bg-slate-950 px-4 text-center">
+        <p class="text-[10px] text-slate-500 font-medium">ESPAÇO = PLAY/STOP METRÔNOMO &nbsp;·&nbsp; TECLA [T] = TAP TEMPO &nbsp;·&nbsp; ESTADOS DE PRESETS EM LOCAL STORAGE</p>
+    </footer>
+
+    <!-- Lógica da Aplicação -->
+    <script>
+        // --- CONSTANTES & ESTADO GLOBAL ---
+        const ALL_NOTES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+        
+        // Intervalos e Fórmulas das escalas
+        const SCALES = {
+            major: {
+                name: "Maior Natural (Jónio)",
+                intervals: [0, 2, 4, 5, 7, 9, 11],
+                names: ["I", "II", "III", "IV", "V", "VI", "VII"],
+                formula: "T - T - ST - T - T - T - ST"
+            },
+            minor: {
+                name: "Menor Natural (Eólio)",
+                intervals: [0, 2, 3, 5, 7, 8, 10],
+                names: ["I", "II", "♭III", "IV", "V", "♭VI", "♭VII"],
+                formula: "T - ST - T - T - ST - T - T"
+            },
+            majorPentatonic: {
+                name: "Pentatónica Maior",
+                intervals: [0, 2, 4, 7, 9],
+                names: ["I", "II", "III", "V", "VI"],
+                formula: "T - T - 1.5T - T - 1.5T"
+            },
+            minorPentatonic: {
+                name: "Pentatónica Menor",
+                intervals: [0, 3, 5, 7, 10],
+                names: ["I", "♭III", "IV", "V", "♭VII"],
+                formula: "1.5T - T - T - 1.5T - T"
+            },
+            blues: {
+                name: "Blues",
+                intervals: [0, 3, 5, 6, 7, 10],
+                names: ["I", "♭III", "IV", "♭V", "V", "♭VII"],
+                formula: "1.5T - T - ST - ST - 1.5T - T"
+            },
+            dorian: {
+                name: "Dórico",
+                intervals: [0, 2, 3, 5, 7, 9, 10],
+                names: ["I", "II", "♭III", "IV", "V", "VI", "♭VII"],
+                formula: "T - ST - T - T - T - ST - T"
+            },
+            phrygian: {
+                name: "Frígio",
+                intervals: [0, 1, 3, 5, 7, 8, 10],
+                names: ["I", "♭II", "♭III", "IV", "V", "♭VI", "♭VII"],
+                formula: "ST - T - T - T - ST - T - T"
+            },
+            lydian: {
+                name: "Lídio",
+                intervals: [0, 2, 4, 6, 7, 9, 11],
+                names: ["I", "II", "III", "♯IV", "V", "VI", "VII"],
+                formula: "T - T - T - ST - T - T - ST"
+            },
+            mixolydian: {
+                name: "Mixolídio",
+                intervals: [0, 2, 4, 5, 7, 9, 10],
+                names: ["I", "II", "III", "IV", "V", "VI", "♭VII"],
+                formula: "T - T - ST - T - T - ST - T"
+            },
+            locrian: {
+                name: "Lócrio",
+                intervals: [0, 1, 3, 5, 6, 8, 10],
+                names: ["I", "♭II", "♭III", "IV", "♭V", "♭VI", "♭VII"],
+                formula: "ST - T - T - ST - T - T - T"
+            },
+            harmonicMinor: {
+                name: "Menor Harmónica",
+                intervals: [0, 2, 3, 5, 7, 8, 11],
+                names: ["I", "II", "♭III", "IV", "V", "♭VI", "VII"],
+                formula: "T - ST - T - T - ST - 1.5T - ST"
+            },
+            melodicMinor: {
+                name: "Menor Melódica",
+                intervals: [0, 2, 3, 5, 7, 9, 11],
+                names: ["I", "II", "♭III", "IV", "V", "VI", "VII"],
+                formula: "T - ST - T - T - T - T - ST"
+            }
+        };
+
+        // Afinações padrão da Guitarra de 7 Cordas
+        const TUNINGS = {
+            standard: {
+                name: "Padrão (E B G D A E B)",
+                notes: ['E', 'B', 'G', 'D', 'A', 'E', 'B'],
+                midi: [64, 59, 55, 50, 45, 40, 35]
+            }
+        };
+
+        // Estado do Aplicativo Unificado
+        let state = {
+            // Visualizador de Escalas
+            rootNote: 'C',
+            scaleKey: 'major',
+            tuningKey: 'standard',
+            viewMode: 'frets', 
+            wakeLock: null,
+            
+            // Audio Web unificado
+            audioCtx: null,
+            guitarGain: null,
+            metroGain: null,
+            backingTrackGain: null,
+            
+            // Metrônomo Config
+            metroPlaying: false,
+            bpm: 120,
+            timeSignature: [4, 4], // Padrão 4/4
+            subdivision: 1,       // Semínima
+            accents: [1, 0, 0, 0], // Forte, normal, normal, normal
+            soundType: 'sine',
+            silenceMode: 'none',
+            silenceParams: { playMeasures: 3, muteMeasures: 1, randomProb: 30, partialTarget: 2, fadeSeconds: 2 },
+            progressive: { enabled: false, start: 100, end: 140, duration: 120 },
+            humanize: { enabled: false, ms: 8 },
+            
+            // Metrônomo Motor Interno
+            lookahead: 25.0,
+            scheduleAheadTime: 0.1,
+            nextNoteTime: 0.0,
+            current16thNote: 0,
+            noteSchedulerId: null,
+            tapTimes: [],
+            progressiveStartTime: 0,
+            pendulumAnimId: null,
+            pendulumStartTime: 0,
+            silenceState: { currentMeasureIndex: 0, inMuteCycle: false, measuresSinceProgressiveStart: 0, progressiveMuteCount: 0 },
+
+            // Backing Track (Banda Virtual)
+            trackPlaying: false,
+            trackGenre: 'rock',
+            backingTrackProgression: [],
+            backingTrackOscillators: []
+        };
+
+        const PENDULUM_MAX = 35; // Ângulo máximo de rotação do pêndulo em graus
+
+        // --- INICIALIZADOR DE ÁUDIO UNIFICADO ---
+        function initAudio() {
+            if (!state.audioCtx) {
+                state.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                
+                // Nós de ganho independentes para equilibrar volumes
+                state.guitarGain = state.audioCtx.createGain();
+                state.guitarGain.gain.value = 0.85; // Volume confortável para guitarra
+                state.guitarGain.connect(state.audioCtx.destination);
+                
+                state.metroGain = state.audioCtx.createGain();
+                state.metroGain.gain.value = parseFloat(document.getElementById('metroVolumeSlider').value) || 0.7;
+                state.metroGain.connect(state.audioCtx.destination);
+
+                state.backingTrackGain = state.audioCtx.createGain();
+                state.backingTrackGain.gain.value = parseFloat(document.getElementById('trackVolumeSlider').value) || 0.65;
+
+                // --- Efeito de Espaço (Feedback Delay Line com Filtro de Atenuação) ---
+                const delayNode = state.audioCtx.createDelay(1.5);
+                const delayFeedback = state.audioCtx.createGain();
+                const delayFilter = state.audioCtx.createBiquadFilter();
+                const delayDryGain = state.audioCtx.createGain();
+                const delayWetGain = state.audioCtx.createGain();
+
+                delayNode.delayTime.value = 0.375; // Sincronizado para criar balanço rítmico
+                delayFeedback.gain.value = 0.38;   // Feedback controlado do eco
+                
+                delayFilter.type = 'lowpass';
+                delayFilter.frequency.value = 850; // Atenua frequências agudas do delay (som analógico mais macio)
+
+                delayDryGain.gain.value = 1.0;
+                delayWetGain.gain.value = 0.35;    // Volume do efeito espacial
+
+                // Roteamento do Feedback Loop do Delay
+                delayNode.connect(delayFilter);
+                delayFilter.connect(delayFeedback);
+                delayFeedback.connect(delayNode);
+
+                // Conexões de áudio da Banda Virtual -> Saída Master & Canal de Efeitos
+                state.backingTrackGain.connect(delayDryGain);
+                state.backingTrackGain.connect(delayNode);
+
+                delayDryGain.connect(state.audioCtx.destination);
+                delayNode.connect(delayWetGain);
+                delayWetGain.connect(state.audioCtx.destination);
+            }
+        }
+
+        // --- SISTEMA DE SINTETIZADOR DA GUITARRA (FM Pluck Synth) ---
+        function playGuitarTone(frequency) {
+            initAudio();
+            if (!state.audioCtx) return;
+
+            if (state.audioCtx.state === 'suspended') {
+                state.audioCtx.resume();
+            }
+
+            const ctx = state.audioCtx;
+            const now = ctx.currentTime;
+
+            // Síntese FM: Operador Portador (Carrier) e Modulador (Modulator)
+            const carrier = ctx.createOscillator();
+            const carrierGain = ctx.createGain();
+
+            const modulator = ctx.createOscillator();
+            const modulatorGain = ctx.createGain();
+
+            carrier.type = 'sine';
+            carrier.frequency.setValueAtTime(frequency, now);
+
+            modulator.type = 'sine';
+            modulator.frequency.setValueAtTime(frequency * 2.0, now); // Rácio 2:1 para emular harmónicos brilhantes de corda de metal
+
+            // Índice de Modulação: Ataque rápido (transiente) para simular o ataque da palheta
+            modulatorGain.gain.setValueAtTime(frequency * 1.6, now);
+            modulatorGain.gain.exponentialRampToValueAtTime(0.01, now + 0.12);
+
+            // Filtro dinâmico para suavizar as notas mais agudas e simular a ressonância do corpo da guitarra
+            const filter = ctx.createBiquadFilter();
+            filter.type = 'lowpass';
+            filter.frequency.setValueAtTime(frequency * 4.0, now);
+            filter.frequency.exponentialRampToValueAtTime(frequency * 1.3, now + 0.7);
+
+            // Envelope de Amplitude
+            carrierGain.gain.setValueAtTime(0, now);
+            carrierGain.gain.linearRampToValueAtTime(0.4, now + 0.006); // Ataque ultra-rápido do toque
+            carrierGain.gain.exponentialRampToValueAtTime(0.001, now + 1.6); // Decaimento natural da corda a soar
+
+            // Modulador modula a frequência da Portadora
+            modulator.connect(modulatorGain);
+            modulatorGain.connect(carrier.frequency);
+
+            // Portadora passa pelo filtro e envelope de amplitude
+            carrier.connect(filter);
+            filter.connect(carrierGain);
+            carrierGain.connect(state.guitarGain);
+
+            modulator.start(now);
+            carrier.start(now);
+            
+            modulator.stop(now + 1.7);
+            carrier.stop(now + 1.7);
+        }
+
+        function playMidiNote(midiNumber) {
+            const freq = midiToFreq(midiNumber);
+            playGuitarTone(freq);
+        }
+
+        function midiToFreq(midi) {
+            return 440 * Math.pow(2, (midi - 69) / 12);
+        }
+
+        // --- TEORIA MUSICAL (Cálculo de Escalas) ---
+        function getScaleNotes() {
+            const rootIdx = ALL_NOTES.indexOf(state.rootNote);
+            const scaleObj = SCALES[state.scaleKey];
+            return scaleObj.intervals.map(interval => {
+                return ALL_NOTES[(rootIdx + interval) % 12];
+            });
+        }
+
+        // ... lógica restante mantida ...
+        function getNoteIntervalName(note) {
+            const scaleNotes = getScaleNotes();
+            const scaleObj = SCALES[state.scaleKey];
+            const idx = scaleNotes.indexOf(note);
+            if (idx !== -1) {
+                return scaleObj.names[idx];
+            }
+            return '';
+        }
+
+        function getNoteAt(stringIdx, fret) {
+            const tuning = TUNINGS[state.tuningKey];
+            const baseMidi = tuning.midi[stringIdx];
+            
+            const currentMidi = baseMidi + fret;
+            const noteName = ALL_NOTES[currentMidi % 12];
+            
+            return {
+                name: noteName,
+                midi: currentMidi
+            };
+        }
+
+        // --- RENDERIZADORES DE INTERFACE (Visualizador) ---
+        function renderRootSelector() {
+            const container = document.getElementById('rootNoteSelector');
+            container.innerHTML = '';
+            
+            ALL_NOTES.forEach(note => {
+                const btn = document.createElement('button');
+                btn.innerText = note;
+                
+                const isSelected = state.rootNote === note;
+                btn.className = `py-1 text-center text-xs font-semibold rounded-md border transition ${
+                    isSelected 
+                        ? 'bg-rose-600 border-rose-500 text-white shadow shadow-rose-950/40 font-black' 
+                        : 'bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-755'
+                }`;
+                
+                btn.addEventListener('click', () => {
+                    state.rootNote = note;
+                    renderRootSelector();
+                    updateScaleInfo();
+                    renderFretboard();
+                    if (state.trackPlaying) {
+                        buildBackingTrackProgression();
+                    }
+                    if (!state.wakeLock && ('wakeLock' in navigator)) {
+                        requestWakeLock();
+                    }
+                });
+                
+                container.appendChild(btn);
+            });
+        }
+
+        function updateScaleInfo() {
+            const scale = SCALES[state.scaleKey];
+            const scaleNotes = getScaleNotes();
+            
+            document.getElementById('scaleInfoTitle').innerText = `${state.rootNote} ${scale.name}`;
+            document.getElementById('scaleLength').innerText = scaleNotes.length;
+            document.getElementById('scaleFormula').innerText = scale.formula;
+            document.getElementById('scaleRootDisplay').innerText = state.rootNote;
+
+            const notesContainer = document.getElementById('scaleNotesContainer');
+            notesContainer.innerHTML = '';
+
+            scaleNotes.forEach((note, index) => {
+                const isRoot = note === state.rootNote;
+                const intervalName = scale.names[index];
+
+                const noteBlock = document.createElement('div');
+                noteBlock.className = `flex flex-col items-center justify-center w-12 h-14 rounded-lg border text-center cursor-pointer transition transform hover:scale-105 select-none ${
+                    isRoot 
+                        ? 'bg-rose-950/40 border-rose-500/70 text-rose-300' 
+                        : 'bg-indigo-950/30 border-indigo-500/55 text-indigo-300'
+                }`;
+
+                noteBlock.innerHTML = `
+                    <span class="text-sm font-bold">${note}</span>
+                    <span class="text-[10px] text-slate-400 font-mono">${intervalName}</span>
+                `;
+
+                noteBlock.addEventListener('click', () => {
+                    const noteIdx = ALL_NOTES.indexOf(note);
+                    let targetMidi = 60 + (noteIdx - ALL_NOTES.indexOf('C'));
+                    if (targetMidi < 40) targetMidi += 12;
+                    playMidiNote(targetMidi);
+                });
+
+                notesContainer.appendChild(noteBlock);
+            });
+        }
+
+        function renderFretboard() {
+            const fretboard = document.getElementById('fretboard');
+            fretboard.innerHTML = '';
+
+            const tuning = TUNINGS[state.tuningKey];
+            const scaleNotes = getScaleNotes();
+            
+            const numFrets = 25; 
+            const fretsArray = [];
+            for (let i = 0; i < numFrets; i++) {
+                fretsArray.push(i);
+            }
+
+            const inlaysSingle = [3, 5, 7, 9, 15, 17, 19, 21];
+            const inlaysDouble = [12, 24];
+
+            // 1. Cabeçalho dos trastes
+            const trasteHeaderGrid = document.createElement('div');
+            trasteHeaderGrid.className = "grid w-full relative h-6 border-b border-slate-800 bg-slate-950/65 text-[9px] sm:text-[11px] text-slate-400 font-mono font-bold";
+            trasteHeaderGrid.style.gridTemplateColumns = `repeat(${numFrets}, minmax(0, 1fr))`;
+            
+            fretsArray.forEach(f => {
+                const numBox = document.createElement('div');
+                numBox.className = "flex items-center justify-center border-r border-slate-800/40";
+                numBox.innerText = f === 0 ? "Nut" : f;
+                
+                if (f === 12 || f === 24) {
+                    numBox.classList.add("text-indigo-400", "bg-indigo-950/20");
+                }
+                trasteHeaderGrid.appendChild(numBox);
+            });
+            fretboard.appendChild(trasteHeaderGrid);
+
+            // 2. Criar cada uma das 7 cordas (Calibrado de cima para baixo)
+            tuning.notes.forEach((tuningNote, stringIdx) => {
+                const stringRow = document.createElement('div');
+                stringRow.className = "grid w-full relative h-7 sm:h-9 md:h-11 items-center border-b border-slate-800/30 last:border-0";
+                stringRow.style.gridTemplateColumns = `repeat(${numFrets}, minmax(0, 1fr))`;
+
+                const stringGauge = stringIdx + 1; 
+                const stringWire = document.createElement('div');
+                stringWire.className = "absolute left-0 right-0 bg-slate-400/40 pointer-events-none z-0";
+                stringWire.style.height = `${stringGauge}px`;
+                stringWire.style.top = "calc(50% - " + (stringGauge/2) + "px)";
+                stringRow.appendChild(stringWire);
+
+                fretsArray.forEach(fret => {
+                    const fretCell = document.createElement('div');
+                    fretCell.className = "relative h-full flex items-center justify-center border-r border-slate-700/60 z-10 cursor-pointer hover:bg-slate-800/15 transition";
+                    
+                    if (fret === 0) {
+                        fretCell.classList.add("bg-slate-900/40");
+                        fretCell.style.borderRight = "4px solid #64748b";
+                    }
+
+                    // Renderização de marcadores de bolinha (Inlays)
+                    if (inlaysSingle.includes(fret) && stringIdx === 3) {
+                        const inlayDot = document.createElement('div');
+                        inlayDot.className = "absolute w-2 h-2 rounded-full bg-slate-600/45 pointer-events-none";
+                        fretCell.appendChild(inlayDot);
+                    }
+                    
+                    if (inlaysDouble.includes(fret) && (stringIdx === 2 || stringIdx === 4)) {
+                        const inlayDot = document.createElement('div');
+                        inlayDot.className = "absolute w-1.5 h-1.5 rounded-full bg-indigo-500/40 pointer-events-none";
+                        fretCell.appendChild(inlayDot);
+                    }
+
+                    // Obter dados da casa atual
+                    const info = getNoteAt(stringIdx, fret);
+                    const isInScale = scaleNotes.includes(info.name);
+                    const isRoot = info.name === state.rootNote;
+
+                    if (isInScale) {
+                        const noteBadge = document.createElement('div');
+                        
+                        let displayText = info.name;
+                        if (state.viewMode === 'intervals') {
+                            displayText = getNoteIntervalName(info.name);
+                        } else if (state.viewMode === 'frets') {
+                            displayText = fret === 0 ? tuning.notes[stringIdx] : fret;
+                        }
+
+                        const classes = isRoot 
+                            ? "bg-rose-500 text-white font-black note-glow-root border border-rose-300/55" 
+                            : "bg-indigo-600 text-slate-100 font-bold note-glow-scale border border-indigo-400/45";
+
+                        noteBadge.className = `w-4 h-4 min-[450px]:w-5 min-[450px]:h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 lg:w-8 lg:h-8 rounded-full flex items-center justify-center text-[7px] min-[450px]:text-[9px] sm:text-xs shadow-lg transition transform hover:scale-110 active:scale-95 ${classes}`;
+                        noteBadge.innerText = displayText;
+                        
+                        fretCell.appendChild(noteBadge);
+                    } else {
+                        const ghostNote = document.createElement('div');
+                        ghostNote.className = "w-4 h-4 min-[450px]:w-5 min-[450px]:h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 lg:w-8 lg:h-8 rounded-full flex items-center justify-center text-[7px] min-[450px]:text-[9px] text-slate-500 opacity-0 hover:opacity-100 transition duration-150 bg-slate-800 border border-slate-700";
+                        ghostNote.innerText = info.name;
+                        fretCell.appendChild(ghostNote);
+                    }
+
+                    fretCell.addEventListener('click', () => {
+                        playMidiNote(info.midi);
+                        
+                        const badge = fretCell.querySelector('.rounded-full');
+                        if (badge) {
+                            badge.classList.add('scale-125');
+                            setTimeout(() => {
+                                badge.classList.remove('scale-125');
+                            }, 150);
+                        }
+                    });
+
+                    stringRow.appendChild(fretCell);
+                });
+
+                fretboard.appendChild(stringRow);
+            });
+        }
+
+        // --- MANTER ECRÃ ATIVO (WAKE LOCK API) ---
+        async function requestWakeLock() {
+            if (!('wakeLock' in navigator)) {
+                const wlStatusText = document.getElementById('wakeLockStatus');
+                wlStatusText.innerText = "Incompatível";
+                wlStatusText.className = "font-bold text-rose-450";
+                return;
+            }
+            try {
+                state.wakeLock = await navigator.wakeLock.request('screen');
+                const wlStatusText = document.getElementById('wakeLockStatus');
+                wlStatusText.innerText = "Sim";
+                wlStatusText.className = "font-bold text-emerald-450";
+
+                state.wakeLock.addEventListener('release', () => {
+                    if (!state.wakeLock) {
+                        const innerText = document.getElementById('wakeLockStatus');
+                        innerText.innerText = "Não";
+                        innerText.className = "font-bold text-slate-450";
+                    }
+                });
+            } catch (err) {
+                const wlStatusText = document.getElementById('wakeLockStatus');
+                wlStatusText.innerText = "Restrito";
+                wlStatusText.className = "font-bold text-amber-500";
+                state.wakeLock = null;
+            }
+        }
+
+        function releaseWakeLock() {
+            if (state.wakeLock) {
+                state.wakeLock.release().then(() => {
+                    state.wakeLock = null;
+                    const wlStatusText = document.getElementById('wakeLockStatus');
+                    wlStatusText.innerText = "Não";
+                    wlStatusText.className = "font-bold text-slate-450";
+                });
+            }
+        }
+
+        // --- MOTOR INTERNO DO METRÔNOMO ---
+        
+        function parseTS(str) {
+            const [n, d] = str.split('/').map(Number);
+            return [n, d];
+        }
+
+        function buildAccents() {
+            const numBeats = state.timeSignature[0];
+            state.accents = new Array(numBeats).fill(0);
+            state.accents[0] = 1; // Acentuação padrão do primeiro tempo (forte)
+            renderAccentsUI();
+        }
+
+        function renderAccentsUI() {
+            const container = document.getElementById('accents');
+            container.innerHTML = '';
+            const labels = { 1: 'FORTE', 0: 'NORM', '-1': 'FRACO' };
+            
+            state.accents.forEach((val, i) => {
+                const btn = document.createElement('button');
+                btn.className = 'accent-btn flex-1 py-1 text-[9px] font-mono border rounded font-semibold transition ' + 
+                    (val === 1 ? 'border-indigo-500 bg-indigo-950/40 text-indigo-300' : 
+                     val === -1 ? 'border-slate-800 text-slate-600 border-dashed' : 
+                     'border-slate-700 text-slate-400');
+                
+                btn.textContent = `B${i+1} ${labels[val]}`;
+                btn.addEventListener('click', () => {
+                    state.accents[i] = state.accents[i] === 0 ? 1 : (state.accents[i] === 1 ? -1 : 0);
+                    renderAccentsUI();
+                });
+                container.appendChild(btn);
+            });
+        }
+
+        function makeClickBuffer(ctx) {
+            const len = Math.floor(ctx.sampleRate * 0.012);
+            const buf = ctx.createBuffer(1, len, ctx.sampleRate);
+            const d = buf.getChannelData(0);
+            for (let i = 0; i < len; i++) {
+                d[i] = (Math.random() * 2 - 1) * Math.exp(-i / (len * 0.15));
+            }
+            return buf;
+        }
+
+        function playWoodblock(ctx, dest, t, g) {
+            [800, 1200].forEach((f, i) => {
+                const o = ctx.createOscillator(), gn = ctx.createGain();
+                o.type = 'sine'; o.frequency.value = f; o.connect(gn); gn.connect(dest);
+                gn.gain.setValueAtTime(0.0001, t);
+                gn.gain.exponentialRampToValueAtTime(Math.max(0.0001, g * (i ? 0.5 : 1)), t + 0.001);
+                gn.gain.exponentialRampToValueAtTime(0.0001, t + 0.04);
+                o.start(t); o.stop(t + 0.05);
+            });
+        }
+
+        function playBeep(ctx, dest, t, g, freq) {
+            const o = ctx.createOscillator(), gn = ctx.createGain();
+            o.type = 'square'; o.frequency.value = freq * 0.5; o.connect(gn); gn.connect(dest);
+            gn.gain.setValueAtTime(0.0001, t);
+            gn.gain.exponentialRampToValueAtTime(Math.max(0.0001, g * 0.35), t + 0.002);
+            gn.gain.exponentialRampToValueAtTime(0.0001, t + 0.05);
+            o.start(t); o.stop(t + 0.06);
+        }
+
+        function updateSilenceVis(mode) {
+            document.querySelectorAll('.sil-param').forEach(p => {
+                p.style.display = (p.dataset.mode || '').includes(mode) ? 'block' : 'none';
+            });
+            document.getElementById('silence-params-container').style.display = mode === 'none' ? 'none' : 'grid';
+            
+            const labels = { fixed: 'FIXO', progressive: 'PROG.', random: 'ALEAT.', partial: 'PARCIAL', fade: 'FADE' };
+            const silBadge = document.getElementById('silBadge');
+            
+            if (mode !== 'none') { 
+                silBadge.textContent = 'MUTO: ' + labels[mode]; 
+                silBadge.style.display = 'block'; 
+            } else {
+                silBadge.style.display = 'none';
+            }
+        }
+
+        function updateMeasureCounterDisplay() {
+            const display = document.getElementById('measureCounter');
+            if (!state.metroPlaying) {
+                display.innerHTML = '—';
+                return;
+            }
+            const currentM = state.silenceState.currentMeasureIndex;
+            const mode = state.silenceMode;
+            if (mode === 'none') {
+                display.innerHTML = `COMPASSO <strong class="text-indigo-400 font-mono">${currentM + 1}</strong>`;
+                return;
+            }
+            const play = parseInt(document.getElementById('playMeasures').value) || 1;
+            const mute = parseInt(document.getElementById('muteMeasures').value) || 1;
+            const currentMuteCount = mode === 'progressive' ? mute + state.silenceState.progressiveMuteCount : mute;
+            const cycleLength = play + currentMuteCount;
+            const pos = currentM % cycleLength;
+
+            if (pos >= play) {
+                display.innerHTML = `⏸ SILÊNCIO <strong class="text-rose-450 font-mono">${(pos - play) + 1}/${currentMuteCount}</strong>`;
+            } else {
+                display.innerHTML = `▸ METRÔNOMO <strong class="text-emerald-400 font-mono">${pos + 1}/${play}</strong>`;
+            }
+        }
+
+        function shouldPlayClick(bi) {
+            const mode = state.silenceMode;
+            if (mode === 'none') return true;
+            
+            const play = parseInt(document.getElementById('playMeasures').value) || 1;
+            const mute = parseInt(document.getElementById('muteMeasures').value) || 1;
+            
+            if (mode === 'fixed') {
+                return (bi.measureIndex % (play + mute)) < play;
+            }
+            if (mode === 'progressive') {
+                const currentMuteCount = mute + state.silenceState.progressiveMuteCount;
+                return (bi.measureIndex % (play + currentMuteCount)) < play;
+            }
+            if (mode === 'random') {
+                const prob = parseInt(document.getElementById('randomProb').value) || 30;
+                return (Math.random() * 100) >= prob;
+            }
+            if (mode === 'partial') {
+                const target = parseInt(document.getElementById('partialTarget').value) || 1;
+                const sub = state.subdivision;
+                if (target >= sub) return true;
+                const step = Math.round(sub / target);
+                return step === 0 || bi.subIndex % step === 0;
+            }
+            if (mode === 'fade') return true;
+            return true;
+        }
+
+        function scheduleTick(time, bi) {
+            initAudio();
+            const numBeats = state.timeSignature[0];
+            const accent = state.accents[bi.beatIndex % numBeats] || 0;
+            let gainValue = accent === 1 ? 1.0 : (accent === -1 ? 0.4 : 0.7);
+
+            // Se for modo fade, reduz gradualmente nos compassos mudo
+            if (state.silenceMode === 'fade') {
+                const play = parseInt(document.getElementById('playMeasures').value) || 1;
+                const mute = parseInt(document.getElementById('muteMeasures').value) || 1;
+                const fadeSec = parseFloat(document.getElementById('fadeSeconds').value) || 2;
+                const cycle = play + mute;
+                const pos = bi.measureIndex % cycle;
+                if (pos >= play - 1) {
+                    const measureDuration = (60 / state.bpm) * numBeats;
+                    const subIdx = state.subdivision;
+                    const totalTicks = subIdx * numBeats;
+                    const elapsedInMeasure = (bi.current16thNote % totalTicks) * ((60 / state.bpm) / subIdx);
+                    const remainingInPlay = measureDuration - elapsedInMeasure;
+                    if (remainingInPlay <= fadeSec) {
+                        gainValue *= Math.max(0, remainingInPlay / fadeSec);
+                    }
+                }
+            }
+
+            let humanizeOffset = 0;
+            if (state.humanize.enabled && state.humanize.ms > 0) {
+                humanizeOffset = (Math.random() * 2 - 1) * (state.humanize.ms / 1000);
+            }
+
+            const currentActualGain = gainValue * (parseFloat(document.getElementById('metroVolumeSlider').value) || 0.7);
+            
+            // Bloqueia clique se estiver no ciclo de silêncio
+            if (!shouldPlayClick(bi) && state.silenceMode !== 'fade') return;
+            if (currentActualGain < 0.002) return;
+
+            const finalScheduledTime = Math.max(time + humanizeOffset, state.audioCtx.currentTime + 0.001);
+            const baseFreq = accent === 1 ? 1150 : (accent === -1 ? 650 : 850);
+            const isSubdivision = bi.subIndex !== 0;
+            const soundTypeToUse = isSubdivision ? 'sine' : state.soundType;
+
+            if (soundTypeToUse === 'click') {
+                const buf = makeClickBuffer(state.audioCtx);
+                const src = state.audioCtx.createBufferSource();
+                const g = state.audioCtx.createGain();
+                src.buffer = buf;
+                g.gain.value = isSubdivision ? currentActualGain * 0.35 : currentActualGain;
+                src.connect(g);
+                g.connect(state.metroGain);
+                src.start(finalScheduledTime);
+            } else if (soundTypeToUse === 'woodblock') {
+                playWoodblock(state.audioCtx, state.metroGain, finalScheduledTime, isSubdivision ? currentActualGain * 0.3 : currentActualGain);
+            } else if (soundTypeToUse === 'beep') {
+                playBeep(state.audioCtx, state.metroGain, finalScheduledTime, isSubdivision ? currentActualGain * 0.35 : currentActualGain, baseFreq);
+            } else {
+                // Sine padrão
+                const o = state.audioCtx.createOscillator();
+                const g = state.audioCtx.createGain();
+                o.type = 'sine';
+                o.frequency.value = isSubdivision ? baseFreq * 0.65 : baseFreq;
+                o.connect(g);
+                g.connect(state.metroGain);
+                const clickDur = 0.055;
+                g.gain.setValueAtTime(0.0001, finalScheduledTime);
+                g.gain.exponentialRampToValueAtTime(Math.max(0.0001, isSubdivision ? currentActualGain * 0.4 : currentActualGain), finalScheduledTime + 0.002);
+                g.gain.exponentialRampToValueAtTime(0.0001, finalScheduledTime + clickDur);
+                o.start(finalScheduledTime);
+                o.stop(finalScheduledTime + clickDur + 0.02);
+            }
+
+            // Ações visuais sincronizadas
+            const delay = Math.max(0, (finalScheduledTime - state.audioCtx.currentTime) * 1000);
+            setTimeout(() => {
+                // Feedback visual de piscada no beat 1
+                if (!isSubdivision && bi.beatIndex === 0) {
+                    const flash = document.getElementById('beatFlash');
+                    flash.style.opacity = '0.06';
+                    setTimeout(() => flash.style.opacity = '0', 70);
+                }
+
+                // Sincronizar o trigger da Backing Track
+                if (state.trackPlaying && bi.beatIndex === 0 && bi.subIndex === 0) {
+                    const currentChordIdx = bi.measureIndex % state.backingTrackProgression.length;
+                    playChordSynth(state.backingTrackProgression[currentChordIdx], finalScheduledTime);
+                    updateActiveChordHighlight(currentChordIdx);
+                }
+            }, delay);
+        }
+
+        function nextNote() {
+            const numBeats = state.timeSignature[0];
+            const sub = state.subdivision;
+            state.current16thNote++;
+            
+            if (state.current16thNote >= numBeats * sub) {
+                state.current16thNote = 0;
+            }
+            if (state.current16thNote === 0) {
+                state.silenceState.currentMeasureIndex++;
+                if (state.silenceMode === 'progressive') {
+                    state.silenceState.measuresSinceProgressiveStart++;
+                    const progressDurationSeconds = parseFloat(document.getElementById('progressiveDuration').value) || 120;
+                    const measureInSeconds = (60 / state.bpm) * numBeats;
+                    const approxTotalMeasures = Math.max(1, Math.round(progressDurationSeconds / measureInSeconds));
+                    const everyNMeasures = Math.max(1, Math.floor(approxTotalMeasures / 10));
+                    if (state.silenceState.measuresSinceProgressiveStart % everyNMeasures === 0) {
+                        state.silenceState.progressiveMuteCount++;
+                    }
+                }
+            }
+            const beatIndex = Math.floor(state.current16thNote / sub);
+            return {
+                beatIndex,
+                subIndex: state.current16thNote % sub,
+                current16thNote: state.current16thNote,
+                measureIndex: state.silenceState.currentMeasureIndex
+            };
+        }
+
+        function scheduler() {
+            if (!state.metroPlaying) return;
+            while (state.nextNoteTime < state.audioCtx.currentTime + state.scheduleAheadTime) {
+                const bi = nextNote();
+                scheduleTick(state.nextNoteTime, bi);
+                state.nextNoteTime += (60.0 / state.bpm) / state.subdivision;
+            }
+            state.noteSchedulerId = setTimeout(scheduler, state.lookahead);
+        }
+
+        function animatePendulum() {
+            if (!state.metroPlaying) {
+                state.pendulumAnimId = null;
+                return;
+            }
+            state.pendulumAnimId = requestAnimationFrame(animatePendulum);
+            if (!state.audioCtx) {
+                document.getElementById('pendulumLine').style.transform = 'translateX(-50%) rotate(0deg)';
+                return;
+            }
+            const elapsed = state.audioCtx.currentTime - state.pendulumStartTime;
+            const beatDuration = 60.0 / state.bpm;
+            const fullCycleDuration = beatDuration * 2;
+            const angle = PENDULUM_MAX * Math.sin((2 * Math.PI * elapsed) / fullCycleDuration);
+            document.getElementById('pendulumLine').style.transform = `translateX(-50%) rotate(${angle.toFixed(2)}deg)`;
+        }
+
+        // --- CONTROLE DE START / STOP DO METRÔNOMO ---
+        function startMetronome() {
+            if (state.metroPlaying) return;
+            initAudio();
+            if (state.audioCtx.state === 'suspended') {
+                state.audioCtx.resume();
+            }
+            state.metroPlaying = true;
+            
+            // Sincroniza estado de controlos
+            const btn = document.getElementById('toggleBtn');
+            btn.innerHTML = '<i data-lucide="square" class="w-4 h-4 text-rose-350"></i> STOP';
+            btn.className = "flex-1 bg-rose-600 hover:bg-rose-500 text-white font-bold py-2.5 px-4 rounded-lg transition tracking-wider text-sm flex items-center justify-center gap-2";
+            
+            const pill = document.getElementById('statusPill');
+            pill.textContent = "ATIVO";
+            pill.className = "text-[10px] font-mono border border-emerald-700 text-emerald-450 bg-emerald-950/20 px-2 py-0.5 rounded tracking-wider uppercase";
+            
+            lucide.createIcons();
+
+            // Configurações do modo rítmico
+            state.progressive.enabled = document.getElementById('progressiveToggle').checked;
+            if (state.progressive.enabled) {
+                state.progressiveStartTime = state.audioCtx.currentTime;
+                document.getElementById('progressiveBpmDisplay').classList.remove('hidden');
+                state.progressive.start = parseFloat(document.getElementById('bpmStart').value) || state.bpm;
+                state.progressive.end = parseFloat(document.getElementById('bpmEnd').value) || state.bpm;
+                state.progressive.duration = parseFloat(document.getElementById('progressiveDuration').value) || 120;
+            } else {
+                document.getElementById('progressiveBpmDisplay').classList.add('hidden');
+            }
+
+            state.humanize.enabled = document.getElementById('humanizeToggle').checked;
+            state.humanize.ms = parseFloat(document.getElementById('humanizeMs').value) || 8;
+
+            // Zerar estados do silenciador
+            state.silenceState.currentMeasureIndex = 0;
+            state.silenceState.measuresSinceProgressiveStart = 0;
+            state.silenceState.progressiveMuteCount = 0;
+
+            state.current16thNote = -1;
+            state.tapTimes = [];
+            state.nextNoteTime = state.audioCtx.currentTime + 0.05;
+            
+            scheduler();
+            state.pendulumStartTime = state.audioCtx.currentTime;
+            animatePendulum();
+        }
+
+        function stopMetronome() {
+            if (!state.metroPlaying) return;
+            state.metroPlaying = false;
+            
+            if (state.noteSchedulerId) clearTimeout(state.noteSchedulerId);
+            if (state.pendulumAnimId) cancelAnimationFrame(state.pendulumAnimId);
+
+            const btn = document.getElementById('toggleBtn');
+            btn.innerHTML = '<i data-lucide="play" class="w-4 h-4"></i> START';
+            btn.className = "flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 px-4 rounded-lg transition tracking-wider text-sm flex items-center justify-center gap-2";
+
+            const pill = document.getElementById('statusPill');
+            pill.textContent = "PARADO";
+            pill.className = "text-[10px] font-mono border border-slate-700 text-slate-500 px-2 py-0.5 rounded tracking-wider uppercase";
+            
+            lucide.createIcons();
+            
+            document.getElementById('progressiveBpmDisplay').classList.add('hidden');
+            document.getElementById('pendulumLine').style.transform = 'translateX(-50%) rotate(0deg)';
+            updateMeasureCounterDisplay();
+
+            // Garantir que a backing track pare juntamente
+            if (state.trackPlaying) {
+                toggleBackingTrack();
+            }
+        }
+
+        function toggleMetronome() {
+            state.metroPlaying ? stopMetronome() : startMetronome();
+        }
+
+        // --- ACELERAÇÃO GRADUAL (BPM PROGRESSIVO) ---
+        function tickProgressiveBPM() {
+            if (!state.metroPlaying || !state.progressive.enabled || !state.audioCtx) return;
+            const now = state.audioCtx.currentTime;
+            const t0 = state.progressiveStartTime;
+            const t1 = t0 + state.progressive.duration;
+            
+            if (now <= t0) {
+                state.bpm = state.progressive.start;
+            } else if (now >= t1) {
+                state.bpm = state.progressive.end;
+            } else {
+                const ratio = (now - t0) / (t1 - t0);
+                state.bpm = state.progressive.start + (state.progressive.end - state.progressive.start) * ratio;
+            }
+            
+            document.getElementById('bpmInput').value = Math.round(state.bpm);
+            document.getElementById('progressiveBpmNow').textContent = Math.round(state.bpm);
+        }
+
+        // --- TAP TEMPO ---
+        // ... mantido idêntico ...
+        function tapTempo() {
+            const now = performance.now();
+            state.tapTimes.push(now);
+            if (state.tapTimes.length > 8) state.tapTimes.shift();
+
+            const tapBtn = document.getElementById('tapBtn');
+            tapBtn.classList.add('border-indigo-500', 'text-indigo-400');
+            setTimeout(() => tapBtn.classList.remove('border-indigo-500', 'text-indigo-400'), 100);
+
+            if (state.tapTimes.length >= 2) {
+                let diffs = [];
+                for (let i = 1; i < state.tapTimes.length; i++) {
+                    diffs.push(state.tapTimes[i] - state.tapTimes[i - 1]);
+                }
+                const averageDiff = diffs.reduce((a, b) => a + b, 0) / diffs.length;
+                state.bpm = Math.min(400, Math.max(20, Math.round(60000 / averageDiff)));
+                document.getElementById('bpmInput').value = state.bpm;
+            }
+        }
+
+        // --- SISTEMA DE SINTETIZADOR DA BANDA (Subtrativo & Analógico) ---
+        function buildBackingTrackProgression() {
+            const scaleNotes = getScaleNotes();
+            const genre = document.getElementById('trackGenre').value;
+            const isMinor = ['minor', 'minorPentatonic', 'blues', 'phrygian', 'locrian', 'harmonicMinor', 'melodicMinor'].includes(state.scaleKey);
+            
+            let progression = [];
+            
+            const noteBaseMidiMap = {
+                'C': 48, 'C#': 49, 'D': 50, 'D#': 51, 'E': 52, 'F': 53,
+                'F#': 54, 'G': 55, 'G#': 56, 'A': 57, 'A#': 58, 'B': 59
+            };
+            
+            function getChordLabel(rootNote, quality) {
+                return rootNote + (quality === 'Min' ? 'm' : (quality === 'Dim' ? 'dim' : (quality === 'maj7' ? 'maj7' : (quality === 'm7' ? 'm7' : (quality === '7' ? '7' : (quality === 'm7b5' ? 'ø' : ''))))));
+            }
+
+            if (genre === 'blues') {
+                const degrees = [0, 0, 0, 0, 3, 3, 0, 0, 4, 3, 0, 4];
+                degrees.forEach((deg, idx) => {
+                    const rootName = scaleNotes[deg % scaleNotes.length] || state.rootNote;
+                    const rootMidi = noteBaseMidiMap[rootName] || 48;
+                    const semitones = isMinor ? [0, 3, 7, 10] : [0, 4, 7, 10]; 
+                    const label = rootName + (isMinor ? 'm7' : '7');
+                    
+                    progression.push({
+                        name: label,
+                        notes: semitones.map(s => rootMidi + s),
+                        bass: rootMidi - 12
+                    });
+                });
+            } else if (genre === 'jazz') {
+                const degrees = [1, 4, 0, 5];
+                const majorJazzQualities = ['m7', '7', 'maj7', '7'];
+                const minorJazzQualities = ['m7b5', '7', 'm7', '7'];
+                const qualities = isMinor ? minorJazzQualities : majorJazzQualities;
+                
+                degrees.forEach((deg, idx) => {
+                    const rootName = scaleNotes[deg % scaleNotes.length] || state.rootNote;
+                    const rootMidi = noteBaseMidiMap[rootName] || 48;
+                    const q = qualities[idx];
+                    
+                    let semitones = [0, 4, 7];
+                    if (q === 'm7') semitones = [0, 3, 7, 10];
+                    else if (q === 'maj7') semitones = [0, 4, 7, 11];
+                    else if (q === '7') semitones = [0, 4, 7, 10];
+                    else if (q === 'm7b5') semitones = [0, 3, 6, 10];
+                    
+                    progression.push({
+                        name: getChordLabel(rootName, q),
+                        notes: semitones.map(s => rootMidi + s),
+                        bass: rootMidi - 12
+                    });
+                });
+            } else if (genre === 'rock') {
+                const degrees = isMinor ? [0, 5, 2, 6] : [0, 4, 5, 3];
+                const qualities = isMinor ? ['Min', 'Maj', 'Maj', 'Maj'] : ['Maj', 'Maj', 'Min', 'Maj'];
+                
+                degrees.forEach((deg, idx) => {
+                    const rootName = scaleNotes[deg % scaleNotes.length] || state.rootNote;
+                    const rootMidi = noteBaseMidiMap[rootName] || 48;
+                    const q = qualities[idx];
+                    const semitones = q === 'Min' ? [0, 3, 7] : [0, 4, 7];
+                    
+                    progression.push({
+                        name: getChordLabel(rootName, q),
+                        notes: semitones.map(s => rootMidi + s),
+                        bass: rootMidi - 12
+                    });
+                });
+            } else {
+                const degrees = isMinor ? [0, 3, 6, 2] : [0, 5, 3, 4];
+                const qualities = isMinor ? ['Min', 'Min', 'Maj', 'Maj'] : ['Maj', 'Min', 'Maj', 'Maj'];
+                
+                degrees.forEach((deg, idx) => {
+                    const rootName = scaleNotes[deg % scaleNotes.length] || state.rootNote;
+                    const rootMidi = noteBaseMidiMap[rootName] || 48;
+                    const q = qualities[idx];
+                    const semitones = q === 'Min' ? [0, 3, 7] : [0, 4, 7];
+                    
+                    progression.push({
+                        name: getChordLabel(rootName, q),
+                        notes: semitones.map(s => rootMidi + s),
+                        bass: rootMidi - 12
+                    });
+                });
+            }
+            
+            state.backingTrackProgression = progression;
+            renderChordProgressionUI();
+        }
+
+        function renderChordProgressionUI() {
+            const container = document.getElementById('chordProgressionContainer');
+            container.innerHTML = '';
+            
+            const genre = document.getElementById('trackGenre').value;
+            if (genre === 'blues') {
+                container.className = "grid grid-cols-4 gap-1 sm:gap-1.5 text-center";
+            } else {
+                container.className = "grid grid-cols-4 gap-1.5 text-center";
+            }
+            
+            state.backingTrackProgression.forEach((chord, idx) => {
+                const card = document.createElement('div');
+                card.id = `chord-card-${idx}`;
+                card.className = "flex flex-col items-center justify-center p-2 rounded-lg border border-slate-800 bg-slate-950/45 text-center transition-all duration-200 select-none cursor-pointer hover:border-indigo-500/50";
+                
+                card.innerHTML = `
+                    <span class="text-[11px] sm:text-xs font-black text-slate-200">${chord.name}</span>
+                    <span class="text-[8px] text-slate-500 font-mono">Bar ${idx + 1}</span>
+                `;
+                
+                card.addEventListener('click', () => {
+                    initAudio();
+                    if (state.audioCtx.state === 'suspended') {
+                        state.audioCtx.resume();
+                    }
+                    playChordSynth(chord, state.audioCtx.currentTime);
+                });
+                
+                container.appendChild(card);
+            });
+        }
+
+        // --- RENDERIZADOR DE ÁUDIO DO ACOMPANHAMENTO MELHORADO (SÍNTESE SUBTRATIVA) ---
+        function playChordSynth(chordObj, startTime) {
+            initAudio();
+            const ctx = state.audioCtx;
+            
+            fadeActiveChords(startTime);
+            
+            const gVal = parseFloat(document.getElementById('trackVolumeSlider').value) || 0.65;
+            const measureDuration = (60 / state.bpm) * state.timeSignature[0];
+
+            // 1. Linha de Baixo: Baixo Analógico Passa-Baixo (Saw + Triangle Blend)
+            if (chordObj.bass) {
+                const oscSaw = ctx.createOscillator();
+                const oscTri = ctx.createOscillator();
+                
+                const mixSaw = ctx.createGain();
+                const mixTri = ctx.createGain();
+                
+                const bassFilter = ctx.createBiquadFilter();
+                const bassGainNode = ctx.createGain();
+
+                // Dente de serra para brilho analógico e harmónicos
+                oscSaw.type = 'sawtooth';
+                oscSaw.frequency.setValueAtTime(midiToFreq(chordObj.bass), startTime);
+                mixSaw.gain.setValueAtTime(0.14, startTime);
+
+                // Onda triangular para o subgrave profundo redondo
+                oscTri.type = 'triangle';
+                oscTri.frequency.setValueAtTime(midiToFreq(chordObj.bass), startTime);
+                mixTri.gain.setValueAtTime(0.42, startTime);
+
+                // Configuração do Filtro Dinâmico do Baixo
+                bassFilter.type = 'lowpass';
+                // Envelope de Filtro: Começa cortando em 280Hz e decai para 80Hz para emular o ataque do dedo
+                bassFilter.frequency.setValueAtTime(280, startTime);
+                bassFilter.frequency.exponentialRampToValueAtTime(80, startTime + 0.28);
+
+                // Envelope de Amplitude do Baixo
+                bassGainNode.gain.setValueAtTime(0, startTime);
+                bassGainNode.gain.linearRampToValueAtTime(gVal * 0.75, startTime + 0.04);
+                bassGainNode.gain.setValueAtTime(gVal * 0.75, startTime + measureDuration - 0.15);
+                bassGainNode.gain.exponentialRampToValueAtTime(0.0001, startTime + measureDuration);
+
+                // Ligações do Baixo
+                oscSaw.connect(mixSaw);
+                oscTri.connect(mixTri);
+                
+                mixSaw.connect(bassFilter);
+                mixTri.connect(bassFilter);
+                
+                bassFilter.connect(bassGainNode);
+                bassGainNode.connect(state.backingTrackGain);
+
+                oscSaw.start(startTime);
+                oscTri.start(startTime);
+                
+                oscSaw.stop(startTime + measureDuration);
+                oscTri.stop(startTime + measureDuration);
+
+                state.backingTrackOscillators.push({ osc: oscSaw, gainNode: bassGainNode });
+                state.backingTrackOscillators.push({ osc: oscTri, gainNode: bassGainNode });
+            }
+            
+            // 2. Pad de Acordes: Warm Pad desafinado com Modulação LFO
+            chordObj.notes.forEach((midi, idx) => {
+                const strumDelay = idx * 0.035; // Ligeiro dedilhado para soar natural
+                const noteTime = startTime + strumDelay;
+
+                // 2 Osciladores Desafinados por nota para um efeito Chorus amplo natural
+                const oscSawDetuned = ctx.createOscillator();
+                const oscTriDetuned = ctx.createOscillator();
+                
+                const padGainNode = ctx.createGain();
+                const padFilter = ctx.createBiquadFilter();
+
+                // Oscilador 1 desafinado para baixo
+                oscSawDetuned.type = 'sawtooth';
+                oscSawDetuned.frequency.setValueAtTime(midiToFreq(midi), noteTime);
+                oscSawDetuned.detune.setValueAtTime(-6, noteTime); // desafinado em -6 cents
+
+                // Oscilador 2 desafinado para cima
+                oscTriDetuned.type = 'triangle';
+                oscTriDetuned.frequency.setValueAtTime(midiToFreq(midi), noteTime);
+                oscTriDetuned.detune.setValueAtTime(6, noteTime);  // desafinado em +6 cents
+
+                // Filtro analógico quente cortado nos agudos
+                padFilter.type = 'lowpass';
+                padFilter.frequency.setValueAtTime(450, noteTime);
+
+                // Criação do LFO lento para animar o filtro
+                const lfo = ctx.createOscillator();
+                const lfoGain = ctx.createGain();
+                lfo.type = 'sine';
+                lfo.frequency.value = 0.22; // Ciclo de 4.5 segundos
+                lfoGain.gain.value = 90;    // Oscila o corte do filtro em +/- 90Hz
+
+                lfo.connect(lfoGain);
+                lfoGain.connect(padFilter.frequency);
+
+                // Envelope do Pad: Ataque lento suave de 350ms e libertação suave
+                padGainNode.gain.setValueAtTime(0, noteTime);
+                padGainNode.gain.linearRampToValueAtTime(gVal * 0.14, noteTime + 0.35); 
+                padGainNode.gain.setValueAtTime(gVal * 0.14, startTime + measureDuration - 0.2);
+                padGainNode.gain.exponentialRampToValueAtTime(0.0001, startTime + measureDuration);
+
+                // Conexões
+                oscSawDetuned.connect(padFilter);
+                oscTriDetuned.connect(padFilter);
+                
+                padFilter.connect(padGainNode);
+                padGainNode.connect(state.backingTrackGain);
+
+                oscSawDetuned.start(noteTime);
+                oscTriDetuned.start(noteTime);
+                lfo.start(noteTime);
+
+                oscSawDetuned.stop(startTime + measureDuration);
+                oscTriDetuned.stop(startTime + measureDuration);
+                lfo.stop(startTime + measureDuration);
+
+                state.backingTrackOscillators.push({ osc: oscSawDetuned, gainNode: padGainNode });
+                state.backingTrackOscillators.push({ osc: oscTriDetuned, gainNode: padGainNode });
+                state.backingTrackOscillators.push({ osc: lfo, gainNode: padGainNode });
+            });
+        }
+
+        function fadeActiveChords(targetTime) {
+            state.backingTrackOscillators.forEach(item => {
+                try {
+                    item.gainNode.gain.cancelScheduledValues(targetTime);
+                    item.gainNode.gain.setValueAtTime(item.gainNode.gain.value, targetTime);
+                    item.gainNode.gain.linearRampToValueAtTime(0.0001, targetTime + 0.08);
+                    item.osc.stop(targetTime + 0.12);
+                } catch (e) {}
+            });
+            state.backingTrackOscillators = [];
+        }
+
+        function toggleBackingTrack() {
+            if (state.trackPlaying) {
+                state.trackPlaying = false;
+                fadeActiveChords(state.audioCtx ? state.audioCtx.currentTime : 0);
+                updateTrackUI();
+            } else {
+                buildBackingTrackProgression();
+                state.trackPlaying = true;
+                if (!state.metroPlaying) {
+                    startMetronome();
+                }
+                updateTrackUI();
+            }
+        }
+
+        function updateTrackUI() {
+            const btn = document.getElementById('btnPlayTrack');
+            const pill = document.getElementById('trackStatusPill');
+            if (state.trackPlaying) {
+                btn.innerHTML = '<i data-lucide="square" class="w-3.5 h-3.5 text-rose-300"></i> Parar Track';
+                btn.className = "w-full bg-rose-600 hover:bg-rose-500 text-white font-bold py-1.5 px-3 rounded text-xs transition flex items-center justify-center gap-1 shadow-lg shadow-rose-900/10";
+                pill.textContent = "ATIVO";
+                pill.className = "text-[10px] font-mono border border-indigo-700 text-indigo-400 bg-indigo-950/20 px-2 py-0.5 rounded tracking-wider uppercase";
+            } else {
+                btn.innerHTML = '<i data-lucide="play" class="w-3.5 h-3.5"></i> Play Track';
+                btn.className = "w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-1.5 px-3 rounded text-xs transition flex items-center justify-center gap-1 shadow-lg shadow-indigo-900/10";
+                pill.textContent = "PARADO";
+                pill.className = "text-[10px] font-mono border border-slate-700 text-slate-500 px-2 py-0.5 rounded tracking-wider uppercase";
+                
+                // Limpar todos os destaques de acordes
+                document.querySelectorAll('[id^="chord-card-"]').forEach(el => {
+                    el.className = "flex flex-col items-center justify-center p-2 rounded-lg border border-slate-800 bg-slate-950/45 text-center transition-all duration-200 select-none cursor-pointer hover:border-indigo-500/50";
+                });
+            }
+            lucide.createIcons();
+        }
+
+        function updateActiveChordHighlight(activeIdx) {
+            state.backingTrackProgression.forEach((chord, idx) => {
+                const card = document.getElementById(`chord-card-${idx}`);
+                if (card) {
+                    if (idx === activeIdx) {
+                        card.className = "flex flex-col items-center justify-center p-2 rounded-lg border-2 border-indigo-500 bg-indigo-950/45 text-center transition-all duration-200 select-none cursor-pointer scale-105 shadow-md shadow-indigo-950/20";
+                    } else {
+                        card.className = "flex flex-col items-center justify-center p-2 rounded-lg border border-slate-800 bg-slate-950/45 text-center transition-all duration-200 select-none cursor-pointer hover:border-indigo-500/50 opacity-40";
+                    }
+                }
+            });
+        }
+
+        // --- CONTROLO DOS PRESETS (LOCAL STORAGE) ---
+        const PRESETS_STORAGE_KEY = 'gtr_scale_metro_presets';
+        
+        function loadLocalPresets() {
+            try {
+                return JSON.parse(localStorage.getItem(PRESETS_STORAGE_KEY) || '{}');
+            } catch (e) {
+                return {};
+            }
+        }
+        
+        function saveLocalPresets(p) {
+            try {
+                localStorage.setItem(PRESETS_STORAGE_KEY, JSON.stringify(p));
+            } catch (e) {}
+        }
+
+        function captureStateJSON() {
+            return {
+                bpm: state.bpm,
+                timeSignature: document.getElementById('timeSignature').value,
+                subdivision: state.subdivision,
+                accents: [...state.accents],
+                silenceMode: state.silenceMode,
+                playMeasures: document.getElementById('playMeasures').value,
+                muteMeasures: document.getElementById('muteMeasures').value,
+                randomProb: document.getElementById('randomProb').value,
+                fadeSeconds: document.getElementById('fadeSeconds').value,
+                progressive: {
+                    enabled: document.getElementById('progressiveToggle').checked,
+                    start: document.getElementById('bpmStart').value,
+                    end: document.getElementById('bpmEnd').value,
+                    duration: document.getElementById('progressiveDuration').value
+                },
+                humanize: {
+                    enabled: document.getElementById('humanizeToggle').checked,
+                    ms: document.getElementById('humanizeMs').value
+                },
+                soundType: state.soundType,
+                rootNote: state.rootNote,
+                scaleKey: state.scaleKey
+            };
+        }
+
+        function applyStateJSON(s) {
+            if (!s) return;
+            if (s.bpm) { state.bpm = parseInt(s.bpm); document.getElementById('bpmInput').value = state.bpm; }
+            if (s.rootNote) { state.rootNote = s.rootNote; renderRootSelector(); }
+            if (s.scaleKey) { state.scaleKey = s.scaleKey; document.getElementById('scaleSelector').value = s.scaleKey; }
+            
+            if (s.timeSignature) {
+                document.getElementById('timeSignature').value = s.timeSignature;
+                state.timeSignature = parseTS(s.timeSignature);
+            }
+            if (s.subdivision) {
+                state.subdivision = parseInt(s.subdivision);
+                document.getElementById('subdivision').value = s.subdivision;
+            }
+            if (s.accents) {
+                state.accents = s.accents;
+            } else {
+                buildAccents();
+            }
+            renderAccentsUI();
+
+            if (s.silenceMode) {
+                state.silenceMode = s.silenceMode;
+                document.querySelectorAll('.sil-chip').forEach(c => c.classList.toggle('active', c.dataset.mode === s.silenceMode));
+                updateSilenceVis(s.silenceMode);
+            }
+            if (s.playMeasures) document.getElementById('playMeasures').value = s.playMeasures;
+            if (s.muteMeasures) document.getElementById('muteMeasures').value = s.muteMeasures;
+            if (s.randomProb) document.getElementById('randomProb').value = s.randomProb;
+            if (s.fadeSeconds) document.getElementById('fadeSeconds').value = s.fadeSeconds;
+
+            if (s.progressive) {
+                document.getElementById('progressiveToggle').checked = s.progressive.enabled;
+                document.getElementById('bpmStart').value = s.progressive.start;
+                document.getElementById('bpmEnd').value = s.progressive.end;
+                document.getElementById('progressiveDuration').value = s.progressive.duration;
+            }
+            if (s.humanize) {
+                document.getElementById('humanizeToggle').checked = s.humanize.enabled;
+                document.getElementById('humanizeMs').value = s.humanize.ms;
+                document.getElementById('humanizeMsLabel').textContent = s.humanize.ms + 'ms';
+            }
+            if (s.soundType) {
+                state.soundType = s.soundType;
+                document.querySelectorAll('.sound-chip').forEach(c => c.classList.toggle('active', c.dataset.sound === s.soundType));
+            }
+
+            updateScaleInfo();
+            renderFretboard();
+        }
+
+        function refreshPresetsDropdown() {
+            const p = loadLocalPresets();
+            const select = document.getElementById('presetSelect');
+            const prevVal = select.value;
+            select.innerHTML = '<option value="">— Selecionar Preset —</option>';
+            Object.keys(p).forEach(name => {
+                const opt = document.createElement('option');
+                opt.value = name;
+                opt.textContent = name;
+                select.appendChild(opt);
+            });
+            if (prevVal) select.value = prevVal;
+        }
+
+        // --- ARRASTO BIDIRECIONAL DE BPM (DRAG/WHEEL) ---
+        function setupBpmDragAndScroll() {
+            const input = document.getElementById('bpmInput');
+            let dragging = false;
+            let startY = 0;
+            let startBpm = 0;
+
+            input.addEventListener('mousedown', e => {
+                dragging = true;
+                startY = e.clientY;
+                startBpm = state.bpm;
+                e.preventDefault();
+            });
+            document.addEventListener('mousemove', e => {
+                if (!dragging) return;
+                const deltaY = startY - e.clientY;
+                state.bpm = Math.min(400, Math.max(20, Math.round(startBpm + deltaY * 0.4)));
+                input.value = state.bpm;
+            });
+            document.addEventListener('mouseup', () => dragging = false);
+
+            input.addEventListener('touchstart', e => {
+                dragging = true;
+                startY = e.touches[0].clientY;
+                startBpm = state.bpm;
+            }, { passive: true });
+            
+            document.addEventListener('touchmove', e => {
+                if (!dragging) return;
+                const deltaY = startY - e.touches[0].clientY;
+                state.bpm = Math.min(400, Math.max(20, Math.round(startBpm + deltaY * 0.4)));
+                input.value = state.bpm;
+            }, { passive: true });
+            document.addEventListener('touchend', () => dragging = false);
+
+            input.addEventListener('wheel', e => {
+                e.preventDefault();
+                const step = e.shiftKey ? 10 : 1;
+                state.bpm = e.deltaY > 0 ? Math.max(20, state.bpm - step) : Math.min(400, state.bpm + step);
+                input.value = state.bpm;
+            });
+
+            input.addEventListener('change', () => {
+                state.bpm = Math.min(400, Math.max(20, parseInt(input.value) || 120));
+                input.value = state.bpm;
+            });
+        }
+
+        // --- ASSOCIAÇÃO DE EVENTOS DE INTERFACE ---
+        function setupEventBindings() {
+            // Alteração de Tom e Escalas
+            document.getElementById('scaleSelector').addEventListener('change', (e) => {
+                state.scaleKey = e.target.value;
+                updateScaleInfo();
+                renderFretboard();
+                if (state.trackPlaying) {
+                    buildBackingTrackProgression();
+                }
+            });
+
+            // Modos de Exibição
+            const btnViewNotes = document.getElementById('viewNoteNames');
+            const btnViewIntervals = document.getElementById('viewIntervals');
+            const btnViewFrets = document.getElementById('viewFrets');
+
+            function updateViewModeStyle() {
+                [btnViewNotes, btnViewIntervals, btnViewFrets].forEach(btn => {
+                    btn.className = "py-1.5 px-1 text-center rounded-lg text-xs font-bold border border-slate-700 bg-slate-800 text-slate-400 hover:bg-slate-750 transition";
+                });
+                if (state.viewMode === 'notes') {
+                    btnViewNotes.className = "py-1.5 px-1 text-center rounded-lg text-xs font-bold border bg-indigo-600 border-indigo-500 text-white transition";
+                } else if (state.viewMode === 'intervals') {
+                    btnViewIntervals.className = "py-1.5 px-1 text-center rounded-lg text-xs font-bold border bg-indigo-600 border-indigo-500 text-white transition";
+                } else if (state.viewMode === 'frets') {
+                    btnViewFrets.className = "py-1.5 px-1 text-center rounded-lg text-xs font-bold border bg-indigo-600 border-indigo-500 text-white transition";
+                }
+            }
+
+            btnViewNotes.addEventListener('click', () => { state.viewMode = 'notes'; updateViewModeStyle(); renderFretboard(); });
+            btnViewIntervals.addEventListener('click', () => { state.viewMode = 'intervals'; updateViewModeStyle(); renderFretboard(); });
+            btnViewFrets.addEventListener('click', () => { state.viewMode = 'frets'; updateViewModeStyle(); renderFretboard(); });
+
+            // Wake Lock manual
+            document.getElementById('btnToggleWakeLock').addEventListener('click', () => {
+                state.wakeLock ? releaseWakeLock() : requestWakeLock();
+            });
+
+            // Fullscreen
+            const btnToggleFullscreen = document.getElementById('btnToggleFullscreen');
+            const fretboardSection = document.getElementById('fretboardSection');
+
+            btnToggleFullscreen.addEventListener('click', () => {
+                if (!document.fullscreenElement) {
+                    fretboardSection.requestFullscreen().then(() => {
+                        btnToggleFullscreen.innerHTML = '<i data-lucide="minimize" class="w-3.5 h-3.5"></i> Sair';
+                        lucide.createIcons();
+                    }).catch(err => console.error(err));
+                } else {
+                    document.exitFullscreen();
+                }
+            });
+
+            document.addEventListener('fullscreenchange', () => {
+                if (document.fullscreenElement) {
+                    fretboardSection.classList.add('p-6', 'bg-slate-950');
+                } else {
+                    fretboardSection.classList.remove('p-6', 'bg-slate-950');
+                    btnToggleFullscreen.innerHTML = '<i data-lucide="maximize" class="w-3.5 h-3.5"></i> Ecrã Inteiro';
+                    lucide.createIcons();
+                }
+                renderFretboard();
+            });
+
+            // Metrônomo: Botões Rápidos de BPM
+            document.getElementById('increaseBpm').addEventListener('click', () => { state.bpm = Math.min(400, state.bpm + 1); document.getElementById('bpmInput').value = state.bpm; });
+            document.getElementById('decreaseBpm').addEventListener('click', () => { state.bpm = Math.max(20, state.bpm - 1); document.getElementById('bpmInput').value = state.bpm; });
+            document.getElementById('increaseBpm10').addEventListener('click', () => { state.bpm = Math.min(400, state.bpm + 10); document.getElementById('bpmInput').value = state.bpm; });
+            document.getElementById('decreaseBpm10').addEventListener('click', () => { state.bpm = Math.max(20, state.bpm - 10); document.getElementById('bpmInput').value = state.bpm; });
+
+            // Metrônomo: Play/Stop e Tap
+            document.getElementById('toggleBtn').addEventListener('click', toggleMetronome);
+            document.getElementById('tapBtn').addEventListener('click', tapTempo);
+
+            // Compasso e Subdivisão
+            document.getElementById('timeSignature').addEventListener('change', (e) => {
+                state.timeSignature = parseTS(e.target.value);
+                buildAccents();
+                if (state.trackPlaying) {
+                    buildBackingTrackProgression();
+                }
+            });
+            document.getElementById('subdivision').addEventListener('change', (e) => {
+                state.subdivision = parseInt(e.target.value);
+            });
+
+            // Mudança de tipo de som (Timbre)
+            document.querySelectorAll('.sound-chip').forEach(chip => {
+                chip.addEventListener('click', () => {
+                    document.querySelectorAll('.sound-chip').forEach(x => x.className = "sound-chip bg-slate-850 border border-slate-700 text-slate-400 px-1 py-1 rounded hover:bg-slate-755 transition");
+                    chip.className = "sound-chip active bg-indigo-950/40 border border-indigo-700/50 text-indigo-300 px-1 py-1 rounded";
+                    state.soundType = chip.dataset.sound;
+                });
+            });
+
+            // Volume do Metrônomo
+            document.getElementById('metroVolumeSlider').addEventListener('input', (e) => {
+                if (state.metroGain) {
+                    state.metroGain.gain.value = parseFloat(e.target.value);
+                }
+            });
+
+            // Volume da Backing Track
+            document.getElementById('trackVolumeSlider').addEventListener('input', (e) => {
+                if (state.backingTrackGain) {
+                    state.backingTrackGain.gain.value = parseFloat(e.target.value);
+                }
+            });
+
+            // Género da Backing Track
+            document.getElementById('trackGenre').addEventListener('change', () => {
+                buildBackingTrackProgression();
+            });
+
+            // Play da Backing Track
+            document.getElementById('btnPlayTrack').addEventListener('click', toggleBackingTrack);
+
+            // Silêncio
+            document.querySelectorAll('.sil-chip').forEach(chip => {
+                chip.addEventListener('click', () => {
+                    document.querySelectorAll('.sil-chip').forEach(x => x.className = "sil-chip bg-slate-850 border border-slate-800 text-slate-400 py-1 rounded hover:bg-slate-755 transition");
+                    chip.className = "sil-chip active bg-red-950/10 border border-red-900/10 text-red-400 py-1 rounded";
+                    state.silenceMode = chip.dataset.mode;
+                    updateSilenceVis(chip.dataset.mode);
+                });
+            });
+
+            // Humanizar
+            document.getElementById('humanizeMs').addEventListener('input', (e) => {
+                document.getElementById('humanizeMsLabel').textContent = e.target.value + 'ms';
+                state.humanize.ms = parseInt(e.target.value);
+            });
+
+            // Presets: Save, Load, Delete
+            document.getElementById('presetSave').addEventListener('click', () => {
+                const name = prompt('Nome para guardar este Preset:');
+                if (!name || !name.trim()) return;
+                const p = loadLocalPresets();
+                p[name.trim()] = captureStateJSON();
+                saveLocalPresets(p);
+                refreshPresetsDropdown();
+                document.getElementById('presetSelect').value = name.trim();
+                const status = document.getElementById('presetStatus');
+                status.textContent = 'SALVO ✓';
+                setTimeout(() => status.textContent = '', 2000);
+            });
+
+            document.getElementById('presetLoad').addEventListener('click', () => {
+                const name = document.getElementById('presetSelect').value;
+                if (!name) return;
+                const p = loadLocalPresets();
+                if (p[name]) {
+                    applyStateJSON(p[name]);
+                    const status = document.getElementById('presetStatus');
+                    status.textContent = 'CARREGADO ✓';
+                    setTimeout(() => status.textContent = '', 2000);
+                }
+            });
+
+            document.getElementById('presetDelete').addEventListener('click', () => {
+                const name = document.getElementById('presetSelect').value;
+                if (!name || !confirm(`Pretende eliminar o preset "${name}"?`)) return;
+                const p = loadLocalPresets();
+                delete p[name];
+                saveLocalPresets(p);
+                refreshPresetsDropdown();
+                const status = document.getElementById('presetStatus');
+                status.textContent = 'ELIMINADO';
+                setTimeout(() => status.textContent = '', 2000);
+            });
+
+            // Atalhos globais de Teclado (Tecla Espaço e T)
+            window.addEventListener('keydown', e => {
+                if (e.target.tagName === 'INPUT' && e.target.type !== 'checkbox') return;
+                if (e.code === 'Space') {
+                    e.preventDefault();
+                    toggleMetronome();
+                }
+                if (e.key.toLowerCase() === 't') {
+                    e.preventDefault();
+                    tapTempo();
+                }
+            });
+
+            document.addEventListener('visibilitychange', async () => {
+                if (state.wakeLock !== null && document.visibilityState === 'visible') {
+                    await requestWakeLock();
+                }
+            });
+        }
+
+        // --- LOOP DE ATUALIZAÇÕES CONTÍNUAS ---
+        setInterval(() => {
+            if (state.metroPlaying) {
+                if (state.progressive.enabled) tickProgressiveBPM();
+                updateMeasureCounterDisplay();
+            }
+        }, 100);
+
+        // --- INICIALIZAÇÃO GERAL ---
+        window.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+            
+            // Força o estado padrão inicial
+            state.bpm = parseInt(document.getElementById('bpmInput').value) || 120;
+            state.timeSignature = parseTS(document.getElementById('timeSignature').value);
+            state.subdivision = parseInt(document.getElementById('subdivision').value) || 1;
+            
+            renderRootSelector();
+            buildAccents();
+            updateScaleInfo();
+            renderFretboard();
+            buildBackingTrackProgression();
+            
+            updateSilenceVis('none');
+            refreshPresetsDropdown();
+            setupBpmDragAndScroll();
+            setupEventBindings();
+            
+            // Inicia o Wake lock se autorizado
+            requestWakeLock();
+        });
+    </script>
+</body>
+</html>
