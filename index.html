@@ -30,8 +30,12 @@
         .note-glow-scale {
             box-shadow: 0 0 12px rgba(99, 102, 241, 0.6);
         }
+        /* Destaque especial do dedilhado do dicionário de acordes */
+        .note-glow-chord {
+            box-shadow: 0 0 16px rgba(16, 185, 129, 0.95);
+        }
         /* Forçar cores escuras nos seletores para evitar texto invisível */
-        #scaleSelector, #scaleSelector option, #scaleSelector optgroup, #trackGenre, #trackGenre option {
+        #scaleSelector, #scaleSelector option, #scaleSelector optgroup, #trackGenre, #trackGenre option, #chordDictRoot, #chordDictType {
             background-color: #0f172a !important;
             color: #f1f5f9 !important;
         }
@@ -110,8 +114,8 @@
                     <i data-lucide="music" class="w-6 h-6"></i>
                 </div>
                 <div>
-                    <h1 class="text-xl font-bold tracking-tight bg-gradient-to-r from-indigo-400 to-rose-400 bg-clip-text text-transparent">GuitarBuddy</h1>
-                    <p class="text-xs text-slate-400 font-medium">Guitarra de 7 Cordas • Metrônomo • Backing Tracks</p>
+                    <h1 class="text-xl font-bold tracking-tight bg-gradient-to-r from-indigo-400 to-rose-400 bg-clip-text text-transparent">GTR Scales & Banda Virtual</h1>
+                    <p class="text-xs text-slate-400 font-medium">7-String Guitar Pro • Ritmos • Editor de Acordes • Dicionário</p>
                 </div>
             </div>
             
@@ -198,6 +202,7 @@
                 </h2>
                 <div class="flex items-center gap-3 text-[10px] sm:text-xs text-slate-400">
                     <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-rose-500 inline-block border border-rose-300/40"></span> Tônica</span>
+                    <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-emerald-500 inline-block border border-emerald-350/40"></span> Dedilhado Ativo</span>
                     <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-indigo-600 inline-block border border-indigo-400/40"></span> Notas</span>
                 </div>
             </div>
@@ -212,18 +217,57 @@
             </div>
         </section>
 
-        <!-- Área Dividida de Prática e Harmonia -->
+        <!-- Área Dividida de Prática e Harmonia (3 Colunas) -->
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
             
-            <!-- ESQUERDA: Informações da Escala (lg:col-span-4) -->
+            <!-- ESQUERDA: Informações da Escala & Dicionário (lg:col-span-4) -->
             <section class="lg:col-span-4 bg-slate-900 border border-slate-800 rounded-xl p-4 sm:p-5 shadow-xl flex flex-col justify-between space-y-4">
-                <div class="space-y-3">
-                    <h3 class="text-base font-bold text-slate-200 flex items-center gap-2">
-                        <span id="scaleInfoTitle" class="text-indigo-400">Dó Maior</span>
-                        <span class="text-[10px] bg-indigo-900/50 text-indigo-300 border border-indigo-700/50 px-2 py-0.5 rounded-full font-medium">Notas</span>
-                    </h3>
-                    <div class="flex flex-wrap gap-1.5 items-center" id="scaleNotesContainer">
-                        <!-- Notas geradas via JS -->
+                <div class="space-y-4">
+                    <div class="space-y-3">
+                        <h3 class="text-base font-bold text-slate-200 flex items-center gap-2">
+                            <span id="scaleInfoTitle" class="text-indigo-400">Dó Maior</span>
+                            <span class="text-[10px] bg-indigo-900/50 text-indigo-300 border border-indigo-700/50 px-2 py-0.5 rounded-full font-medium">Notas</span>
+                        </h3>
+                        <div class="flex flex-wrap gap-1.5 items-center" id="scaleNotesContainer">
+                            <!-- Notas geradas via JS -->
+                        </div>
+                    </div>
+
+                    <!-- Dicionário de Acordes de 7 Cordas -->
+                    <div class="border-t border-slate-800 pt-4 space-y-3">
+                        <h4 class="text-xs font-bold text-emerald-400 tracking-wider flex items-center gap-1.5">
+                            <i data-lucide="book-open" class="w-3.5 h-3.5"></i> DICIONÁRIO DE ACORDES (7 CORDAS)
+                        </h4>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-[9px] text-slate-400 font-bold mb-1">RAIZ</label>
+                                <select id="chordDictRoot" class="w-full bg-slate-950 border border-slate-750 rounded py-1 px-1.5 text-xs text-slate-300 focus:outline-none focus:ring-1 focus:ring-emerald-500">
+                                    <!-- Preenchido via JS -->
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-[9px] text-slate-400 font-bold mb-1">TIPO</label>
+                                <select id="chordDictType" class="w-full bg-slate-950 border border-slate-750 rounded py-1 px-1.5 text-xs text-slate-300 focus:outline-none focus:ring-1 focus:ring-emerald-500">
+                                    <option value="maj" selected>Maior (Tríade)</option>
+                                    <option value="min">Menor (Tríade)</option>
+                                    <option value="dom7">Dominante (7)</option>
+                                    <option value="maj7">Sétima Maior (Maj7)</option>
+                                    <option value="min7">Sétima Menor (m7)</option>
+                                    <option value="m7b5">Meio-Diminuto (m7b5)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="flex gap-1.5">
+                            <button id="btnShowVoicing" class="flex-1 bg-emerald-750/30 hover:bg-emerald-700/40 border border-emerald-500/30 text-emerald-300 text-xs font-bold py-1.5 px-3 rounded transition flex items-center justify-center gap-1.5">
+                                <i data-lucide="eye" class="w-3.5 h-3.5"></i> Ver no Braço
+                            </button>
+                            <button id="btnClearVoicing" class="bg-slate-800 hover:bg-slate-755 border border-slate-700 text-slate-400 text-xs py-1.5 px-2.5 rounded transition" title="Limpar Dedilhado">
+                                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                            </button>
+                        </div>
+                        <div id="voicingDisplay" class="text-[10px] bg-slate-950/40 p-2.5 rounded border border-slate-850 text-slate-400 font-mono hidden">
+                            <!-- Dedilhado string renderizado -->
+                        </div>
                     </div>
                 </div>
                 
@@ -243,54 +287,82 @@
                 </div>
             </section>
 
-            <!-- MEIO: Gerador de Backing Tracks (lg:col-span-4) -->
+            <!-- MEIO: Gerador de Backing Tracks & Editor Harmónico (lg:col-span-4) -->
             <section class="lg:col-span-4 bg-slate-900 border border-slate-800 rounded-xl p-4 sm:p-5 shadow-xl flex flex-col justify-between space-y-4">
-                <div class="flex items-center justify-between border-b border-slate-800 pb-2">
-                    <h3 class="text-base font-bold text-indigo-400 flex items-center gap-1.5">
-                        <i data-lucide="disc" class="w-4 h-4"></i> BANDA VIRTUAL
-                    </h3>
-                    <div id="trackStatusPill" class="text-[10px] font-mono border border-slate-700 text-slate-500 px-2 py-0.5 rounded tracking-wider uppercase">PARADA</div>
-                </div>
-
-                <div class="space-y-3.5">
-                    <div class="grid grid-cols-2 gap-2">
-                        <div>
-                            <label class="block text-[9px] font-bold text-slate-400 tracking-wider mb-1">GÉNERO / ESTILO</label>
-                            <select id="trackGenre" class="w-full bg-slate-950 border border-slate-700 rounded py-1.5 px-2 text-xs text-slate-300 focus:outline-none">
-                                <option value="rock" selected>Rock / Metal</option>
-                                <option value="balada">Balada Clássica</option>
-                                <option value="jazz">Ambient Jazz / Fusion</option>
-                                <option value="blues">Blues (12 Compassos)</option>
-                            </select>
-                        </div>
-                        <div class="flex items-end">
-                            <button id="btnPlayTrack" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-1.5 px-3 rounded text-xs transition flex items-center justify-center gap-1">
-                                <i data-lucide="play" class="w-3.5 h-3.5"></i> Play Track
-                            </button>
-                        </div>
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+                        <h3 class="text-base font-bold text-indigo-400 flex items-center gap-1.5">
+                            <i data-lucide="disc" class="w-4 h-4"></i> BANDA VIRTUAL
+                        </h3>
+                        <div id="trackStatusPill" class="text-[10px] font-mono border border-slate-700 text-slate-500 px-2 py-0.5 rounded tracking-wider uppercase">PARADA</div>
                     </div>
 
-                    <!-- Volume da Backing Track -->
-                    <div class="bg-slate-950/20 p-2.5 rounded-lg border border-slate-800/80 space-y-1">
-                        <span class="block text-[9px] font-bold text-slate-400 tracking-wider">VOLUME DA BANDA (ACOMPANHAMENTO)</span>
-                        <div class="flex items-center gap-2">
-                            <i data-lucide="volume-1" class="w-3.5 h-3.5 text-slate-500"></i>
-                            <input type="range" id="trackVolumeSlider" min="0" max="1" step="0.05" value="0.65" class="flex-1 accent-indigo-500 bg-slate-800 h-1 rounded-lg cursor-pointer"/>
-                            <i data-lucide="volume-2" class="w-3.5 h-3.5 text-indigo-400"></i>
+                    <div class="space-y-3">
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-[9px] font-bold text-slate-400 tracking-wider mb-1">GÉNERO / ESTILO</label>
+                                <select id="trackGenre" class="w-full bg-slate-950 border border-slate-700 rounded py-1.5 px-2 text-xs text-slate-300 focus:outline-none">
+                                    <option value="rock" selected>Rock / Metal</option>
+                                    <option value="balada">Balada Clássica</option>
+                                    <option value="jazz">Ambient Jazz / Fusion</option>
+                                    <option value="blues">Blues (12 Compassos)</option>
+                                    <option value="custom">★ Prog. Personalizada</option>
+                                </select>
+                            </div>
+                            <div class="flex items-end">
+                                <button id="btnPlayTrack" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-1.5 px-3 rounded text-xs transition flex items-center justify-center gap-1">
+                                    <i data-lucide="play" class="w-3.5 h-3.5"></i> Play Track
+                                </button>
+                            </div>
                         </div>
-                    </div>
 
-                    <!-- Visualização da Progressão de Chords -->
-                    <div class="space-y-1.5">
-                        <span class="block text-[9px] font-bold text-slate-400 tracking-wider">PROGRESSÃO ATIVA</span>
-                        <div id="chordProgressionContainer" class="grid gap-1.5">
-                            <!-- Gerado dinamicamente -->
+                        <!-- Editor de Progressões Customizadas -->
+                        <div id="customProgressionEditor" class="hidden space-y-2 p-3 bg-slate-950/40 rounded-lg border border-slate-800 transition-all duration-250">
+                            <span class="block text-[9px] font-black text-indigo-400 tracking-wider">EDITOR DE COMPASSOS (ESCOLHA OS ACORDES)</span>
+                            <div class="grid grid-cols-4 gap-1" id="customChordsContainer">
+                                <!-- Gerado dinamicamente via JS de acordo com a escala -->
+                            </div>
+                        </div>
+
+                        <!-- Controles de Volume Separados (Banda & Bateria) -->
+                        <div class="bg-slate-950/20 p-2.5 rounded-lg border border-slate-800/80 space-y-3">
+                            <div class="space-y-1">
+                                <span class="block text-[9px] font-bold text-slate-400 tracking-wider flex justify-between">
+                                    <span>VOLUME DA BANDA (ACOMPANHAMENTO)</span>
+                                    <span class="text-indigo-400 text-[8px] tracking-wide font-mono">PADS + BAIXO FM</span>
+                                </span>
+                                <div class="flex items-center gap-2">
+                                    <i data-lucide="volume-1" class="w-3.5 h-3.5 text-slate-500"></i>
+                                    <input type="range" id="bandVolumeSlider" min="0" max="1" step="0.05" value="0.6" class="flex-1 accent-indigo-500 bg-slate-800 h-1 rounded-lg cursor-pointer"/>
+                                    <i data-lucide="volume-2" class="w-3.5 h-3.5 text-indigo-400"></i>
+                                </div>
+                            </div>
+                            
+                            <div class="space-y-1">
+                                <span class="block text-[9px] font-bold text-slate-400 tracking-wider flex justify-between">
+                                    <span>VOLUME DA BATERIA (SINTETIZADA)</span>
+                                    <span class="text-rose-400 text-[8px] tracking-wide font-mono">KICK + SNARE + HAT</span>
+                                </span>
+                                <div class="flex items-center gap-2">
+                                    <i data-lucide="volume-1" class="w-3.5 h-3.5 text-slate-500"></i>
+                                    <input type="range" id="drumVolumeSlider" min="0" max="1" step="0.05" value="0.7" class="flex-1 accent-rose-500 bg-slate-800 h-1 rounded-lg cursor-pointer"/>
+                                    <i data-lucide="volume-2" class="w-3.5 h-3.5 text-rose-400"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Visualização da Progressão de Chords -->
+                        <div class="space-y-1.5">
+                            <span class="block text-[9px] font-bold text-slate-400 tracking-wider">PROGRESSÃO ATIVA</span>
+                            <div id="chordProgressionContainer" class="grid gap-1.5">
+                                <!-- Gerado dinamicamente -->
+                            </div>
                         </div>
                     </div>
                 </div>
                 
                 <div class="text-[9px] text-slate-500 italic text-center">
-                    Dica: A banda acompanha e sincroniza-se perfeitamente com os BPMs e o compasso do Metrônomo!
+                    A Bateria Sintetizada (Kick, Snare e Hats) e os acordes acompanham perfeitamente o compasso e BPMs!
                 </div>
             </section>
 
@@ -310,13 +382,13 @@
                         <div>
                             <span class="text-[10px] tracking-widest text-slate-400 font-bold block mb-1">BATIDAS POR MINUTO</span>
                             <div class="flex items-center justify-center md:justify-start gap-1">
-                                <button class="bg-slate-800 hover:bg-slate-750 text-slate-300 font-mono text-xs px-2 py-1 rounded" id="decreaseBpm10" title="−10">−10</button>
-                                <button class="bg-slate-800 hover:bg-slate-750 text-slate-300 text-xs px-2.5 py-1 rounded" id="decreaseBpm" title="−1">−</button>
+                                <button class="bg-slate-800 hover:bg-slate-755 text-slate-300 font-mono text-xs px-2 py-1 rounded" id="decreaseBpm10" title="−10">−10</button>
+                                <button class="bg-slate-800 hover:bg-slate-755 text-slate-300 text-xs px-2.5 py-1 rounded" id="decreaseBpm" title="−1">−</button>
                                 
                                 <input id="bpmInput" type="number" min="20" max="400" step="1" value="120" class="bg-transparent border-b border-slate-700 text-3xl font-black text-indigo-400 w-16 text-center focus:outline-none focus:border-indigo-500 font-mono" title="Arraste verticalmente ou use scroll para ajustar"/>
                                 
-                                <button class="bg-slate-800 hover:bg-slate-750 text-slate-300 text-xs px-2.5 py-1 rounded" id="increaseBpm" title="+1">+</button>
-                                <button class="bg-slate-800 hover:bg-slate-750 text-slate-300 font-mono text-xs px-2 py-1 rounded" id="increaseBpm10" title="+10">+10</button>
+                                <button class="bg-slate-800 hover:bg-slate-755 text-slate-300 text-xs px-2.5 py-1 rounded" id="increaseBpm" title="+1">+</button>
+                                <button class="bg-slate-800 hover:bg-slate-755 text-slate-300 font-mono text-xs px-2 py-1 rounded" id="increaseBpm10" title="+10">+10</button>
                             </div>
                             <span class="text-[8px] tracking-wider text-slate-500 block mt-1">ARRANSTE · SCROLL · DIGITE</span>
                         </div>
@@ -336,7 +408,7 @@
                             <button id="toggleBtn" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 px-4 rounded-lg transition tracking-wider text-sm flex items-center justify-center gap-2">
                                 <i data-lucide="play" class="w-4 h-4"></i> START
                             </button>
-                            <button id="tapBtn" class="bg-slate-800 hover:bg-slate-750 text-slate-300 border border-slate-700 py-2.5 px-3 rounded-lg transition text-xs font-mono font-bold tracking-wider">
+                            <button id="tapBtn" class="bg-slate-800 hover:bg-slate-755 text-slate-300 border border-slate-700 py-2.5 px-3 rounded-lg transition text-xs font-mono font-bold tracking-wider">
                                 TAP [T]
                             </button>
                         </div>
@@ -498,7 +570,7 @@
                                 <select id="presetSelect" class="flex-1 bg-slate-950 border border-slate-850 rounded px-2 py-1 text-[10px] focus:outline-none">
                                     <option value="">— Selecionar —</option>
                                 </select>
-                                <button id="presetLoad" class="bg-slate-800 hover:bg-slate-750 text-slate-300 border border-slate-700 px-3 py-1 rounded text-[10px] font-bold">LOAD</button>
+                                <button id="presetLoad" class="bg-slate-800 hover:bg-slate-755 text-slate-300 border border-slate-700 px-3 py-1 rounded text-[10px] font-bold">LOAD</button>
                                 <button id="presetSave" class="bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-300 border border-indigo-550/30 px-3 py-1 rounded text-[10px] font-bold">SAVE</button>
                                 <button id="presetDelete" class="hover:bg-red-900/20 text-slate-450 border border-slate-800 px-2 py-1 rounded text-[10px] hover:border-red-900/40 transition">✕</button>
                             </div>
@@ -599,7 +671,7 @@
             }
         };
 
-        // Afinações padrão da Guitarra de 7 Cordas
+        // Afinações padrão da Guitarra de 7 Cordas (Ordem Física: Corda 1 [Mais fina] -> Corda 7 [Mais grossa])
         const TUNINGS = {
             standard: {
                 name: "Padrão (E B G D A E B)",
@@ -621,14 +693,16 @@
             audioCtx: null,
             guitarGain: null,
             metroGain: null,
-            backingTrackGain: null,
+            bandGain: null,
+            drumGain: null,
+            noiseBuffer: null,
             
             // Metrônomo Config
             metroPlaying: false,
             bpm: 120,
-            timeSignature: [4, 4], // Padrão 4/4
-            subdivision: 1,       // Semínima
-            accents: [1, 0, 0, 0], // Forte, normal, normal, normal
+            timeSignature: [4, 4], 
+            subdivision: 1,       
+            accents: [1, 0, 0, 0], 
             soundType: 'sine',
             silenceMode: 'none',
             silenceParams: { playMeasures: 3, muteMeasures: 1, randomProb: 30, partialTarget: 2, fadeSeconds: 2 },
@@ -651,60 +725,215 @@
             trackPlaying: false,
             trackGenre: 'rock',
             backingTrackProgression: [],
-            backingTrackOscillators: []
+            backingTrackOscillators: [],
+            customChords: ['I', 'V', 'vi', 'IV'], // Armazena graus escolhidos pelo usuário
+
+            // Dicionário de Acordes
+            activeVoicing: null // Array de 7 trastes do acorde ativo para destacar no braço
         };
 
-        const PENDULUM_MAX = 35; // Ângulo máximo de rotação do pêndulo em graus
+        const PENDULUM_MAX = 35; // Ângulo de rotação do pêndulo em graus
 
         // --- INICIALIZADOR DE ÁUDIO UNIFICADO ---
         function initAudio() {
             if (!state.audioCtx) {
                 state.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
                 
-                // Nós de ganho independentes para equilibrar volumes
                 state.guitarGain = state.audioCtx.createGain();
-                state.guitarGain.gain.value = 0.85; // Volume confortável para guitarra
+                state.guitarGain.gain.value = 0.85; 
                 state.guitarGain.connect(state.audioCtx.destination);
                 
                 state.metroGain = state.audioCtx.createGain();
                 state.metroGain.gain.value = parseFloat(document.getElementById('metroVolumeSlider').value) || 0.7;
                 state.metroGain.connect(state.audioCtx.destination);
 
-                state.backingTrackGain = state.audioCtx.createGain();
-                state.backingTrackGain.gain.value = parseFloat(document.getElementById('trackVolumeSlider').value) || 0.65;
+                state.bandGain = state.audioCtx.createGain();
+                state.bandGain.gain.value = parseFloat(document.getElementById('bandVolumeSlider').value) || 0.6;
 
-                // --- Efeito de Espaço (Feedback Delay Line com Filtro de Atenuação) ---
+                state.drumGain = state.audioCtx.createGain();
+                state.drumGain.gain.value = parseFloat(document.getElementById('drumVolumeSlider').value) || 0.7;
+                state.drumGain.connect(state.audioCtx.destination);
+
+                // --- Efeito Delay Stereo/Espacial para a Banda ---
                 const delayNode = state.audioCtx.createDelay(1.5);
                 const delayFeedback = state.audioCtx.createGain();
                 const delayFilter = state.audioCtx.createBiquadFilter();
                 const delayDryGain = state.audioCtx.createGain();
                 const delayWetGain = state.audioCtx.createGain();
 
-                delayNode.delayTime.value = 0.375; // Sincronizado para criar balanço rítmico
-                delayFeedback.gain.value = 0.38;   // Feedback controlado do eco
+                delayNode.delayTime.value = 0.375; 
+                delayFeedback.gain.value = 0.38;   
                 
                 delayFilter.type = 'lowpass';
-                delayFilter.frequency.value = 850; // Atenua frequências agudas do delay (som analógico mais macio)
+                delayFilter.frequency.value = 850; 
 
                 delayDryGain.gain.value = 1.0;
-                delayWetGain.gain.value = 0.35;    // Volume do efeito espacial
+                delayWetGain.gain.value = 0.35;    
 
-                // Roteamento do Feedback Loop do Delay
                 delayNode.connect(delayFilter);
                 delayFilter.connect(delayFeedback);
                 delayFeedback.connect(delayNode);
 
-                // Conexões de áudio da Banda Virtual -> Saída Master & Canal de Efeitos
-                state.backingTrackGain.connect(delayDryGain);
-                state.backingTrackGain.connect(delayNode);
+                state.bandGain.connect(delayDryGain);
+                state.bandGain.connect(delayNode);
 
                 delayDryGain.connect(state.audioCtx.destination);
                 delayNode.connect(delayWetGain);
                 delayWetGain.connect(state.audioCtx.destination);
+
+                // Gerar ruído branco de bateria uma única vez
+                generateNoiseBuffer();
             }
         }
 
-        // --- SISTEMA DE SINTETIZADOR DA GUITARRA (FM Pluck Synth) ---
+        // --- GERADOR DE RUÍDO BRANCO (Para pratos e tarolas sintetizados) ---
+        function generateNoiseBuffer() {
+            if (!state.audioCtx) return;
+            const bufferSize = state.audioCtx.sampleRate * 2;
+            state.noiseBuffer = state.audioCtx.createBuffer(1, bufferSize, state.audioCtx.sampleRate);
+            const data = state.noiseBuffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) {
+                data[i] = Math.random() * 2 - 1;
+            }
+        }
+
+        // --- SÍNTESE EM TEMPO REAL DE BATERIA (REAL DRUMS) ---
+        function playKick(time, vol) {
+            if (!state.audioCtx) return;
+            const osc = state.audioCtx.createOscillator();
+            const gain = state.audioCtx.createGain();
+            
+            osc.connect(gain);
+            gain.connect(state.drumGain);
+
+            osc.type = 'sine';
+            // Variação de frequência exponencial clássica do bumbo (de 140Hz decaindo rapidamente para 40Hz)
+            osc.frequency.setValueAtTime(140, time);
+            osc.frequency.exponentialRampToValueAtTime(40, time + 0.12);
+
+            gain.gain.setValueAtTime(0, time);
+            gain.gain.linearRampToValueAtTime(vol * 1.3, time + 0.005);
+            gain.gain.exponentialRampToValueAtTime(0.001, time + 0.16);
+
+            osc.start(time);
+            osc.stop(time + 0.18);
+        }
+
+        // Sintetizador de Caixa (Snare)
+        function playSnare(time, vol) {
+            if (!state.audioCtx || !state.noiseBuffer) return;
+            
+            // 1. Corpo tonal da caixa
+            const osc = state.audioCtx.createOscillator();
+            const oscGain = state.audioCtx.createGain();
+            osc.connect(oscGain);
+            oscGain.connect(state.drumGain);
+            
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(180, time);
+            oscGain.gain.setValueAtTime(vol * 0.65, time);
+            oscGain.gain.exponentialRampToValueAtTime(0.001, time + 0.08);
+
+            // 2. Esteira metálica (Ruído filtrado)
+            const noise = state.audioCtx.createBufferSource();
+            const noiseFilter = state.audioCtx.createBiquadFilter();
+            const noiseGain = state.audioCtx.createGain();
+            
+            noise.buffer = state.noiseBuffer;
+            noiseFilter.type = 'highpass';
+            noiseFilter.frequency.setValueAtTime(1200, time);
+
+            noise.connect(noiseFilter);
+            noiseFilter.connect(noiseGain);
+            noiseGain.connect(state.drumGain);
+
+            noiseGain.gain.setValueAtTime(0, time);
+            noiseGain.gain.linearRampToValueAtTime(vol * 0.8, time + 0.005);
+            noiseGain.gain.exponentialRampToValueAtTime(0.001, time + 0.18);
+
+            osc.start(time);
+            noise.start(time);
+            
+            osc.stop(time + 0.1);
+            noise.stop(time + 0.2);
+        }
+
+        // Sintetizador de Chimbal (Hi-Hat)
+        function playHiHat(time, vol) {
+            if (!state.audioCtx || !state.noiseBuffer) return;
+            
+            const noise = state.audioCtx.createBufferSource();
+            const filter = state.audioCtx.createBiquadFilter();
+            const gain = state.audioCtx.createGain();
+            
+            noise.buffer = state.noiseBuffer;
+            filter.type = 'highpass';
+            filter.frequency.setValueAtTime(7500, time);
+
+            noise.connect(filter);
+            filter.connect(gain);
+            gain.connect(state.drumGain);
+
+            gain.gain.setValueAtTime(0, time);
+            gain.gain.linearRampToValueAtTime(vol * 0.38, time + 0.002);
+            gain.gain.exponentialRampToValueAtTime(0.001, time + 0.045);
+
+            noise.start(time);
+            noise.stop(time + 0.06);
+        }
+
+        // --- SEQUENCIADOR DE GROOVES (Sincronizado) ---
+        function scheduleDrums(time, bi) {
+            if (!state.trackPlaying) return;
+            const genre = document.getElementById('trackGenre').value;
+            const vol = (parseFloat(document.getElementById('drumVolumeSlider').value) || 0.7) * 0.9;
+            const beat = bi.beatIndex;
+            const subIdx = bi.subIndex;
+            const sub = state.subdivision;
+
+            const isDownbeat = (subIdx === 0);
+            const isOffbeat = (sub === 2 && subIdx === 1) || (sub === 4 && subIdx === 2) || (sub > 4 && subIdx === Math.floor(sub/2));
+
+            if (genre === 'rock' || genre === 'custom') {
+                if (isDownbeat && (beat === 0 || beat === 2)) playKick(time, vol);
+                if (isDownbeat && (beat === 1 || beat === 3)) playSnare(time, vol * 0.95);
+                if (isDownbeat || isOffbeat) playHiHat(time, vol * 0.45);
+            } 
+            else if (genre === 'balada') {
+                if (isDownbeat && beat === 0) playKick(time, vol * 0.9);
+                if (isOffbeat && beat === 2) playKick(time, vol * 0.5);
+                if (isDownbeat && (beat === 1 || beat === 3)) playSnare(time, vol * 0.7);
+                if (isDownbeat) playHiHat(time, vol * 0.4);
+            } 
+            else if (genre === 'jazz') {
+                if (sub === 3) {
+                    if (subIdx === 0 || subIdx === 2) playHiHat(time, vol * 0.45);
+                    if (isDownbeat && beat === 0) playKick(time, vol * 0.45);
+                } else {
+                    if (isDownbeat) {
+                        playHiHat(time, vol * 0.5);
+                        if (beat === 0) playKick(time, vol * 0.45);
+                    }
+                    if (isOffbeat && (beat === 1 || beat === 3)) {
+                        playHiHat(time, vol * 0.4);
+                    }
+                }
+                if (isDownbeat && beat === 3) playSnare(time, vol * 0.35);
+            } 
+            else if (genre === 'blues') {
+                if (sub === 3) {
+                    if (isDownbeat && (beat === 0 || beat === 2)) playKick(time, vol * 0.95);
+                    if (isDownbeat && (beat === 1 || beat === 3)) playSnare(time, vol * 0.85);
+                    if (subIdx === 0 || subIdx === 2) playHiHat(time, vol * 0.5);
+                } else {
+                    if (isDownbeat && (beat === 0 || beat === 2)) playKick(time, vol);
+                    if (isDownbeat && (beat === 1 || beat === 3)) playSnare(time, vol * 0.9);
+                    if (isDownbeat || isOffbeat) playHiHat(time, vol * 0.45);
+                }
+            }
+        }
+
+        // --- SISTEMA DE SINTETIZADOR DA GUITARRA ---
         function playGuitarTone(frequency) {
             initAudio();
             if (!state.audioCtx) return;
@@ -716,10 +945,8 @@
             const ctx = state.audioCtx;
             const now = ctx.currentTime;
 
-            // Síntese FM: Operador Portador (Carrier) e Modulador (Modulator)
             const carrier = ctx.createOscillator();
             const carrierGain = ctx.createGain();
-
             const modulator = ctx.createOscillator();
             const modulatorGain = ctx.createGain();
 
@@ -727,28 +954,23 @@
             carrier.frequency.setValueAtTime(frequency, now);
 
             modulator.type = 'sine';
-            modulator.frequency.setValueAtTime(frequency * 2.0, now); // Rácio 2:1 para emular harmónicos brilhantes de corda de metal
+            modulator.frequency.setValueAtTime(frequency * 2.0, now); 
 
-            // Índice de Modulação: Ataque rápido (transiente) para simular o ataque da palheta
             modulatorGain.gain.setValueAtTime(frequency * 1.6, now);
             modulatorGain.gain.exponentialRampToValueAtTime(0.01, now + 0.12);
 
-            // Filtro dinâmico para suavizar as notas mais agudas e simular a ressonância do corpo da guitarra
             const filter = ctx.createBiquadFilter();
             filter.type = 'lowpass';
             filter.frequency.setValueAtTime(frequency * 4.0, now);
             filter.frequency.exponentialRampToValueAtTime(frequency * 1.3, now + 0.7);
 
-            // Envelope de Amplitude
             carrierGain.gain.setValueAtTime(0, now);
-            carrierGain.gain.linearRampToValueAtTime(0.4, now + 0.006); // Ataque ultra-rápido do toque
-            carrierGain.gain.exponentialRampToValueAtTime(0.001, now + 1.6); // Decaimento natural da corda a soar
+            carrierGain.gain.linearRampToValueAtTime(0.4, now + 0.006); 
+            carrierGain.gain.exponentialRampToValueAtTime(0.001, now + 1.6);
 
-            // Modulador modula a frequência da Portadora
             modulator.connect(modulatorGain);
             modulatorGain.connect(carrier.frequency);
 
-            // Portadora passa pelo filtro e envelope de amplitude
             carrier.connect(filter);
             filter.connect(carrierGain);
             carrierGain.connect(state.guitarGain);
@@ -778,7 +1000,6 @@
             });
         }
 
-        // ... lógica restante mantida ...
         function getNoteIntervalName(note) {
             const scaleNotes = getScaleNotes();
             const scaleObj = SCALES[state.scaleKey];
@@ -802,7 +1023,110 @@
             };
         }
 
-        // --- RENDERIZADORES DE INTERFACE (Visualizador) ---
+        // --- DICIONÁRIO E GERADOR DE DEDILHADO DE 7 CORDAS ---
+        function calculateVoicing7String(root, type) {
+            const rootIdx = ALL_NOTES.indexOf(root);
+            const bIdx = ALL_NOTES.indexOf('B');
+            let R = (rootIdx - bIdx + 12) % 12;
+
+            let voicing = [null, null, null, null, null, null, null]; 
+
+            voicing[6] = R;       // Corda 7 (B)
+            voicing[5] = null;    // Corda 6 (E) abafada
+
+            if (type === 'maj') {
+                voicing[4] = R + 2; 
+                voicing[3] = R + 2; 
+                voicing[2] = R + 1; 
+            } else if (type === 'min') {
+                voicing[4] = R + 2;
+                voicing[3] = R + 2;
+                voicing[2] = R;
+            } else if (type === 'dom7') {
+                voicing[4] = R + 2;
+                voicing[3] = R;
+                voicing[2] = R + 1;
+            } else if (type === 'maj7') {
+                voicing[4] = R + 2;
+                voicing[3] = R + 1;
+                voicing[2] = R + 1;
+            } else if (type === 'min7') {
+                voicing[4] = R + 2;
+                voicing[3] = R;
+                voicing[2] = R;
+            } else if (type === 'm7b5') {
+                voicing[4] = R + 1;
+                voicing[3] = R;
+                voicing[2] = R;
+            }
+
+            return voicing;
+        }
+
+        function displayVoicingOnFretboard() {
+            const root = document.getElementById('chordDictRoot').value;
+            const type = document.getElementById('chordDictType').value;
+            
+            state.activeVoicing = calculateVoicing7String(root, type);
+            renderFretboard();
+
+            const display = document.getElementById('voicingDisplay');
+            display.classList.remove('hidden');
+
+            const labels = ['1ª (E)', '2ª (B)', '3ª (G)', '4ª (D)', '5ª (A)', '6ª (E)', '7ª (B)'];
+            let output = `<strong class="text-emerald-400">Dedilhado ${root}${type === 'maj' ? '' : type}:</strong><br>`;
+            for (let i = 6; i >= 0; i--) {
+                const traste = state.activeVoicing[i];
+                output += `${labels[i]}: <span class="font-bold text-slate-100">${traste === null ? '✕ (Abafar)' : traste}</span><br>`;
+            }
+            display.innerHTML = output;
+        }
+
+        // --- ACORDES DIATÓNICOS ---
+        function getDiatonicChords() {
+            const scaleNotes = getScaleNotes();
+            const baseMidiMap = {
+                'C': 48, 'C#': 49, 'D': 50, 'D#': 51, 'E': 52, 'F': 53,
+                'F#': 54, 'G': 55, 'G#': 56, 'A': 57, 'A#': 58, 'B': 59
+            };
+
+            const chordNames = ["I", "ii", "iii", "IV", "V", "vi", "vii°"];
+
+            return scaleNotes.map((note, idx) => {
+                const rootIdx = ALL_NOTES.indexOf(note);
+                const thirdNote = scaleNotes[(idx + 2) % scaleNotes.length];
+                const fifthNote = scaleNotes[(idx + 4) % scaleNotes.length];
+                
+                const thirdInterval = (ALL_NOTES.indexOf(thirdNote) - rootIdx + 12) % 12;
+                const fifthInterval = (ALL_NOTES.indexOf(fifthNote) - rootIdx + 12) % 12;
+                
+                let quality = '';
+                let ext = '';
+                if (thirdInterval === 3) {
+                    if (fifthInterval === 6) {
+                        quality = 'dim';
+                        ext = 'm7b5';
+                    } else {
+                        quality = 'm';
+                        ext = 'm7';
+                    }
+                } else if (thirdInterval === 4) {
+                    quality = '';
+                    ext = idx === 4 ? '7' : 'maj7';
+                }
+
+                return {
+                    num: idx,
+                    note: note,
+                    label: note + quality,
+                    roman: chordNames[idx] || (note + quality),
+                    semitones: thirdInterval === 3 ? (fifthInterval === 6 ? [0, 3, 6, 10] : [0, 3, 7, 10]) : [0, 4, 7, 11],
+                    bass: (baseMidiMap[note] || 48) - 12
+                };
+            });
+        }
+
+        // --- RENDERIZADORES DE INTERFACE ---
         function renderRootSelector() {
             const container = document.getElementById('rootNoteSelector');
             container.innerHTML = '';
@@ -823,9 +1147,7 @@
                     renderRootSelector();
                     updateScaleInfo();
                     renderFretboard();
-                    if (state.trackPlaying) {
-                        buildBackingTrackProgression();
-                    }
+                    buildBackingTrackProgression();
                     if (!state.wakeLock && ('wakeLock' in navigator)) {
                         requestWakeLock();
                     }
@@ -872,6 +1194,9 @@
 
                 notesContainer.appendChild(noteBlock);
             });
+
+            renderDiatonicChordsSelector();
+            buildBackingTrackProgression();
         }
 
         function renderFretboard() {
@@ -882,15 +1207,11 @@
             const scaleNotes = getScaleNotes();
             
             const numFrets = 25; 
-            const fretsArray = [];
-            for (let i = 0; i < numFrets; i++) {
-                fretsArray.push(i);
-            }
+            const fretsArray = Array.from({length: numFrets}, (_, i) => i);
 
             const inlaysSingle = [3, 5, 7, 9, 15, 17, 19, 21];
             const inlaysDouble = [12, 24];
 
-            // 1. Cabeçalho dos trastes
             const trasteHeaderGrid = document.createElement('div');
             trasteHeaderGrid.className = "grid w-full relative h-6 border-b border-slate-800 bg-slate-950/65 text-[9px] sm:text-[11px] text-slate-400 font-mono font-bold";
             trasteHeaderGrid.style.gridTemplateColumns = `repeat(${numFrets}, minmax(0, 1fr))`;
@@ -907,7 +1228,6 @@
             });
             fretboard.appendChild(trasteHeaderGrid);
 
-            // 2. Criar cada uma das 7 cordas (Calibrado de cima para baixo)
             tuning.notes.forEach((tuningNote, stringIdx) => {
                 const stringRow = document.createElement('div');
                 stringRow.className = "grid w-full relative h-7 sm:h-9 md:h-11 items-center border-b border-slate-800/30 last:border-0";
@@ -929,7 +1249,6 @@
                         fretCell.style.borderRight = "4px solid #64748b";
                     }
 
-                    // Renderização de marcadores de bolinha (Inlays)
                     if (inlaysSingle.includes(fret) && stringIdx === 3) {
                         const inlayDot = document.createElement('div');
                         inlayDot.className = "absolute w-2 h-2 rounded-full bg-slate-600/45 pointer-events-none";
@@ -942,12 +1261,21 @@
                         fretCell.appendChild(inlayDot);
                     }
 
-                    // Obter dados da casa atual
                     const info = getNoteAt(stringIdx, fret);
                     const isInScale = scaleNotes.includes(info.name);
                     const isRoot = info.name === state.rootNote;
 
-                    if (isInScale) {
+                    let isVoicingNote = false;
+                    if (state.activeVoicing && state.activeVoicing[stringIdx] === fret) {
+                        isVoicingNote = true;
+                    }
+
+                    if (isVoicingNote) {
+                        const noteBadge = document.createElement('div');
+                        noteBadge.className = "w-4 h-4 min-[450px]:w-5 min-[450px]:h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 lg:w-8 lg:h-8 rounded-full flex items-center justify-center text-[7px] min-[450px]:text-[9px] sm:text-xs shadow-lg transition transform hover:scale-110 active:scale-95 bg-emerald-500 text-white font-black note-glow-chord ring-2 ring-emerald-300";
+                        noteBadge.innerText = info.name;
+                        fretCell.appendChild(noteBadge);
+                    } else if (isInScale) {
                         const noteBadge = document.createElement('div');
                         
                         let displayText = info.name;
@@ -974,7 +1302,6 @@
 
                     fretCell.addEventListener('click', () => {
                         playMidiNote(info.midi);
-                        
                         const badge = fretCell.querySelector('.rounded-full');
                         if (badge) {
                             badge.classList.add('scale-125');
@@ -991,7 +1318,7 @@
             });
         }
 
-        // --- MANTER ECRÃ ATIVO (WAKE LOCK API) ---
+        // --- MANTER ECRÃ ATIVO ---
         async function requestWakeLock() {
             if (!('wakeLock' in navigator)) {
                 const wlStatusText = document.getElementById('wakeLockStatus');
@@ -1031,39 +1358,10 @@
             }
         }
 
-        // --- MOTOR INTERNO DO METRÔNOMO ---
-        
+        // --- UTILITÁRIOS E MOTOR DE ÁUDIO DO METRÔNOMO ---
         function parseTS(str) {
             const [n, d] = str.split('/').map(Number);
             return [n, d];
-        }
-
-        function buildAccents() {
-            const numBeats = state.timeSignature[0];
-            state.accents = new Array(numBeats).fill(0);
-            state.accents[0] = 1; // Acentuação padrão do primeiro tempo (forte)
-            renderAccentsUI();
-        }
-
-        function renderAccentsUI() {
-            const container = document.getElementById('accents');
-            container.innerHTML = '';
-            const labels = { 1: 'FORTE', 0: 'NORM', '-1': 'FRACO' };
-            
-            state.accents.forEach((val, i) => {
-                const btn = document.createElement('button');
-                btn.className = 'accent-btn flex-1 py-1 text-[9px] font-mono border rounded font-semibold transition ' + 
-                    (val === 1 ? 'border-indigo-500 bg-indigo-950/40 text-indigo-300' : 
-                     val === -1 ? 'border-slate-800 text-slate-600 border-dashed' : 
-                     'border-slate-700 text-slate-400');
-                
-                btn.textContent = `B${i+1} ${labels[val]}`;
-                btn.addEventListener('click', () => {
-                    state.accents[i] = state.accents[i] === 0 ? 1 : (state.accents[i] === 1 ? -1 : 0);
-                    renderAccentsUI();
-                });
-                container.appendChild(btn);
-            });
         }
 
         function makeClickBuffer(ctx) {
@@ -1094,6 +1392,76 @@
             gn.gain.exponentialRampToValueAtTime(Math.max(0.0001, g * 0.35), t + 0.002);
             gn.gain.exponentialRampToValueAtTime(0.0001, t + 0.05);
             o.start(t); o.stop(t + 0.06);
+        }
+
+        // --- ACELERAÇÃO GRADUAL ---
+        function tickProgressiveBPM() {
+            if (!state.metroPlaying || !state.progressive.enabled || !state.audioCtx) return;
+            const now = state.audioCtx.currentTime;
+            const t0 = state.progressiveStartTime;
+            const t1 = t0 + state.progressive.duration;
+            
+            if (now <= t0) {
+                state.bpm = state.progressive.start;
+            } else if (now >= t1) {
+                state.bpm = state.progressive.end;
+            } else {
+                const ratio = (now - t0) / (t1 - t0);
+                state.bpm = state.progressive.start + (state.progressive.end - state.progressive.start) * ratio;
+            }
+            
+            document.getElementById('bpmInput').value = Math.round(state.bpm);
+            document.getElementById('progressiveBpmNow').textContent = Math.round(state.bpm);
+        }
+
+        // --- TAP TEMPO ---
+        function tapTempo() {
+            const now = performance.now();
+            state.tapTimes.push(now);
+            if (state.tapTimes.length > 8) state.tapTimes.shift();
+
+            const tapBtn = document.getElementById('tapBtn');
+            tapBtn.classList.add('border-indigo-500', 'text-indigo-400');
+            setTimeout(() => tapBtn.classList.remove('border-indigo-500', 'text-indigo-400'), 100);
+
+            if (state.tapTimes.length >= 2) {
+                let diffs = [];
+                for (let i = 1; i < state.tapTimes.length; i++) {
+                    diffs.push(state.tapTimes[i] - state.tapTimes[i - 1]);
+                }
+                const averageDiff = diffs.reduce((a, b) => a + b, 0) / diffs.length;
+                state.bpm = Math.min(400, Math.max(20, Math.round(60000 / averageDiff)));
+                document.getElementById('bpmInput').value = state.bpm;
+            }
+        }
+
+        // --- MOTOR DO ACENTUADOR & COMPASSO ---
+        function buildAccents() {
+            const numBeats = state.timeSignature[0];
+            state.accents = new Array(numBeats).fill(0);
+            state.accents[0] = 1; 
+            renderAccentsUI();
+        }
+
+        function renderAccentsUI() {
+            const container = document.getElementById('accents');
+            container.innerHTML = '';
+            const labels = { 1: 'FORTE', 0: 'NORM', '-1': 'FRACO' };
+            
+            state.accents.forEach((val, i) => {
+                const btn = document.createElement('button');
+                btn.className = 'accent-btn flex-1 py-1 text-[9px] font-mono border rounded font-semibold transition ' + 
+                    (val === 1 ? 'border-indigo-500 bg-indigo-950/40 text-indigo-300' : 
+                     val === -1 ? 'border-slate-800 text-slate-600 border-dashed' : 
+                     'border-slate-700 text-slate-400');
+                
+                btn.textContent = `B${i+1} ${labels[val]}`;
+                btn.addEventListener('click', () => {
+                    state.accents[i] = state.accents[i] === 0 ? 1 : (state.accents[i] === 1 ? -1 : 0);
+                    renderAccentsUI();
+                });
+                container.appendChild(btn);
+            });
         }
 
         function updateSilenceVis(mode) {
@@ -1173,7 +1541,6 @@
             const accent = state.accents[bi.beatIndex % numBeats] || 0;
             let gainValue = accent === 1 ? 1.0 : (accent === -1 ? 0.4 : 0.7);
 
-            // Se for modo fade, reduz gradualmente nos compassos mudo
             if (state.silenceMode === 'fade') {
                 const play = parseInt(document.getElementById('playMeasures').value) || 1;
                 const mute = parseInt(document.getElementById('muteMeasures').value) || 1;
@@ -1199,7 +1566,6 @@
 
             const currentActualGain = gainValue * (parseFloat(document.getElementById('metroVolumeSlider').value) || 0.7);
             
-            // Bloqueia clique se estiver no ciclo de silêncio
             if (!shouldPlayClick(bi) && state.silenceMode !== 'fade') return;
             if (currentActualGain < 0.002) return;
 
@@ -1222,7 +1588,6 @@
             } else if (soundTypeToUse === 'beep') {
                 playBeep(state.audioCtx, state.metroGain, finalScheduledTime, isSubdivision ? currentActualGain * 0.35 : currentActualGain, baseFreq);
             } else {
-                // Sine padrão
                 const o = state.audioCtx.createOscillator();
                 const g = state.audioCtx.createGain();
                 o.type = 'sine';
@@ -1237,17 +1602,16 @@
                 o.stop(finalScheduledTime + clickDur + 0.02);
             }
 
-            // Ações visuais sincronizadas
+            scheduleDrums(finalScheduledTime, bi);
+
             const delay = Math.max(0, (finalScheduledTime - state.audioCtx.currentTime) * 1000);
             setTimeout(() => {
-                // Feedback visual de piscada no beat 1
                 if (!isSubdivision && bi.beatIndex === 0) {
                     const flash = document.getElementById('beatFlash');
                     flash.style.opacity = '0.06';
                     setTimeout(() => flash.style.opacity = '0', 70);
                 }
 
-                // Sincronizar o trigger da Backing Track
                 if (state.trackPlaying && bi.beatIndex === 0 && bi.subIndex === 0) {
                     const currentChordIdx = bi.measureIndex % state.backingTrackProgression.length;
                     playChordSynth(state.backingTrackProgression[currentChordIdx], finalScheduledTime);
@@ -1322,7 +1686,6 @@
             }
             state.metroPlaying = true;
             
-            // Sincroniza estado de controlos
             const btn = document.getElementById('toggleBtn');
             btn.innerHTML = '<i data-lucide="square" class="w-4 h-4 text-rose-350"></i> STOP';
             btn.className = "flex-1 bg-rose-600 hover:bg-rose-500 text-white font-bold py-2.5 px-4 rounded-lg transition tracking-wider text-sm flex items-center justify-center gap-2";
@@ -1333,7 +1696,6 @@
             
             lucide.createIcons();
 
-            // Configurações do modo rítmico
             state.progressive.enabled = document.getElementById('progressiveToggle').checked;
             if (state.progressive.enabled) {
                 state.progressiveStartTime = state.audioCtx.currentTime;
@@ -1348,7 +1710,6 @@
             state.humanize.enabled = document.getElementById('humanizeToggle').checked;
             state.humanize.ms = parseFloat(document.getElementById('humanizeMs').value) || 8;
 
-            // Zerar estados do silenciador
             state.silenceState.currentMeasureIndex = 0;
             state.silenceState.measuresSinceProgressiveStart = 0;
             state.silenceState.progressiveMuteCount = 0;
@@ -1383,7 +1744,6 @@
             document.getElementById('pendulumLine').style.transform = 'translateX(-50%) rotate(0deg)';
             updateMeasureCounterDisplay();
 
-            // Garantir que a backing track pare juntamente
             if (state.trackPlaying) {
                 toggleBackingTrack();
             }
@@ -1393,132 +1753,82 @@
             state.metroPlaying ? stopMetronome() : startMetronome();
         }
 
-        // --- ACELERAÇÃO GRADUAL (BPM PROGRESSIVO) ---
-        function tickProgressiveBPM() {
-            if (!state.metroPlaying || !state.progressive.enabled || !state.audioCtx) return;
-            const now = state.audioCtx.currentTime;
-            const t0 = state.progressiveStartTime;
-            const t1 = t0 + state.progressive.duration;
-            
-            if (now <= t0) {
-                state.bpm = state.progressive.start;
-            } else if (now >= t1) {
-                state.bpm = state.progressive.end;
-            } else {
-                const ratio = (now - t0) / (t1 - t0);
-                state.bpm = state.progressive.start + (state.progressive.end - state.progressive.start) * ratio;
-            }
-            
-            document.getElementById('bpmInput').value = Math.round(state.bpm);
-            document.getElementById('progressiveBpmNow').textContent = Math.round(state.bpm);
-        }
+        // --- SISTEMA DE GERAÇÃO E ATUALIZAÇÃO DA BACKING TRACK (Banda Virtual) ---
+        function renderDiatonicChordsSelector() {
+            const chords = getDiatonicChords();
+            const container = document.getElementById('customChordsContainer');
+            container.innerHTML = '';
 
-        // --- TAP TEMPO ---
-        // ... mantido idêntico ...
-        function tapTempo() {
-            const now = performance.now();
-            state.tapTimes.push(now);
-            if (state.tapTimes.length > 8) state.tapTimes.shift();
+            for (let i = 0; i < 4; i++) {
+                const stepWrap = document.createElement('div');
+                stepWrap.className = "flex flex-col space-y-1";
 
-            const tapBtn = document.getElementById('tapBtn');
-            tapBtn.classList.add('border-indigo-500', 'text-indigo-400');
-            setTimeout(() => tapBtn.classList.remove('border-indigo-500', 'text-indigo-400'), 100);
+                const label = document.createElement('span');
+                label.className = "text-[8px] font-bold text-slate-500 text-center";
+                label.innerText = `Comp. ${i + 1}`;
 
-            if (state.tapTimes.length >= 2) {
-                let diffs = [];
-                for (let i = 1; i < state.tapTimes.length; i++) {
-                    diffs.push(state.tapTimes[i] - state.tapTimes[i - 1]);
-                }
-                const averageDiff = diffs.reduce((a, b) => a + b, 0) / diffs.length;
-                state.bpm = Math.min(400, Math.max(20, Math.round(60000 / averageDiff)));
-                document.getElementById('bpmInput').value = state.bpm;
+                const select = document.createElement('select');
+                select.id = `custom-chord-select-${i}`;
+                select.className = "bg-slate-900 border border-slate-700 text-[10px] rounded p-1 text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-550";
+                
+                chords.forEach(ch => {
+                    const opt = document.createElement('option');
+                    opt.value = ch.num;
+                    opt.innerText = ch.roman + ` (${ch.label})`;
+                    select.appendChild(opt);
+                });
+
+                const defaultGrade = ['I', 'V', 'vi', 'IV'][i];
+                const foundIndex = chords.findIndex(ch => ch.roman === defaultGrade);
+                select.value = foundIndex !== -1 ? foundIndex : 0;
+
+                select.addEventListener('change', () => {
+                    buildBackingTrackProgression();
+                });
+
+                stepWrap.appendChild(label);
+                stepWrap.appendChild(select);
+                container.appendChild(stepWrap);
             }
         }
 
-        // --- SISTEMA DE SINTETIZADOR DA BANDA (Subtrativo & Analógico) ---
         function buildBackingTrackProgression() {
-            const scaleNotes = getScaleNotes();
+            const chords = getDiatonicChords();
             const genre = document.getElementById('trackGenre').value;
-            const isMinor = ['minor', 'minorPentatonic', 'blues', 'phrygian', 'locrian', 'harmonicMinor', 'melodicMinor'].includes(state.scaleKey);
             
             let progression = [];
-            
-            const noteBaseMidiMap = {
-                'C': 48, 'C#': 49, 'D': 50, 'D#': 51, 'E': 52, 'F': 53,
-                'F#': 54, 'G': 55, 'G#': 56, 'A': 57, 'A#': 58, 'B': 59
-            };
-            
-            function getChordLabel(rootNote, quality) {
-                return rootNote + (quality === 'Min' ? 'm' : (quality === 'Dim' ? 'dim' : (quality === 'maj7' ? 'maj7' : (quality === 'm7' ? 'm7' : (quality === '7' ? '7' : (quality === 'm7b5' ? 'ø' : ''))))));
-            }
 
-            if (genre === 'blues') {
-                const degrees = [0, 0, 0, 0, 3, 3, 0, 0, 4, 3, 0, 4];
-                degrees.forEach((deg, idx) => {
-                    const rootName = scaleNotes[deg % scaleNotes.length] || state.rootNote;
-                    const rootMidi = noteBaseMidiMap[rootName] || 48;
-                    const semitones = isMinor ? [0, 3, 7, 10] : [0, 4, 7, 10]; 
-                    const label = rootName + (isMinor ? 'm7' : '7');
-                    
+            if (genre === 'custom') {
+                for (let i = 0; i < 4; i++) {
+                    const select = document.getElementById(`custom-chord-select-${i}`);
+                    const selectedIdx = select ? parseInt(select.value) : 0;
+                    const ch = chords[selectedIdx] || chords[0];
                     progression.push({
-                        name: label,
-                        notes: semitones.map(s => rootMidi + s),
-                        bass: rootMidi - 12
+                        name: ch.label,
+                        notes: ch.semitones.map(s => ch.bass + 12 + s),
+                        bass: ch.bass
                     });
-                });
-            } else if (genre === 'jazz') {
-                const degrees = [1, 4, 0, 5];
-                const majorJazzQualities = ['m7', '7', 'maj7', '7'];
-                const minorJazzQualities = ['m7b5', '7', 'm7', '7'];
-                const qualities = isMinor ? minorJazzQualities : majorJazzQualities;
-                
-                degrees.forEach((deg, idx) => {
-                    const rootName = scaleNotes[deg % scaleNotes.length] || state.rootNote;
-                    const rootMidi = noteBaseMidiMap[rootName] || 48;
-                    const q = qualities[idx];
-                    
-                    let semitones = [0, 4, 7];
-                    if (q === 'm7') semitones = [0, 3, 7, 10];
-                    else if (q === 'maj7') semitones = [0, 4, 7, 11];
-                    else if (q === '7') semitones = [0, 4, 7, 10];
-                    else if (q === 'm7b5') semitones = [0, 3, 6, 10];
-                    
-                    progression.push({
-                        name: getChordLabel(rootName, q),
-                        notes: semitones.map(s => rootMidi + s),
-                        bass: rootMidi - 12
-                    });
-                });
-            } else if (genre === 'rock') {
-                const degrees = isMinor ? [0, 5, 2, 6] : [0, 4, 5, 3];
-                const qualities = isMinor ? ['Min', 'Maj', 'Maj', 'Maj'] : ['Maj', 'Maj', 'Min', 'Maj'];
-                
-                degrees.forEach((deg, idx) => {
-                    const rootName = scaleNotes[deg % scaleNotes.length] || state.rootNote;
-                    const rootMidi = noteBaseMidiMap[rootName] || 48;
-                    const q = qualities[idx];
-                    const semitones = q === 'Min' ? [0, 3, 7] : [0, 4, 7];
-                    
-                    progression.push({
-                        name: getChordLabel(rootName, q),
-                        notes: semitones.map(s => rootMidi + s),
-                        bass: rootMidi - 12
-                    });
-                });
+                }
             } else {
-                const degrees = isMinor ? [0, 3, 6, 2] : [0, 5, 3, 4];
-                const qualities = isMinor ? ['Min', 'Min', 'Maj', 'Maj'] : ['Maj', 'Min', 'Maj', 'Maj'];
-                
-                degrees.forEach((deg, idx) => {
-                    const rootName = scaleNotes[deg % scaleNotes.length] || state.rootNote;
-                    const rootMidi = noteBaseMidiMap[rootName] || 48;
-                    const q = qualities[idx];
-                    const semitones = q === 'Min' ? [0, 3, 7] : [0, 4, 7];
-                    
+                const isMinor = ['minor', 'minorPentatonic', 'blues', 'phrygian', 'locrian', 'harmonicMinor', 'melodicMinor'].includes(state.scaleKey);
+                let degrees = [0, 4, 5, 3]; 
+
+                if (genre === 'blues') {
+                    degrees = [0, 0, 0, 0, 3, 3, 0, 0, 4, 3, 0, 4]; 
+                } else if (genre === 'jazz') {
+                    degrees = [1, 4, 0, 5]; 
+                } else if (genre === 'rock') {
+                    degrees = isMinor ? [0, 5, 2, 6] : [0, 4, 5, 3];
+                } else {
+                    degrees = isMinor ? [0, 3, 6, 2] : [0, 5, 3, 4];
+                }
+
+                degrees.forEach(deg => {
+                    const ch = chords[deg % chords.length] || chords[0];
                     progression.push({
-                        name: getChordLabel(rootName, q),
-                        notes: semitones.map(s => rootMidi + s),
-                        bass: rootMidi - 12
+                        name: ch.label,
+                        notes: ch.semitones.map(s => ch.bass + 12 + s),
+                        bass: ch.bass
                     });
                 });
             }
@@ -1532,11 +1842,7 @@
             container.innerHTML = '';
             
             const genre = document.getElementById('trackGenre').value;
-            if (genre === 'blues') {
-                container.className = "grid grid-cols-4 gap-1 sm:gap-1.5 text-center";
-            } else {
-                container.className = "grid grid-cols-4 gap-1.5 text-center";
-            }
+            container.className = genre === 'blues' ? "grid grid-cols-4 gap-1 text-center" : "grid grid-cols-4 gap-1.5 text-center";
             
             state.backingTrackProgression.forEach((chord, idx) => {
                 const card = document.createElement('div');
@@ -1560,50 +1866,42 @@
             });
         }
 
-        // --- RENDERIZADOR DE ÁUDIO DO ACOMPANHAMENTO MELHORADO (SÍNTESE SUBTRATIVA) ---
+        // --- RENDERIZADOR DE ÁUDIO DO ACOMPANHAMENTO ---
         function playChordSynth(chordObj, startTime) {
             initAudio();
             const ctx = state.audioCtx;
             
             fadeActiveChords(startTime);
             
-            const gVal = parseFloat(document.getElementById('trackVolumeSlider').value) || 0.65;
+            const gVal = parseFloat(document.getElementById('bandVolumeSlider').value) || 0.6;
             const measureDuration = (60 / state.bpm) * state.timeSignature[0];
 
             // 1. Linha de Baixo: Baixo Analógico Passa-Baixo (Saw + Triangle Blend)
             if (chordObj.bass) {
                 const oscSaw = ctx.createOscillator();
                 const oscTri = ctx.createOscillator();
-                
                 const mixSaw = ctx.createGain();
                 const mixTri = ctx.createGain();
-                
                 const bassFilter = ctx.createBiquadFilter();
                 const bassGainNode = ctx.createGain();
 
-                // Dente de serra para brilho analógico e harmónicos
                 oscSaw.type = 'sawtooth';
                 oscSaw.frequency.setValueAtTime(midiToFreq(chordObj.bass), startTime);
                 mixSaw.gain.setValueAtTime(0.14, startTime);
 
-                // Onda triangular para o subgrave profundo redondo
                 oscTri.type = 'triangle';
                 oscTri.frequency.setValueAtTime(midiToFreq(chordObj.bass), startTime);
                 mixTri.gain.setValueAtTime(0.42, startTime);
 
-                // Configuração do Filtro Dinâmico do Baixo
                 bassFilter.type = 'lowpass';
-                // Envelope de Filtro: Começa cortando em 280Hz e decai para 80Hz para emular o ataque do dedo
                 bassFilter.frequency.setValueAtTime(280, startTime);
                 bassFilter.frequency.exponentialRampToValueAtTime(80, startTime + 0.28);
 
-                // Envelope de Amplitude do Baixo
                 bassGainNode.gain.setValueAtTime(0, startTime);
                 bassGainNode.gain.linearRampToValueAtTime(gVal * 0.75, startTime + 0.04);
                 bassGainNode.gain.setValueAtTime(gVal * 0.75, startTime + measureDuration - 0.15);
                 bassGainNode.gain.exponentialRampToValueAtTime(0.0001, startTime + measureDuration);
 
-                // Ligações do Baixo
                 oscSaw.connect(mixSaw);
                 oscTri.connect(mixTri);
                 
@@ -1611,7 +1909,7 @@
                 mixTri.connect(bassFilter);
                 
                 bassFilter.connect(bassGainNode);
-                bassGainNode.connect(state.backingTrackGain);
+                bassGainNode.connect(state.bandGain);
 
                 oscSaw.start(startTime);
                 oscTri.start(startTime);
@@ -1625,52 +1923,44 @@
             
             // 2. Pad de Acordes: Warm Pad desafinado com Modulação LFO
             chordObj.notes.forEach((midi, idx) => {
-                const strumDelay = idx * 0.035; // Ligeiro dedilhado para soar natural
+                const strumDelay = idx * 0.035; 
                 const noteTime = startTime + strumDelay;
 
-                // 2 Osciladores Desafinados por nota para um efeito Chorus amplo natural
                 const oscSawDetuned = ctx.createOscillator();
                 const oscTriDetuned = ctx.createOscillator();
-                
                 const padGainNode = ctx.createGain();
                 const padFilter = ctx.createBiquadFilter();
 
-                // Oscilador 1 desafinado para baixo
                 oscSawDetuned.type = 'sawtooth';
                 oscSawDetuned.frequency.setValueAtTime(midiToFreq(midi), noteTime);
-                oscSawDetuned.detune.setValueAtTime(-6, noteTime); // desafinado em -6 cents
+                oscSawDetuned.detune.setValueAtTime(-6, noteTime); 
 
-                // Oscilador 2 desafinado para cima
                 oscTriDetuned.type = 'triangle';
                 oscTriDetuned.frequency.setValueAtTime(midiToFreq(midi), noteTime);
-                oscTriDetuned.detune.setValueAtTime(6, noteTime);  // desafinado em +6 cents
+                oscTriDetuned.detune.setValueAtTime(6, noteTime);  
 
-                // Filtro analógico quente cortado nos agudos
                 padFilter.type = 'lowpass';
                 padFilter.frequency.setValueAtTime(450, noteTime);
 
-                // Criação do LFO lento para animar o filtro
                 const lfo = ctx.createOscillator();
                 const lfoGain = ctx.createGain();
                 lfo.type = 'sine';
-                lfo.frequency.value = 0.22; // Ciclo de 4.5 segundos
-                lfoGain.gain.value = 90;    // Oscila o corte do filtro em +/- 90Hz
+                lfo.frequency.value = 0.22; 
+                lfoGain.gain.value = 90;    
 
                 lfo.connect(lfoGain);
                 lfoGain.connect(padFilter.frequency);
 
-                // Envelope do Pad: Ataque lento suave de 350ms e libertação suave
                 padGainNode.gain.setValueAtTime(0, noteTime);
                 padGainNode.gain.linearRampToValueAtTime(gVal * 0.14, noteTime + 0.35); 
                 padGainNode.gain.setValueAtTime(gVal * 0.14, startTime + measureDuration - 0.2);
                 padGainNode.gain.exponentialRampToValueAtTime(0.0001, startTime + measureDuration);
 
-                // Conexões
                 oscSawDetuned.connect(padFilter);
                 oscTriDetuned.connect(padFilter);
                 
                 padFilter.connect(padGainNode);
-                padGainNode.connect(state.backingTrackGain);
+                padGainNode.connect(state.bandGain);
 
                 oscSawDetuned.start(noteTime);
                 oscTriDetuned.start(noteTime);
@@ -1727,7 +2017,6 @@
                 pill.textContent = "PARADO";
                 pill.className = "text-[10px] font-mono border border-slate-700 text-slate-500 px-2 py-0.5 rounded tracking-wider uppercase";
                 
-                // Limpar todos os destaques de acordes
                 document.querySelectorAll('[id^="chord-card-"]').forEach(el => {
                     el.className = "flex flex-col items-center justify-center p-2 rounded-lg border border-slate-800 bg-slate-950/45 text-center transition-all duration-200 select-none cursor-pointer hover:border-indigo-500/50";
                 });
@@ -1742,122 +2031,25 @@
                     if (idx === activeIdx) {
                         card.className = "flex flex-col items-center justify-center p-2 rounded-lg border-2 border-indigo-500 bg-indigo-950/45 text-center transition-all duration-200 select-none cursor-pointer scale-105 shadow-md shadow-indigo-950/20";
                     } else {
-                        card.className = "flex flex-col items-center justify-center p-2 rounded-lg border border-slate-800 bg-slate-950/45 text-center transition-all duration-200 select-none cursor-pointer hover:border-indigo-500/50 opacity-40";
+                        card.className = "flex flex-col items-center justify-center p-2 rounded-lg border border-slate-800 bg-slate-950/45 text-center transition-all duration-200 select-none cursor-pointer hover:border-indigo-500/50 opacity-45";
                     }
                 }
             });
         }
 
-        // --- CONTROLO DOS PRESETS (LOCAL STORAGE) ---
-        const PRESETS_STORAGE_KEY = 'gtr_scale_metro_presets';
-        
-        function loadLocalPresets() {
-            try {
-                return JSON.parse(localStorage.getItem(PRESETS_STORAGE_KEY) || '{}');
-            } catch (e) {
-                return {};
-            }
-        }
-        
-        function saveLocalPresets(p) {
-            try {
-                localStorage.setItem(PRESETS_STORAGE_KEY, JSON.stringify(p));
-            } catch (e) {}
-        }
-
-        function captureStateJSON() {
-            return {
-                bpm: state.bpm,
-                timeSignature: document.getElementById('timeSignature').value,
-                subdivision: state.subdivision,
-                accents: [...state.accents],
-                silenceMode: state.silenceMode,
-                playMeasures: document.getElementById('playMeasures').value,
-                muteMeasures: document.getElementById('muteMeasures').value,
-                randomProb: document.getElementById('randomProb').value,
-                fadeSeconds: document.getElementById('fadeSeconds').value,
-                progressive: {
-                    enabled: document.getElementById('progressiveToggle').checked,
-                    start: document.getElementById('bpmStart').value,
-                    end: document.getElementById('bpmEnd').value,
-                    duration: document.getElementById('progressiveDuration').value
-                },
-                humanize: {
-                    enabled: document.getElementById('humanizeToggle').checked,
-                    ms: document.getElementById('humanizeMs').value
-                },
-                soundType: state.soundType,
-                rootNote: state.rootNote,
-                scaleKey: state.scaleKey
-            };
-        }
-
-        function applyStateJSON(s) {
-            if (!s) return;
-            if (s.bpm) { state.bpm = parseInt(s.bpm); document.getElementById('bpmInput').value = state.bpm; }
-            if (s.rootNote) { state.rootNote = s.rootNote; renderRootSelector(); }
-            if (s.scaleKey) { state.scaleKey = s.scaleKey; document.getElementById('scaleSelector').value = s.scaleKey; }
-            
-            if (s.timeSignature) {
-                document.getElementById('timeSignature').value = s.timeSignature;
-                state.timeSignature = parseTS(s.timeSignature);
-            }
-            if (s.subdivision) {
-                state.subdivision = parseInt(s.subdivision);
-                document.getElementById('subdivision').value = s.subdivision;
-            }
-            if (s.accents) {
-                state.accents = s.accents;
-            } else {
-                buildAccents();
-            }
-            renderAccentsUI();
-
-            if (s.silenceMode) {
-                state.silenceMode = s.silenceMode;
-                document.querySelectorAll('.sil-chip').forEach(c => c.classList.toggle('active', c.dataset.mode === s.silenceMode));
-                updateSilenceVis(s.silenceMode);
-            }
-            if (s.playMeasures) document.getElementById('playMeasures').value = s.playMeasures;
-            if (s.muteMeasures) document.getElementById('muteMeasures').value = s.muteMeasures;
-            if (s.randomProb) document.getElementById('randomProb').value = s.randomProb;
-            if (s.fadeSeconds) document.getElementById('fadeSeconds').value = s.fadeSeconds;
-
-            if (s.progressive) {
-                document.getElementById('progressiveToggle').checked = s.progressive.enabled;
-                document.getElementById('bpmStart').value = s.progressive.start;
-                document.getElementById('bpmEnd').value = s.progressive.end;
-                document.getElementById('progressiveDuration').value = s.progressive.duration;
-            }
-            if (s.humanize) {
-                document.getElementById('humanizeToggle').checked = s.humanize.enabled;
-                document.getElementById('humanizeMs').value = s.humanize.ms;
-                document.getElementById('humanizeMsLabel').textContent = s.humanize.ms + 'ms';
-            }
-            if (s.soundType) {
-                state.soundType = s.soundType;
-                document.querySelectorAll('.sound-chip').forEach(c => c.classList.toggle('active', c.dataset.sound === s.soundType));
-            }
-
-            updateScaleInfo();
-            renderFretboard();
-        }
-
-        function refreshPresetsDropdown() {
-            const p = loadLocalPresets();
-            const select = document.getElementById('presetSelect');
-            const prevVal = select.value;
-            select.innerHTML = '<option value="">— Selecionar Preset —</option>';
-            Object.keys(p).forEach(name => {
+        // --- PREENCHIMENTO DE ELEMENTOS DO DICIONÁRIO ---
+        function populateChordDictionaryUI() {
+            const rootSelect = document.getElementById('chordDictRoot');
+            rootSelect.innerHTML = '';
+            ALL_NOTES.forEach(note => {
                 const opt = document.createElement('option');
-                opt.value = name;
-                opt.textContent = name;
-                select.appendChild(opt);
+                opt.value = note;
+                opt.innerText = note;
+                rootSelect.appendChild(opt);
             });
-            if (prevVal) select.value = prevVal;
         }
 
-        // --- ARRASTO BIDIRECIONAL DE BPM (DRAG/WHEEL) ---
+        // --- ARRASTO DE BPM ---
         function setupBpmDragAndScroll() {
             const input = document.getElementById('bpmInput');
             let dragging = false;
@@ -1907,17 +2099,12 @@
 
         // --- ASSOCIAÇÃO DE EVENTOS DE INTERFACE ---
         function setupEventBindings() {
-            // Alteração de Tom e Escalas
             document.getElementById('scaleSelector').addEventListener('change', (e) => {
                 state.scaleKey = e.target.value;
                 updateScaleInfo();
                 renderFretboard();
-                if (state.trackPlaying) {
-                    buildBackingTrackProgression();
-                }
             });
 
-            // Modos de Exibição
             const btnViewNotes = document.getElementById('viewNoteNames');
             const btnViewIntervals = document.getElementById('viewIntervals');
             const btnViewFrets = document.getElementById('viewFrets');
@@ -1939,12 +2126,10 @@
             btnViewIntervals.addEventListener('click', () => { state.viewMode = 'intervals'; updateViewModeStyle(); renderFretboard(); });
             btnViewFrets.addEventListener('click', () => { state.viewMode = 'frets'; updateViewModeStyle(); renderFretboard(); });
 
-            // Wake Lock manual
             document.getElementById('btnToggleWakeLock').addEventListener('click', () => {
                 state.wakeLock ? releaseWakeLock() : requestWakeLock();
             });
 
-            // Fullscreen
             const btnToggleFullscreen = document.getElementById('btnToggleFullscreen');
             const fretboardSection = document.getElementById('fretboardSection');
 
@@ -1970,29 +2155,30 @@
                 renderFretboard();
             });
 
-            // Metrônomo: Botões Rápidos de BPM
+            document.getElementById('btnShowVoicing').addEventListener('click', displayVoicingOnFretboard);
+            document.getElementById('btnClearVoicing').addEventListener('click', () => {
+                state.activeVoicing = null;
+                document.getElementById('voicingDisplay').classList.add('hidden');
+                renderFretboard();
+            });
+
             document.getElementById('increaseBpm').addEventListener('click', () => { state.bpm = Math.min(400, state.bpm + 1); document.getElementById('bpmInput').value = state.bpm; });
             document.getElementById('decreaseBpm').addEventListener('click', () => { state.bpm = Math.max(20, state.bpm - 1); document.getElementById('bpmInput').value = state.bpm; });
             document.getElementById('increaseBpm10').addEventListener('click', () => { state.bpm = Math.min(400, state.bpm + 10); document.getElementById('bpmInput').value = state.bpm; });
             document.getElementById('decreaseBpm10').addEventListener('click', () => { state.bpm = Math.max(20, state.bpm - 10); document.getElementById('bpmInput').value = state.bpm; });
 
-            // Metrônomo: Play/Stop e Tap
             document.getElementById('toggleBtn').addEventListener('click', toggleMetronome);
             document.getElementById('tapBtn').addEventListener('click', tapTempo);
 
-            // Compasso e Subdivisão
             document.getElementById('timeSignature').addEventListener('change', (e) => {
                 state.timeSignature = parseTS(e.target.value);
                 buildAccents();
-                if (state.trackPlaying) {
-                    buildBackingTrackProgression();
-                }
+                buildBackingTrackProgression();
             });
             document.getElementById('subdivision').addEventListener('change', (e) => {
                 state.subdivision = parseInt(e.target.value);
             });
 
-            // Mudança de tipo de som (Timbre)
             document.querySelectorAll('.sound-chip').forEach(chip => {
                 chip.addEventListener('click', () => {
                     document.querySelectorAll('.sound-chip').forEach(x => x.className = "sound-chip bg-slate-850 border border-slate-700 text-slate-400 px-1 py-1 rounded hover:bg-slate-755 transition");
@@ -2001,29 +2187,38 @@
                 });
             });
 
-            // Volume do Metrônomo
             document.getElementById('metroVolumeSlider').addEventListener('input', (e) => {
                 if (state.metroGain) {
                     state.metroGain.gain.value = parseFloat(e.target.value);
                 }
             });
 
-            // Volume da Backing Track
-            document.getElementById('trackVolumeSlider').addEventListener('input', (e) => {
-                if (state.backingTrackGain) {
-                    state.backingTrackGain.gain.value = parseFloat(e.target.value);
+            // Volume Independente da Banda (Acordes/Synth/Baixo)
+            document.getElementById('bandVolumeSlider').addEventListener('input', (e) => {
+                if (state.bandGain) {
+                    state.bandGain.gain.value = parseFloat(e.target.value);
                 }
             });
 
-            // Género da Backing Track
-            document.getElementById('trackGenre').addEventListener('change', () => {
+            // Volume Independente da Bateria
+            document.getElementById('drumVolumeSlider').addEventListener('input', (e) => {
+                if (state.drumGain) {
+                    state.drumGain.gain.value = parseFloat(e.target.value);
+                }
+            });
+
+            document.getElementById('trackGenre').addEventListener('change', (e) => {
+                const editor = document.getElementById('customProgressionEditor');
+                if (e.target.value === 'custom') {
+                    editor.classList.remove('hidden');
+                } else {
+                    editor.classList.add('hidden');
+                }
                 buildBackingTrackProgression();
             });
 
-            // Play da Backing Track
             document.getElementById('btnPlayTrack').addEventListener('click', toggleBackingTrack);
 
-            // Silêncio
             document.querySelectorAll('.sil-chip').forEach(chip => {
                 chip.addEventListener('click', () => {
                     document.querySelectorAll('.sil-chip').forEach(x => x.className = "sil-chip bg-slate-850 border border-slate-800 text-slate-400 py-1 rounded hover:bg-slate-755 transition");
@@ -2033,51 +2228,11 @@
                 });
             });
 
-            // Humanizar
             document.getElementById('humanizeMs').addEventListener('input', (e) => {
                 document.getElementById('humanizeMsLabel').textContent = e.target.value + 'ms';
                 state.humanize.ms = parseInt(e.target.value);
             });
 
-            // Presets: Save, Load, Delete
-            document.getElementById('presetSave').addEventListener('click', () => {
-                const name = prompt('Nome para guardar este Preset:');
-                if (!name || !name.trim()) return;
-                const p = loadLocalPresets();
-                p[name.trim()] = captureStateJSON();
-                saveLocalPresets(p);
-                refreshPresetsDropdown();
-                document.getElementById('presetSelect').value = name.trim();
-                const status = document.getElementById('presetStatus');
-                status.textContent = 'SALVO ✓';
-                setTimeout(() => status.textContent = '', 2000);
-            });
-
-            document.getElementById('presetLoad').addEventListener('click', () => {
-                const name = document.getElementById('presetSelect').value;
-                if (!name) return;
-                const p = loadLocalPresets();
-                if (p[name]) {
-                    applyStateJSON(p[name]);
-                    const status = document.getElementById('presetStatus');
-                    status.textContent = 'CARREGADO ✓';
-                    setTimeout(() => status.textContent = '', 2000);
-                }
-            });
-
-            document.getElementById('presetDelete').addEventListener('click', () => {
-                const name = document.getElementById('presetSelect').value;
-                if (!name || !confirm(`Pretende eliminar o preset "${name}"?`)) return;
-                const p = loadLocalPresets();
-                delete p[name];
-                saveLocalPresets(p);
-                refreshPresetsDropdown();
-                const status = document.getElementById('presetStatus');
-                status.textContent = 'ELIMINADO';
-                setTimeout(() => status.textContent = '', 2000);
-            });
-
-            // Atalhos globais de Teclado (Tecla Espaço e T)
             window.addEventListener('keydown', e => {
                 if (e.target.tagName === 'INPUT' && e.target.type !== 'checkbox') return;
                 if (e.code === 'Space') {
@@ -2109,23 +2264,20 @@
         window.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons();
             
-            // Força o estado padrão inicial
             state.bpm = parseInt(document.getElementById('bpmInput').value) || 120;
             state.timeSignature = parseTS(document.getElementById('timeSignature').value);
             state.subdivision = parseInt(document.getElementById('subdivision').value) || 1;
             
+            populateChordDictionaryUI();
             renderRootSelector();
             buildAccents();
             updateScaleInfo();
             renderFretboard();
-            buildBackingTrackProgression();
             
             updateSilenceVis('none');
-            refreshPresetsDropdown();
             setupBpmDragAndScroll();
             setupEventBindings();
             
-            // Inicia o Wake lock se autorizado
             requestWakeLock();
         });
     </script>
