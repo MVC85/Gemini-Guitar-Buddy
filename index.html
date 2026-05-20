@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GTR Scales 7-String, Metrônomo & Banda Virtual</title>
+    <title>GUITAR BUDDY - 7-String Guitar Pro</title>
     <!-- Tailwind CSS para estilização moderna -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Lucide Icons para ícones -->
@@ -35,7 +35,7 @@
             box-shadow: 0 0 16px rgba(16, 185, 129, 0.95);
         }
         /* Forçar cores escuras nos seletores para evitar texto invisível */
-        #scaleSelector, #scaleSelector option, #scaleSelector optgroup, #trackGenre, #trackGenre option, #chordDictRoot, #chordDictType {
+        #scaleSelector, #scaleSelector option, #scaleSelector optgroup, #trackGenre, #trackGenre option, #chordDictRoot, #chordDictType, #pianoTimbre, #pianoTimbre option {
             background-color: #0f172a !important;
             color: #f1f5f9 !important;
         }
@@ -114,8 +114,7 @@
                     <i data-lucide="music" class="w-6 h-6"></i>
                 </div>
                 <div>
-                    <h1 class="text-xl font-bold tracking-tight bg-gradient-to-r from-indigo-400 to-rose-400 bg-clip-text text-transparent">GTR Scales & Banda Virtual</h1>
-                    <p class="text-xs text-slate-400 font-medium">7-String Guitar Pro • Ritmos • Editor de Acordes • Dicionário</p>
+                    <h1 class="text-xl font-bold tracking-tight bg-gradient-to-r from-indigo-400 to-rose-400 bg-clip-text text-transparent">GUITAR BUDDY</h1>
                 </div>
             </div>
             
@@ -327,9 +326,15 @@
                         <!-- Controles de Volume Separados (Banda & Bateria) -->
                         <div class="bg-slate-950/20 p-2.5 rounded-lg border border-slate-800/80 space-y-3">
                             <div class="space-y-1">
-                                <span class="block text-[9px] font-bold text-slate-400 tracking-wider flex justify-between">
-                                    <span>VOLUME DA BANDA (ACOMPANHAMENTO)</span>
-                                    <span class="text-indigo-400 text-[8px] tracking-wide font-mono">PADS + BAIXO FM</span>
+                                <span class="block text-[9px] font-bold text-slate-400 tracking-wider flex justify-between items-center">
+                                    <span>VOLUME DO PIANO</span>
+                                    <span class="flex items-center gap-1.5">
+                                        <span class="text-[8px] text-slate-500 font-mono">TIMBRE:</span>
+                                        <select id="pianoTimbre" class="bg-slate-950 border border-slate-800 rounded py-0.5 px-1.5 text-[8px] text-indigo-400 font-semibold focus:outline-none focus:ring-1 focus:ring-indigo-550">
+                                            <option value="acoustic" selected>Acústico</option>
+                                            <option value="grand">Grand Piano</option>
+                                        </select>
+                                    </span>
                                 </span>
                                 <div class="flex items-center gap-2">
                                     <i data-lucide="volume-1" class="w-3.5 h-3.5 text-slate-500"></i>
@@ -362,7 +367,7 @@
                 </div>
                 
                 <div class="text-[9px] text-slate-500 italic text-center">
-                    A Bateria Sintetizada (Kick, Snare e Hats) e os acordes acompanham perfeitamente o compasso e BPMs!
+                    A Bateria Sintetizada (Kick, Snare e Hats) e os acordes de Piano acompanham perfeitamente o compasso e BPMs!
                 </div>
             </section>
 
@@ -671,7 +676,7 @@
             }
         };
 
-        // Afinações padrão da Guitarra de 7 Cordas (Ordem Física: Corda 1 [Mais fina] -> Corda 7 [Mais grossa])
+        // Afinações padrão da Guitarra de 7 Cordas
         const TUNINGS = {
             standard: {
                 name: "Padrão (E B G D A E B)",
@@ -699,6 +704,7 @@
             
             // Metrônomo Config
             metroPlaying: false,
+            loopRunning: false, // Controle de motor de áudio em background unificado
             bpm: 120,
             timeSignature: [4, 4], 
             subdivision: 1,       
@@ -727,6 +733,7 @@
             backingTrackProgression: [],
             backingTrackOscillators: [],
             customChords: ['I', 'V', 'vi', 'IV'], // Armazena graus escolhidos pelo usuário
+            pianoTimbre: 'acoustic', // Timbre atual do piano ('acoustic' ou 'grand')
 
             // Dicionário de Acordes
             activeVoicing: null // Array de 7 trastes do acorde ativo para destacar no braço
@@ -781,12 +788,11 @@
                 delayNode.connect(delayWetGain);
                 delayWetGain.connect(state.audioCtx.destination);
 
-                // Gerar ruído branco de bateria uma única vez
                 generateNoiseBuffer();
             }
         }
 
-        // --- GERADOR DE RUÍDO BRANCO (Para pratos e tarolas sintetizados) ---
+        // --- GERADOR DE RUÍDO BRANCO ---
         function generateNoiseBuffer() {
             if (!state.audioCtx) return;
             const bufferSize = state.audioCtx.sampleRate * 2;
@@ -797,7 +803,7 @@
             }
         }
 
-        // --- SÍNTESE EM TEMPO REAL DE BATERIA (REAL DRUMS) ---
+        // --- SÍNTESE EM TEMPO REAL DE BATERIA ---
         function playKick(time, vol) {
             if (!state.audioCtx) return;
             const osc = state.audioCtx.createOscillator();
@@ -807,7 +813,6 @@
             gain.connect(state.drumGain);
 
             osc.type = 'sine';
-            // Variação de frequência exponencial clássica do bumbo (de 140Hz decaindo rapidamente para 40Hz)
             osc.frequency.setValueAtTime(140, time);
             osc.frequency.exponentialRampToValueAtTime(40, time + 0.12);
 
@@ -819,11 +824,9 @@
             osc.stop(time + 0.18);
         }
 
-        // Sintetizador de Caixa (Snare)
         function playSnare(time, vol) {
             if (!state.audioCtx || !state.noiseBuffer) return;
             
-            // 1. Corpo tonal da caixa
             const osc = state.audioCtx.createOscillator();
             const oscGain = state.audioCtx.createGain();
             osc.connect(oscGain);
@@ -834,7 +837,6 @@
             oscGain.gain.setValueAtTime(vol * 0.65, time);
             oscGain.gain.exponentialRampToValueAtTime(0.001, time + 0.08);
 
-            // 2. Esteira metálica (Ruído filtrado)
             const noise = state.audioCtx.createBufferSource();
             const noiseFilter = state.audioCtx.createBiquadFilter();
             const noiseGain = state.audioCtx.createGain();
@@ -858,7 +860,7 @@
             noise.stop(time + 0.2);
         }
 
-        // Sintetizador de Chimbal (Hi-Hat)
+        // --- SEQUENCIADOR DE GROOVES ---
         function playHiHat(time, vol) {
             if (!state.audioCtx || !state.noiseBuffer) return;
             
@@ -882,7 +884,6 @@
             noise.stop(time + 0.06);
         }
 
-        // --- SEQUENCIADOR DE GROOVES (Sincronizado) ---
         function scheduleDrums(time, bi) {
             if (!state.trackPlaying) return;
             const genre = document.getElementById('trackGenre').value;
@@ -933,7 +934,7 @@
             }
         }
 
-        // --- SISTEMA DE SINTETIZADOR DA GUITARRA ---
+        // --- SISTEMA DE SINTETIZADOR DA GUITARRA (FM Pluck Synth) ---
         function playGuitarTone(frequency) {
             initAudio();
             if (!state.audioCtx) return;
@@ -1000,6 +1001,7 @@
             });
         }
 
+        // Determinar o grau romano e nota da escala
         function getNoteIntervalName(note) {
             const scaleNotes = getScaleNotes();
             const scaleObj = SCALES[state.scaleKey];
@@ -1385,6 +1387,7 @@
             });
         }
 
+        // --- ACELERAÇÃO GRADUAL ---
         function playBeep(ctx, dest, t, g, freq) {
             const o = ctx.createOscillator(), gn = ctx.createGain();
             o.type = 'square'; o.frequency.value = freq * 0.5; o.connect(gn); gn.connect(dest);
@@ -1394,9 +1397,8 @@
             o.start(t); o.stop(t + 0.06);
         }
 
-        // --- ACELERAÇÃO GRADUAL ---
         function tickProgressiveBPM() {
-            if (!state.metroPlaying || !state.progressive.enabled || !state.audioCtx) return;
+            if (!state.loopRunning || !state.metroPlaying || !state.progressive.enabled || !state.audioCtx) return;
             const now = state.audioCtx.currentTime;
             const t0 = state.progressiveStartTime;
             const t1 = t0 + state.progressive.duration;
@@ -1443,6 +1445,7 @@
             renderAccentsUI();
         }
 
+        // --- ACENTUAÇÃO ---
         function renderAccentsUI() {
             const container = document.getElementById('accents');
             container.innerHTML = '';
@@ -1483,7 +1486,7 @@
 
         function updateMeasureCounterDisplay() {
             const display = document.getElementById('measureCounter');
-            if (!state.metroPlaying) {
+            if (!state.loopRunning) {
                 display.innerHTML = '—';
                 return;
             }
@@ -1565,48 +1568,49 @@
             }
 
             const currentActualGain = gainValue * (parseFloat(document.getElementById('metroVolumeSlider').value) || 0.7);
-            
-            if (!shouldPlayClick(bi) && state.silenceMode !== 'fade') return;
-            if (currentActualGain < 0.002) return;
-
-            const finalScheduledTime = Math.max(time + humanizeOffset, state.audioCtx.currentTime + 0.001);
-            const baseFreq = accent === 1 ? 1150 : (accent === -1 ? 650 : 850);
             const isSubdivision = bi.subIndex !== 0;
-            const soundTypeToUse = isSubdivision ? 'sine' : state.soundType;
 
-            if (soundTypeToUse === 'click') {
-                const buf = makeClickBuffer(state.audioCtx);
-                const src = state.audioCtx.createBufferSource();
-                const g = state.audioCtx.createGain();
-                src.buffer = buf;
-                g.gain.value = isSubdivision ? currentActualGain * 0.35 : currentActualGain;
-                src.connect(g);
-                g.connect(state.metroGain);
-                src.start(finalScheduledTime);
-            } else if (soundTypeToUse === 'woodblock') {
-                playWoodblock(state.audioCtx, state.metroGain, finalScheduledTime, isSubdivision ? currentActualGain * 0.3 : currentActualGain);
-            } else if (soundTypeToUse === 'beep') {
-                playBeep(state.audioCtx, state.metroGain, finalScheduledTime, isSubdivision ? currentActualGain * 0.35 : currentActualGain, baseFreq);
-            } else {
-                const o = state.audioCtx.createOscillator();
-                const g = state.audioCtx.createGain();
-                o.type = 'sine';
-                o.frequency.value = isSubdivision ? baseFreq * 0.65 : baseFreq;
-                o.connect(g);
-                g.connect(state.metroGain);
-                const clickDur = 0.055;
-                g.gain.setValueAtTime(0.0001, finalScheduledTime);
-                g.gain.exponentialRampToValueAtTime(Math.max(0.0001, isSubdivision ? currentActualGain * 0.4 : currentActualGain), finalScheduledTime + 0.002);
-                g.gain.exponentialRampToValueAtTime(0.0001, finalScheduledTime + clickDur);
-                o.start(finalScheduledTime);
-                o.stop(finalScheduledTime + clickDur + 0.02);
+            // Se o metrónomo estiver ativo, tocamos o clique
+            if (state.metroPlaying && shouldPlayClick(bi) && currentActualGain >= 0.002) {
+                const finalScheduledTime = Math.max(time + humanizeOffset, state.audioCtx.currentTime + 0.001);
+                const baseFreq = accent === 1 ? 1150 : (accent === -1 ? 650 : 850);
+                const soundTypeToUse = isSubdivision ? 'sine' : state.soundType;
+
+                if (soundTypeToUse === 'click') {
+                    const buf = makeClickBuffer(state.audioCtx);
+                    const src = state.audioCtx.createBufferSource();
+                    const g = state.audioCtx.createGain();
+                    src.buffer = buf;
+                    g.gain.value = isSubdivision ? currentActualGain * 0.35 : currentActualGain;
+                    src.connect(g);
+                    g.connect(state.metroGain);
+                    src.start(finalScheduledTime);
+                } else if (soundTypeToUse === 'woodblock') {
+                    playWoodblock(state.audioCtx, state.metroGain, finalScheduledTime, isSubdivision ? currentActualGain * 0.3 : currentActualGain);
+                } else if (soundTypeToUse === 'beep') {
+                    playBeep(state.audioCtx, state.metroGain, finalScheduledTime, isSubdivision ? currentActualGain * 0.35 : currentActualGain, baseFreq);
+                } else {
+                    const o = state.audioCtx.createOscillator();
+                    const g = state.audioCtx.createGain();
+                    o.type = 'sine';
+                    o.frequency.value = isSubdivision ? baseFreq * 0.65 : baseFreq;
+                    o.connect(g);
+                    g.connect(state.metroGain);
+                    const clickDur = 0.055;
+                    g.gain.setValueAtTime(0.0001, finalScheduledTime);
+                    g.gain.exponentialRampToValueAtTime(Math.max(0.0001, isSubdivision ? currentActualGain * 0.4 : currentActualGain), finalScheduledTime + 0.002);
+                    g.gain.exponentialRampToValueAtTime(0.0001, finalScheduledTime + clickDur);
+                    o.start(finalScheduledTime);
+                    o.stop(finalScheduledTime + clickDur + 0.02);
+                }
             }
 
-            scheduleDrums(finalScheduledTime, bi);
+            // Tocamos bateria da banda virtual sempre (se banda ligada)
+            scheduleDrums(time, bi);
 
-            const delay = Math.max(0, (finalScheduledTime - state.audioCtx.currentTime) * 1000);
+            const delay = Math.max(0, (time - state.audioCtx.currentTime) * 1000);
             setTimeout(() => {
-                if (!isSubdivision && bi.beatIndex === 0) {
+                if (state.metroPlaying && !isSubdivision && bi.beatIndex === 0) {
                     const flash = document.getElementById('beatFlash');
                     flash.style.opacity = '0.06';
                     setTimeout(() => flash.style.opacity = '0', 70);
@@ -1614,7 +1618,7 @@
 
                 if (state.trackPlaying && bi.beatIndex === 0 && bi.subIndex === 0) {
                     const currentChordIdx = bi.measureIndex % state.backingTrackProgression.length;
-                    playChordSynth(state.backingTrackProgression[currentChordIdx], finalScheduledTime);
+                    playChordSynth(state.backingTrackProgression[currentChordIdx], time);
                     updateActiveChordHighlight(currentChordIdx);
                 }
             }, delay);
@@ -1651,7 +1655,7 @@
         }
 
         function scheduler() {
-            if (!state.metroPlaying) return;
+            if (!state.loopRunning) return;
             while (state.nextNoteTime < state.audioCtx.currentTime + state.scheduleAheadTime) {
                 const bi = nextNote();
                 scheduleTick(state.nextNoteTime, bi);
@@ -1661,12 +1665,12 @@
         }
 
         function animatePendulum() {
-            if (!state.metroPlaying) {
+            if (!state.loopRunning) {
                 state.pendulumAnimId = null;
                 return;
             }
             state.pendulumAnimId = requestAnimationFrame(animatePendulum);
-            if (!state.audioCtx) {
+            if (!state.audioCtx || !state.metroPlaying) {
                 document.getElementById('pendulumLine').style.transform = 'translateX(-50%) rotate(0deg)';
                 return;
             }
@@ -1677,13 +1681,44 @@
             document.getElementById('pendulumLine').style.transform = `translateX(-50%) rotate(${angle.toFixed(2)}deg)`;
         }
 
+        // --- SISTEMA UNIFICADO DE LOOP DE ÁUDIO ---
+        function updateLoopState() {
+            initAudio();
+            const shouldRun = state.metroPlaying || state.trackPlaying;
+            
+            if (shouldRun) {
+                if (!state.loopRunning) {
+                    state.loopRunning = true;
+                    if (state.audioCtx.state === 'suspended') {
+                        state.audioCtx.resume();
+                    }
+                    
+                    state.silenceState.currentMeasureIndex = -1;
+                    state.silenceState.measuresSinceProgressiveStart = 0;
+                    state.silenceState.progressiveMuteCount = 0;
+                    state.current16thNote = -1;
+                    state.tapTimes = [];
+                    state.nextNoteTime = state.audioCtx.currentTime + 0.05;
+                    state.progressiveStartTime = state.audioCtx.currentTime;
+                    state.pendulumStartTime = state.audioCtx.currentTime;
+                    
+                    scheduler();
+                    animatePendulum();
+                }
+            } else {
+                if (state.loopRunning) {
+                    state.loopRunning = false;
+                    if (state.noteSchedulerId) clearTimeout(state.noteSchedulerId);
+                    if (state.pendulumAnimId) cancelAnimationFrame(state.pendulumAnimId);
+                    document.getElementById('pendulumLine').style.transform = 'translateX(-50%) rotate(0deg)';
+                    updateMeasureCounterDisplay();
+                }
+            }
+        }
+
         // --- CONTROLE DE START / STOP DO METRÔNOMO ---
         function startMetronome() {
             if (state.metroPlaying) return;
-            initAudio();
-            if (state.audioCtx.state === 'suspended') {
-                state.audioCtx.resume();
-            }
             state.metroPlaying = true;
             
             const btn = document.getElementById('toggleBtn');
@@ -1698,7 +1733,6 @@
 
             state.progressive.enabled = document.getElementById('progressiveToggle').checked;
             if (state.progressive.enabled) {
-                state.progressiveStartTime = state.audioCtx.currentTime;
                 document.getElementById('progressiveBpmDisplay').classList.remove('hidden');
                 state.progressive.start = parseFloat(document.getElementById('bpmStart').value) || state.bpm;
                 state.progressive.end = parseFloat(document.getElementById('bpmEnd').value) || state.bpm;
@@ -1710,26 +1744,13 @@
             state.humanize.enabled = document.getElementById('humanizeToggle').checked;
             state.humanize.ms = parseFloat(document.getElementById('humanizeMs').value) || 8;
 
-            state.silenceState.currentMeasureIndex = 0;
-            state.silenceState.measuresSinceProgressiveStart = 0;
-            state.silenceState.progressiveMuteCount = 0;
-
-            state.current16thNote = -1;
-            state.tapTimes = [];
-            state.nextNoteTime = state.audioCtx.currentTime + 0.05;
-            
-            scheduler();
-            state.pendulumStartTime = state.audioCtx.currentTime;
-            animatePendulum();
+            updateLoopState();
         }
 
         function stopMetronome() {
             if (!state.metroPlaying) return;
             state.metroPlaying = false;
             
-            if (state.noteSchedulerId) clearTimeout(state.noteSchedulerId);
-            if (state.pendulumAnimId) cancelAnimationFrame(state.pendulumAnimId);
-
             const btn = document.getElementById('toggleBtn');
             btn.innerHTML = '<i data-lucide="play" class="w-4 h-4"></i> START';
             btn.className = "flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 px-4 rounded-lg transition tracking-wider text-sm flex items-center justify-center gap-2";
@@ -1742,18 +1763,15 @@
             
             document.getElementById('progressiveBpmDisplay').classList.add('hidden');
             document.getElementById('pendulumLine').style.transform = 'translateX(-50%) rotate(0deg)';
-            updateMeasureCounterDisplay();
-
-            if (state.trackPlaying) {
-                toggleBackingTrack();
-            }
+            
+            updateLoopState();
         }
 
         function toggleMetronome() {
             state.metroPlaying ? stopMetronome() : startMetronome();
         }
 
-        // --- SISTEMA DE GERAÇÃO E ATUALIZAÇÃO DA BACKING TRACK (Banda Virtual) ---
+        // --- SISTEMA DE GERAÇÃO E ATUALIZAÇÃO DA BACKING TRACK ---
         function renderDiatonicChordsSelector() {
             const chords = getDiatonicChords();
             const container = document.getElementById('customChordsContainer');
@@ -1866,6 +1884,148 @@
             });
         }
 
+        // --- SINTETIZADOR DE TIMBRE DE PIANO PURO & ENCORPADO ---
+        function playPianoNote(ctx, destination, midi, startTime, duration, velocity = 0.8) {
+            const freq = midiToFreq(midi);
+            const now = startTime;
+
+            // Nó de controlo do volume principal da nota
+            const noteGain = ctx.createGain();
+            noteGain.connect(destination);
+
+            const targetVol = Math.pow(velocity, 1.4) * 0.75;
+            noteGain.gain.setValueAtTime(0, now);
+            noteGain.gain.linearRampToValueAtTime(targetVol, now + 0.005);
+            noteGain.gain.setValueAtTime(targetVol, now + duration - 0.15);
+            noteGain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+
+            // Filtro dinâmico por nota (Ataque brilhante e decaimento quente e amadeirado)
+            const filter = ctx.createBiquadFilter();
+            filter.type = 'lowpass';
+            
+            // Grand Piano vs Acústico
+            const isGrand = state.pianoTimbre === 'grand';
+            const filterStart = isGrand ? freq * 5.5 : freq * 3.8;
+            const filterEnd = isGrand ? freq * 1.4 : freq * 1.05;
+            const decayScale = isGrand ? 1.75 : 1.15;
+
+            filter.frequency.setValueAtTime(filterStart, now);
+            filter.frequency.exponentialRampToValueAtTime(filterEnd, now + 0.35);
+            filter.Q.setValueAtTime(1.2, now);
+            filter.connect(noteGain);
+
+            // Simulação de 3 Cordas (Uníssono Físico com Beating Natural)
+            const osc1 = ctx.createOscillator();
+            const osc1Gain = ctx.createGain();
+            osc1.type = 'sine';
+            osc1.frequency.setValueAtTime(freq, now);
+            osc1.detune.setValueAtTime(-1.8, now); 
+            osc1Gain.gain.setValueAtTime(0.38, now);
+            osc1Gain.gain.exponentialRampToValueAtTime(0.0001, now + duration * 1.5 * decayScale);
+            osc1.connect(osc1Gain);
+            osc1Gain.connect(filter);
+
+            const osc2 = ctx.createOscillator();
+            const osc2Gain = ctx.createGain();
+            osc2.type = 'triangle'; // Traz o corpo amadeirado e quente
+            osc2.frequency.setValueAtTime(freq, now);
+            osc2.detune.setValueAtTime(0.2, now); 
+            osc2Gain.gain.setValueAtTime(0.22, now);
+            osc2Gain.gain.exponentialRampToValueAtTime(0.0001, now + duration * 1.25 * decayScale);
+            osc2.connect(osc2Gain);
+            osc2Gain.connect(filter);
+
+            const osc3 = ctx.createOscillator();
+            const osc3Gain = ctx.createGain();
+            osc3.type = 'sine';
+            osc3.frequency.setValueAtTime(freq, now);
+            osc3.detune.setValueAtTime(1.8, now); 
+            osc3Gain.gain.setValueAtTime(0.38, now);
+            osc3Gain.gain.exponentialRampToValueAtTime(0.0001, now + duration * 1.5 * decayScale);
+            osc3.connect(osc3Gain);
+            osc3Gain.connect(filter);
+
+            // Harmónicos Superiores com decaimento exponencial rápido
+            const harmonics = isGrand ? [
+                [2.0, 0.28, 0.7],  // 2ª oitava
+                [3.0, 0.15, 0.45], // Quinta
+                [4.0, 0.08, 0.25], // Oitava superior
+                [5.0, 0.04, 0.15]  // Brilho agudo
+            ] : [
+                [2.0, 0.22, 0.5],  // Oitava equilibrada
+                [3.0, 0.08, 0.3]   // Quinta discreta
+            ];
+
+            const oscillators = [osc1, osc2, osc3];
+
+            harmonics.forEach(([mult, amp, decayMult]) => {
+                const osc = ctx.createOscillator();
+                const oscGain = ctx.createGain();
+
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(freq * mult, now);
+                osc.detune.setValueAtTime((Math.random() * 4 - 2), now);
+
+                oscGain.gain.setValueAtTime(amp * velocity * 0.3, now);
+                oscGain.gain.exponentialRampToValueAtTime(0.0001, now + (duration * decayMult * decayScale));
+
+                osc.connect(oscGain);
+                oscGain.connect(filter);
+
+                osc.start(now);
+                osc.stop(now + duration * decayScale * 1.5);
+
+                oscillators.push(osc);
+            });
+
+            // Simulador de Ressonância da Tábua Harmónica (Feedback Comb Filter simplificado)
+            const boardGain = ctx.createGain();
+            boardGain.gain.setValueAtTime(0.25, now);
+            
+            const delay1 = ctx.createDelay();
+            delay1.delayTime.setValueAtTime(0.0011, now); // Simulação de reflexão acústica 1
+            const delay2 = ctx.createDelay();
+            delay2.delayTime.setValueAtTime(0.0019, now); // Simulação de reflexão acústica 2
+            
+            const resFilter = ctx.createBiquadFilter();
+            resFilter.type = 'bandpass';
+            resFilter.frequency.setValueAtTime(320, now); // Região de ressonância da madeira
+            resFilter.Q.setValueAtTime(1.4, now);
+
+            noteGain.connect(delay1);
+            delay1.connect(resFilter);
+            resFilter.connect(delay2);
+            delay2.connect(boardGain);
+            boardGain.connect(destination);
+
+            // Ataque Físico do Martelo (Triângulo rápido + Thump de baixa frequência)
+            const hammer = ctx.createOscillator();
+            const hammerGain = ctx.createGain();
+            hammer.type = 'triangle';
+            hammer.frequency.setValueAtTime(isGrand ? 160 : 120, now);
+            hammer.frequency.exponentialRampToValueAtTime(45, now + 0.02);
+
+            hammerGain.gain.setValueAtTime((isGrand ? 0.35 : 0.22) * velocity, now);
+            hammerGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.025);
+            
+            hammer.connect(hammerGain);
+            hammerGain.connect(noteGain);
+            
+            hammer.start(now);
+            hammer.stop(now + 0.04);
+            
+            osc1.start(now);
+            osc2.start(now);
+            osc3.start(now);
+            
+            const stopTime = now + duration * decayScale * 1.6;
+            osc1.stop(stopTime);
+            osc2.stop(stopTime);
+            osc3.stop(stopTime);
+
+            return { noteGain, oscillators: [...oscillators, hammer] };
+        }
+
         // --- RENDERIZADOR DE ÁUDIO DO ACOMPANHAMENTO ---
         function playChordSynth(chordObj, startTime) {
             initAudio();
@@ -1875,105 +2035,23 @@
             
             const gVal = parseFloat(document.getElementById('bandVolumeSlider').value) || 0.6;
             const measureDuration = (60 / state.bpm) * state.timeSignature[0];
+            const activeTrackNodes = [];
 
-            // 1. Linha de Baixo: Baixo Analógico Passa-Baixo (Saw + Triangle Blend)
+            // 1. Linha de Baixo Acústica (Nota fundamental profunda do Piano)
             if (chordObj.bass) {
-                const oscSaw = ctx.createOscillator();
-                const oscTri = ctx.createOscillator();
-                const mixSaw = ctx.createGain();
-                const mixTri = ctx.createGain();
-                const bassFilter = ctx.createBiquadFilter();
-                const bassGainNode = ctx.createGain();
-
-                oscSaw.type = 'sawtooth';
-                oscSaw.frequency.setValueAtTime(midiToFreq(chordObj.bass), startTime);
-                mixSaw.gain.setValueAtTime(0.14, startTime);
-
-                oscTri.type = 'triangle';
-                oscTri.frequency.setValueAtTime(midiToFreq(chordObj.bass), startTime);
-                mixTri.gain.setValueAtTime(0.42, startTime);
-
-                bassFilter.type = 'lowpass';
-                bassFilter.frequency.setValueAtTime(280, startTime);
-                bassFilter.frequency.exponentialRampToValueAtTime(80, startTime + 0.28);
-
-                bassGainNode.gain.setValueAtTime(0, startTime);
-                bassGainNode.gain.linearRampToValueAtTime(gVal * 0.75, startTime + 0.04);
-                bassGainNode.gain.setValueAtTime(gVal * 0.75, startTime + measureDuration - 0.15);
-                bassGainNode.gain.exponentialRampToValueAtTime(0.0001, startTime + measureDuration);
-
-                oscSaw.connect(mixSaw);
-                oscTri.connect(mixTri);
-                
-                mixSaw.connect(bassFilter);
-                mixTri.connect(bassFilter);
-                
-                bassFilter.connect(bassGainNode);
-                bassGainNode.connect(state.bandGain);
-
-                oscSaw.start(startTime);
-                oscTri.start(startTime);
-                
-                oscSaw.stop(startTime + measureDuration);
-                oscTri.stop(startTime + measureDuration);
-
-                state.backingTrackOscillators.push({ osc: oscSaw, gainNode: bassGainNode });
-                state.backingTrackOscillators.push({ osc: oscTri, gainNode: bassGainNode });
+                const bassResult = playPianoNote(ctx, state.bandGain, chordObj.bass, startTime, measureDuration, gVal * 0.9);
+                activeTrackNodes.push(...bassResult.oscillators.map(o => ({ osc: o, gainNode: bassResult.noteGain })));
             }
             
-            // 2. Pad de Acordes: Warm Pad desafinado com Modulação LFO
+            // 2. Acordes dedilhados de Piano (Com atraso de martelada realística)
             chordObj.notes.forEach((midi, idx) => {
-                const strumDelay = idx * 0.035; 
+                const strumDelay = idx * 0.025; // Simulação de dedilhado físico
                 const noteTime = startTime + strumDelay;
-
-                const oscSawDetuned = ctx.createOscillator();
-                const oscTriDetuned = ctx.createOscillator();
-                const padGainNode = ctx.createGain();
-                const padFilter = ctx.createBiquadFilter();
-
-                oscSawDetuned.type = 'sawtooth';
-                oscSawDetuned.frequency.setValueAtTime(midiToFreq(midi), noteTime);
-                oscSawDetuned.detune.setValueAtTime(-6, noteTime); 
-
-                oscTriDetuned.type = 'triangle';
-                oscTriDetuned.frequency.setValueAtTime(midiToFreq(midi), noteTime);
-                oscTriDetuned.detune.setValueAtTime(6, noteTime);  
-
-                padFilter.type = 'lowpass';
-                padFilter.frequency.setValueAtTime(450, noteTime);
-
-                const lfo = ctx.createOscillator();
-                const lfoGain = ctx.createGain();
-                lfo.type = 'sine';
-                lfo.frequency.value = 0.22; 
-                lfoGain.gain.value = 90;    
-
-                lfo.connect(lfoGain);
-                lfoGain.connect(padFilter.frequency);
-
-                padGainNode.gain.setValueAtTime(0, noteTime);
-                padGainNode.gain.linearRampToValueAtTime(gVal * 0.14, noteTime + 0.35); 
-                padGainNode.gain.setValueAtTime(gVal * 0.14, startTime + measureDuration - 0.2);
-                padGainNode.gain.exponentialRampToValueAtTime(0.0001, startTime + measureDuration);
-
-                oscSawDetuned.connect(padFilter);
-                oscTriDetuned.connect(padFilter);
-                
-                padFilter.connect(padGainNode);
-                padGainNode.connect(state.bandGain);
-
-                oscSawDetuned.start(noteTime);
-                oscTriDetuned.start(noteTime);
-                lfo.start(noteTime);
-
-                oscSawDetuned.stop(startTime + measureDuration);
-                oscTriDetuned.stop(startTime + measureDuration);
-                lfo.stop(startTime + measureDuration);
-
-                state.backingTrackOscillators.push({ osc: oscSawDetuned, gainNode: padGainNode });
-                state.backingTrackOscillators.push({ osc: oscTriDetuned, gainNode: padGainNode });
-                state.backingTrackOscillators.push({ osc: lfo, gainNode: padGainNode });
+                const noteResult = playPianoNote(ctx, state.bandGain, midi, noteTime, measureDuration - strumDelay, gVal * 0.42);
+                activeTrackNodes.push(...noteResult.oscillators.map(o => ({ osc: o, gainNode: noteResult.noteGain })));
             });
+
+            state.backingTrackOscillators = activeTrackNodes;
         }
 
         function fadeActiveChords(targetTime) {
@@ -1993,13 +2071,12 @@
                 state.trackPlaying = false;
                 fadeActiveChords(state.audioCtx ? state.audioCtx.currentTime : 0);
                 updateTrackUI();
+                updateLoopState();
             } else {
                 buildBackingTrackProgression();
                 state.trackPlaying = true;
-                if (!state.metroPlaying) {
-                    startMetronome();
-                }
                 updateTrackUI();
+                updateLoopState();
             }
         }
 
@@ -2111,7 +2188,7 @@
 
             function updateViewModeStyle() {
                 [btnViewNotes, btnViewIntervals, btnViewFrets].forEach(btn => {
-                    btn.className = "py-1.5 px-1 text-center rounded-lg text-xs font-bold border border-slate-700 bg-slate-800 text-slate-400 hover:bg-slate-750 transition";
+                    btn.className = "py-1.5 px-1 text-center rounded-lg text-xs font-bold border border-slate-700 bg-slate-800 text-slate-400 hover:bg-slate-755 transition";
                 });
                 if (state.viewMode === 'notes') {
                     btnViewNotes.className = "py-1.5 px-1 text-center rounded-lg text-xs font-bold border bg-indigo-600 border-indigo-500 text-white transition";
@@ -2193,14 +2270,12 @@
                 }
             });
 
-            // Volume Independente da Banda (Acordes/Synth/Baixo)
             document.getElementById('bandVolumeSlider').addEventListener('input', (e) => {
                 if (state.bandGain) {
                     state.bandGain.gain.value = parseFloat(e.target.value);
                 }
             });
 
-            // Volume Independente da Bateria
             document.getElementById('drumVolumeSlider').addEventListener('input', (e) => {
                 if (state.drumGain) {
                     state.drumGain.gain.value = parseFloat(e.target.value);
@@ -2233,6 +2308,11 @@
                 state.humanize.ms = parseInt(e.target.value);
             });
 
+            // Capturar evento de alteração do Timbre do Piano
+            document.getElementById('pianoTimbre').addEventListener('change', (e) => {
+                state.pianoTimbre = e.target.value;
+            });
+
             window.addEventListener('keydown', e => {
                 if (e.target.tagName === 'INPUT' && e.target.type !== 'checkbox') return;
                 if (e.code === 'Space') {
@@ -2254,8 +2334,8 @@
 
         // --- LOOP DE ATUALIZAÇÕES CONTÍNUAS ---
         setInterval(() => {
-            if (state.metroPlaying) {
-                if (state.progressive.enabled) tickProgressiveBPM();
+            if (state.loopRunning) {
+                if (state.metroPlaying && state.progressive.enabled) tickProgressiveBPM();
                 updateMeasureCounterDisplay();
             }
         }, 100);
