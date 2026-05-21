@@ -4,9 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GUITAR BUDDY - 7-String Guitar Pro</title>
-    <!-- Tailwind CSS para estilização moderna -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Lucide Icons para ícones -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         .fretboard-scroll::-webkit-scrollbar {
@@ -106,7 +104,6 @@
 
     <div id="beatFlash"></div>
 
-    <!-- Cabeçalho -->
     <header class="border-b border-slate-800 bg-slate-900/50 backdrop-blur sticky top-0 z-10 px-2 sm:px-4 py-3">
         <div class="w-full mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
             <div class="flex items-center gap-3">
@@ -120,11 +117,9 @@
             
             <div class="flex flex-wrap gap-2 justify-center">
                 <div id="silBadge" class="hidden font-mono text-xs bg-red-950/40 border border-red-700/50 text-red-400 px-2 py-1 rounded-md tracking-wider">SILÊNCIO</div>
-                <!-- Botão Manter Ecrã Ligado -->
                 <button id="btnToggleWakeLock" class="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-slate-200 py-1.5 px-3 rounded-lg border border-slate-700 transition text-xs font-semibold">
                     <i data-lucide="sun" class="w-3.5 h-3.5"></i> Ecrã Ativo: <span id="wakeLockStatus" class="font-bold text-slate-450">Não</span>
                 </button>
-                <!-- Botão Ecrã Inteiro -->
                 <button id="btnToggleFullscreen" class="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-slate-200 py-1.5 px-3 rounded-lg border border-slate-700 transition text-xs font-semibold">
                     <i data-lucide="maximize" class="w-3.5 h-3.5"></i> Ecrã Inteiro
                 </button>
@@ -132,22 +127,17 @@
         </div>
     </header>
 
-    <!-- Conteúdo Principal -->
     <main class="w-full mx-auto p-2 sm:p-4 flex-grow space-y-4">
         
-        <!-- Painel de Controlos de Escala (12 Colunas) -->
         <section class="grid grid-cols-1 md:grid-cols-12 gap-3 bg-slate-900 p-3.5 rounded-xl border border-slate-800 shadow-xl items-end">
-            <!-- 1. Tom Fundamental -->
             <div class="md:col-span-5 space-y-1.5">
                 <label class="block text-xs font-semibold text-slate-400 flex items-center gap-1.5">
                     <i data-lucide="key" class="w-3.5 h-3.5 text-indigo-400"></i> TOM FUNDAMENTAL
                 </label>
                 <div class="grid grid-cols-12 gap-0.5" id="rootNoteSelector">
-                    <!-- Gerado dinamicamente via JS -->
-                </div>
+                    </div>
             </div>
 
-            <!-- 2. Tipo de Escala -->
             <div class="md:col-span-4 space-y-1.5">
                 <label for="scaleSelector" class="block text-xs font-semibold text-slate-400 flex items-center gap-1.5">
                     <i data-lucide="activity" class="w-3.5 h-3.5 text-indigo-400"></i> ESCALA / MODO
@@ -174,7 +164,6 @@
                 </select>
             </div>
 
-            <!-- 3. Opções de Visualização -->
             <div class="md:col-span-3 space-y-1.5">
                 <label class="block text-xs font-semibold text-slate-400 flex items-center gap-1.5">
                     <i data-lucide="eye" class="w-3.5 h-3.5 text-indigo-400"></i> EXIBIÇÃO NO BRAÇO
@@ -193,33 +182,28 @@
             </div>
         </section>
 
-        <!-- Braço da Guitarra de 7 Cordas e 24 Trastes -->
         <section id="fretboardSection" class="bg-slate-900 border border-slate-800 rounded-xl p-3 sm:p-4 shadow-xl space-y-3">
             <div class="flex items-center justify-between">
                 <h2 class="text-sm sm:text-base font-bold text-slate-200 flex items-center gap-2">
                     <i data-lucide="layers" class="w-4 h-4 text-indigo-400"></i> Braço Virtual (7 Cordas, 24 Trastes)
                 </h2>
                 <div class="flex items-center gap-3 text-[10px] sm:text-xs text-slate-400">
-                    <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-rose-500 inline-block border border-rose-300/40"></span> Tônica</span>
-                    <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-emerald-500 inline-block border border-emerald-350/40"></span> Dedilhado Ativo</span>
-                    <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-indigo-600 inline-block border border-indigo-400/40"></span> Notas</span>
+                    <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-md bg-rose-500 inline-block border border-rose-300/40"></span> Tônica</span>
+                    <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-md bg-emerald-500 inline-block border border-emerald-350/40"></span> Dedilhado Ativo</span>
+                    <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-md bg-indigo-600 inline-block border border-indigo-400/40"></span> Notas</span>
                 </div>
             </div>
 
-            <!-- Braço totalmente fluido -->
             <div class="w-full overflow-hidden pb-2 pt-1">
                 <div class="relative w-full select-none" id="fretboardContainer">
                     <div id="fretboard" class="relative bg-amber-950/15 border-t border-b border-slate-700/60 rounded overflow-hidden">
-                        <!-- Gerado dinamicamente via JS -->
-                    </div>
+                        </div>
                 </div>
             </div>
         </section>
 
-        <!-- Área Dividida de Prática e Harmonia (3 Colunas) -->
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
             
-            <!-- ESQUERDA: Informações da Escala & Dicionário (lg:col-span-4) -->
             <section class="lg:col-span-4 bg-slate-900 border border-slate-800 rounded-xl p-4 sm:p-5 shadow-xl flex flex-col justify-between space-y-4">
                 <div class="space-y-4">
                     <div class="space-y-3">
@@ -228,11 +212,9 @@
                             <span class="text-[10px] bg-indigo-900/50 text-indigo-300 border border-indigo-700/50 px-2 py-0.5 rounded-full font-medium">Notas</span>
                         </h3>
                         <div class="flex flex-wrap gap-1.5 items-center" id="scaleNotesContainer">
-                            <!-- Notas geradas via JS -->
-                        </div>
+                            </div>
                     </div>
 
-                    <!-- Dicionário de Acordes de 7 Cordas -->
                     <div class="border-t border-slate-800 pt-4 space-y-3">
                         <h4 class="text-xs font-bold text-emerald-400 tracking-wider flex items-center gap-1.5">
                             <i data-lucide="book-open" class="w-3.5 h-3.5"></i> DICIONÁRIO DE ACORDES (7 CORDAS)
@@ -241,8 +223,7 @@
                             <div>
                                 <label class="block text-[9px] text-slate-400 font-bold mb-1">RAIZ</label>
                                 <select id="chordDictRoot" class="w-full bg-slate-950 border border-slate-750 rounded py-1 px-1.5 text-xs text-slate-300 focus:outline-none focus:ring-1 focus:ring-emerald-500">
-                                    <!-- Preenchido via JS -->
-                                </select>
+                                    </select>
                             </div>
                             <div>
                                 <label class="block text-[9px] text-slate-400 font-bold mb-1">TIPO</label>
@@ -265,8 +246,7 @@
                             </button>
                         </div>
                         <div id="voicingDisplay" class="text-[10px] bg-slate-950/40 p-2.5 rounded border border-slate-850 text-slate-400 font-mono hidden">
-                            <!-- Dedilhado string renderizado -->
-                        </div>
+                            </div>
                     </div>
                 </div>
                 
@@ -286,7 +266,6 @@
                 </div>
             </section>
 
-            <!-- MEIO: Gerador de Backing Tracks & Editor Harmónico (lg:col-span-4) -->
             <section class="lg:col-span-4 bg-slate-900 border border-slate-800 rounded-xl p-4 sm:p-5 shadow-xl flex flex-col justify-between space-y-4">
                 <div class="space-y-4">
                     <div class="flex items-center justify-between border-b border-slate-800 pb-2">
@@ -301,10 +280,10 @@
                             <div>
                                 <label class="block text-[9px] font-bold text-slate-400 tracking-wider mb-1">GÉNERO / ESTILO</label>
                                 <select id="trackGenre" class="w-full bg-slate-950 border border-slate-700 rounded py-1.5 px-2 text-xs text-slate-300 focus:outline-none">
-                                    <option value="rock" selected>Rock / Metal</option>
-                                    <option value="balada">Balada Clássica</option>
+                                    <option value="rock" selected>Rock / Heavy Metal</option>
+                                    <option value="balada">Balada Arpejada</option>
                                     <option value="jazz">Ambient Jazz / Fusion</option>
-                                    <option value="blues">Blues (12 Compassos)</option>
+                                    <option value="blues">Blues Shuffle</option>
                                     <option value="custom">★ Prog. Personalizada</option>
                                 </select>
                             </div>
@@ -315,15 +294,12 @@
                             </div>
                         </div>
 
-                        <!-- Editor de Progressões Customizadas -->
                         <div id="customProgressionEditor" class="hidden space-y-2 p-3 bg-slate-950/40 rounded-lg border border-slate-800 transition-all duration-250">
                             <span class="block text-[9px] font-black text-indigo-400 tracking-wider">EDITOR DE COMPASSOS (ESCOLHA OS ACORDES)</span>
                             <div class="grid grid-cols-4 gap-1" id="customChordsContainer">
-                                <!-- Gerado dinamicamente via JS de acordo com a escala -->
-                            </div>
+                                </div>
                         </div>
 
-                        <!-- Controles de Volume Separados (Banda & Bateria) -->
                         <div class="bg-slate-950/20 p-2.5 rounded-lg border border-slate-800/80 space-y-3">
                             <div class="space-y-1">
                                 <span class="block text-[9px] font-bold text-slate-400 tracking-wider flex justify-between items-center">
@@ -346,7 +322,7 @@
                             <div class="space-y-1">
                                 <span class="block text-[9px] font-bold text-slate-400 tracking-wider flex justify-between">
                                     <span>VOLUME DA BATERIA (SINTETIZADA)</span>
-                                    <span class="text-rose-400 text-[8px] tracking-wide font-mono">KICK + SNARE + HAT</span>
+                                    <span class="text-rose-400 text-[8px] tracking-wide font-mono">GROOVE PERSONALIZADO</span>
                                 </span>
                                 <div class="flex items-center gap-2">
                                     <i data-lucide="volume-1" class="w-3.5 h-3.5 text-slate-500"></i>
@@ -356,22 +332,19 @@
                             </div>
                         </div>
 
-                        <!-- Visualização da Progressão de Chords -->
                         <div class="space-y-1.5">
-                            <span class="block text-[9px] font-bold text-slate-400 tracking-wider">PROGRESSÃO ATIVA</span>
+                            <span class="block text-[9px] font-bold text-slate-400 tracking-wider">PROGRESSÃO ATIVA (ARRANJO POR ESTILO)</span>
                             <div id="chordProgressionContainer" class="grid gap-1.5">
-                                <!-- Gerado dinamicamente -->
-                            </div>
+                                </div>
                         </div>
                     </div>
                 </div>
                 
                 <div class="text-[9px] text-slate-500 italic text-center">
-                    A Bateria Sintetizada (Kick, Snare e Hats) e os acordes de Piano acompanham perfeitamente o compasso e BPMs!
+                    A Bateria e o acompanhamento do Piano mudam totalmente de dinâmica e timbre dependendo do estilo escolhido!
                 </div>
             </section>
 
-            <!-- DIREITA: O Metrônomo Profissional (lg:col-span-4) -->
             <section class="lg:col-span-4 bg-slate-900 border border-slate-800 rounded-xl p-4 sm:p-5 shadow-xl space-y-4">
                 
                 <div class="flex items-center justify-between border-b border-slate-800 pb-2">
@@ -382,7 +355,6 @@
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
-                    <!-- Esquerda do Metrônomo: BPM, Pêndulo e Controles Rápidos -->
                     <div class="space-y-3 text-center md:text-left">
                         <div>
                             <span class="text-[10px] tracking-widest text-slate-400 font-bold block mb-1">BATIDAS POR MINUTO</span>
@@ -398,7 +370,6 @@
                             <span class="text-[8px] tracking-wider text-slate-500 block mt-1">ARRANSTE · SCROLL · DIGITE</span>
                         </div>
 
-                        <!-- Pêndulo Compacto -->
                         <div class="pendulum-wrap">
                             <div class="pendulum-arc"></div>
                             <div class="pendulum-line" id="pendulumLine">
@@ -407,7 +378,6 @@
                         </div>
                     </div>
 
-                    <!-- Direita do Metrônomo: Botões de Ação e Definições de Tempo -->
                     <div class="space-y-3">
                         <div class="flex gap-2">
                             <button id="toggleBtn" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 px-4 rounded-lg transition tracking-wider text-sm flex items-center justify-center gap-2">
@@ -447,17 +417,13 @@
                     </div>
                 </div>
 
-                <!-- Acentuações por Beat -->
                 <div class="space-y-1.5 pt-1 border-t border-slate-800">
                     <span class="block text-[9px] font-bold text-slate-400 tracking-wider">PADRÃO DE ACENTUAÇÃO (BATA NOS BOTÕES)</span>
                     <div id="accents" class="flex gap-1 flex-wrap justify-between">
-                        <!-- Gerado dinamicamente via JS -->
-                    </div>
+                        </div>
                 </div>
 
-                <!-- Painel de Controlos Físicos Rápidos -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2">
-                    <!-- Volume do Clique -->
                     <div class="bg-slate-950/20 p-2 rounded-lg border border-slate-800/80 space-y-1">
                         <span class="block text-[9px] font-bold text-slate-400 tracking-wider">VOLUME DO CLIQUE</span>
                         <div class="flex items-center gap-2">
@@ -466,7 +432,6 @@
                             <i data-lucide="volume-2" class="w-3.5 h-3.5 text-indigo-400"></i>
                         </div>
                     </div>
-                    <!-- Tipo de Som do Metrônomo -->
                     <div class="bg-slate-950/20 p-2 rounded-lg border border-slate-800/80 space-y-1">
                         <span class="block text-[9px] font-bold text-slate-400 tracking-wider">TIMBRE DO CLIQUE</span>
                         <div class="grid grid-cols-4 gap-1 text-[9px] font-mono">
@@ -478,7 +443,6 @@
                     </div>
                 </div>
 
-                <!-- Configurações Avançadas Colapsáveis (BPM Progressivo & Silêncio) -->
                 <details class="bg-slate-950/40 border border-slate-800 rounded-lg group">
                     <summary class="flex items-center justify-between p-2.5 cursor-pointer text-xs font-semibold text-slate-400 hover:text-slate-200 select-none">
                         <span class="flex items-center gap-1.5">
@@ -488,7 +452,6 @@
                     </summary>
                     <div class="p-3 border-t border-slate-800 space-y-3 text-xs">
                         
-                        <!-- 1. BPM Progressivo (Speed Up) -->
                         <div class="bg-slate-900/40 p-2.5 rounded border border-slate-850 space-y-2">
                             <div class="flex items-center justify-between">
                                 <label class="flex items-center gap-2 font-bold text-[10px] text-slate-300 tracking-wide cursor-pointer">
@@ -513,7 +476,6 @@
                             </div>
                         </div>
 
-                        <!-- 2. Modo de Silêncio (Treino de Precisão Interna) -->
                         <div class="bg-slate-900/40 p-2.5 rounded border border-slate-850 space-y-2">
                             <span class="block font-bold text-[10px] text-slate-300 tracking-wide">TREINO DE MEMÓRIA RÍTMICA (MODO SILÊNCIO)</span>
                             <div class="grid grid-cols-6 gap-1 text-[10px] text-center font-semibold">
@@ -525,7 +487,6 @@
                                 <button class="sil-chip bg-slate-850 border border-slate-800 text-slate-400 py-1 rounded" data-mode="fade">Fade</button>
                             </div>
                             
-                            <!-- Parametros Variáveis do Silêncio -->
                             <div id="silence-params-container" class="hidden grid grid-cols-2 gap-2 text-[10px] border-t border-slate-800/60 pt-2">
                                 <div class="sil-param col-span-1 hidden" data-mode="fixed progressive">
                                     <span class="text-slate-500 block mb-0.5">TOCAR (COMPASSOS)</span>
@@ -556,7 +517,6 @@
                             </div>
                         </div>
 
-                        <!-- 3. Humanizar (Micro atrasos) -->
                         <div class="bg-slate-900/40 p-2.5 rounded border border-slate-850 flex items-center justify-between text-[10px]">
                             <label class="flex items-center gap-2 font-bold text-slate-300 tracking-wide cursor-pointer select-none">
                                 <input type="checkbox" id="humanizeToggle" class="accent-indigo-500 rounded"/>
@@ -568,7 +528,6 @@
                             </div>
                         </div>
 
-                        <!-- 4. Sistema de Presets Rápidos -->
                         <div class="bg-slate-900/40 p-2.5 rounded border border-slate-850 space-y-1.5">
                             <span class="block font-bold text-[10px] text-slate-300 tracking-wide">PRESETS SALVOS NO SEU DISPOSITIVO</span>
                             <div class="flex gap-2">
@@ -590,12 +549,10 @@
 
     </main>
 
-    <!-- Rodapé -->
     <footer class="border-t border-slate-800 py-4 bg-slate-950 px-4 text-center">
         <p class="text-[10px] text-slate-500 font-medium">ESPAÇO = PLAY/STOP METRÔNOMO &nbsp;·&nbsp; TECLA [T] = TAP TEMPO &nbsp;·&nbsp; ESTADOS DE PRESETS EM LOCAL STORAGE</p>
     </footer>
 
-    <!-- Lógica da Aplicação -->
     <script>
         // --- CONSTANTES & ESTADO GLOBAL ---
         const ALL_NOTES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
@@ -803,39 +760,38 @@
             }
         }
 
-        // --- SÍNTESE EM TEMPO REAL DE BATERIA ---
-        function playKick(time, vol) {
+        // --- SÍNTESE EM TEMPO REAL DE BATERIA AVANÇADA (Sons Distintos por Estilo) ---
+        function playKick(time, vol, weight = 1.0) {
             if (!state.audioCtx) return;
             const osc = state.audioCtx.createOscillator();
             const gain = state.audioCtx.createGain();
-            
-            osc.connect(gain);
-            gain.connect(state.drumGain);
+            osc.connect(gain); gain.connect(state.drumGain);
 
             osc.type = 'sine';
-            osc.frequency.setValueAtTime(140, time);
-            osc.frequency.exponentialRampToValueAtTime(40, time + 0.12);
+            // Metal tem bumbo mais agudo/estralado ("clicky"), jazz é mais sub-grave e redondo
+            const startFreq = weight > 1.2 ? 160 : (weight < 0.8 ? 110 : 140);
+            osc.frequency.setValueAtTime(startFreq, time);
+            osc.frequency.exponentialRampToValueAtTime(38, time + 0.14);
 
             gain.gain.setValueAtTime(0, time);
-            gain.gain.linearRampToValueAtTime(vol * 1.3, time + 0.005);
-            gain.gain.exponentialRampToValueAtTime(0.001, time + 0.16);
+            gain.gain.linearRampToValueAtTime(vol * 1.35 * weight, time + 0.004);
+            gain.gain.exponentialRampToValueAtTime(0.001, time + 0.18);
 
-            osc.start(time);
-            osc.stop(time + 0.18);
+            osc.start(time); osc.stop(time + 0.2);
         }
 
-        function playSnare(time, vol) {
+        function playSnare(time, vol, isRimshot = false) {
             if (!state.audioCtx || !state.noiseBuffer) return;
             
             const osc = state.audioCtx.createOscillator();
             const oscGain = state.audioCtx.createGain();
-            osc.connect(oscGain);
-            oscGain.connect(state.drumGain);
+            osc.connect(oscGain); oscGain.connect(state.drumGain);
             
             osc.type = 'triangle';
-            osc.frequency.setValueAtTime(180, time);
-            oscGain.gain.setValueAtTime(vol * 0.65, time);
-            oscGain.gain.exponentialRampToValueAtTime(0.001, time + 0.08);
+            // Rimshot da balada é mais alto na afinação do aro da caixa
+            osc.frequency.setValueAtTime(isRimshot ? 330 : 185, time);
+            oscGain.gain.setValueAtTime(vol * (isRimshot ? 0.35 : 0.6), time);
+            oscGain.gain.exponentialRampToValueAtTime(0.001, time + 0.07);
 
             const noise = state.audioCtx.createBufferSource();
             const noiseFilter = state.audioCtx.createBiquadFilter();
@@ -843,25 +799,19 @@
             
             noise.buffer = state.noiseBuffer;
             noiseFilter.type = 'highpass';
-            noiseFilter.frequency.setValueAtTime(1200, time);
+            noiseFilter.frequency.setValueAtTime(isRimshot ? 2200 : 1350, time);
 
-            noise.connect(noiseFilter);
-            noiseFilter.connect(noiseGain);
-            noiseGain.connect(state.drumGain);
+            noise.connect(noiseFilter); noiseFilter.connect(noiseGain); noiseGain.connect(state.drumGain);
 
             noiseGain.gain.setValueAtTime(0, time);
-            noiseGain.gain.linearRampToValueAtTime(vol * 0.8, time + 0.005);
-            noiseGain.gain.exponentialRampToValueAtTime(0.001, time + 0.18);
+            noiseGain.gain.linearRampToValueAtTime(vol * (isRimshot ? 0.45 : 0.85), time + 0.004);
+            noiseGain.gain.exponentialRampToValueAtTime(0.001, time + (isRimshot ? 0.11 : 0.22));
 
-            osc.start(time);
-            noise.start(time);
-            
-            osc.stop(time + 0.1);
-            noise.stop(time + 0.2);
+            osc.start(time); noise.start(time);
+            osc.stop(time + 0.12); noise.stop(time + 0.24);
         }
 
-        // --- SEQUENCIADOR DE GROOVES ---
-        function playHiHat(time, vol) {
+        function playHiHat(time, vol, isOpened = false) {
             if (!state.audioCtx || !state.noiseBuffer) return;
             
             const noise = state.audioCtx.createBufferSource();
@@ -870,67 +820,89 @@
             
             noise.buffer = state.noiseBuffer;
             filter.type = 'highpass';
-            filter.frequency.setValueAtTime(7500, time);
+            // Prato de condução do jazz (Ride) é um filtro ligeiramente mais baixo e metálico que o Hat aberto
+            filter.frequency.setValueAtTime(isOpened ? 6200 : 8500, time);
 
-            noise.connect(filter);
-            filter.connect(gain);
-            gain.connect(state.drumGain);
+            noise.connect(filter); filter.connect(gain); gain.connect(state.drumGain);
 
+            const duration = isOpened ? 0.28 : 0.045;
             gain.gain.setValueAtTime(0, time);
-            gain.gain.linearRampToValueAtTime(vol * 0.38, time + 0.002);
-            gain.gain.exponentialRampToValueAtTime(0.001, time + 0.045);
+            gain.gain.linearRampToValueAtTime(vol * 0.4, time + 0.002);
+            gain.gain.exponentialRampToValueAtTime(0.001, time + duration);
 
-            noise.start(time);
-            noise.stop(time + 0.06);
+            noise.start(time); noise.stop(time + duration + 0.02);
         }
 
+        // --- SEQUENCIADOR DE GROOVES REAIS POR ESTILO ---
         function scheduleDrums(time, bi) {
             if (!state.trackPlaying) return;
-            const genre = document.getElementById('trackGenre').value;
-            const vol = (parseFloat(document.getElementById('drumVolumeSlider').value) || 0.7) * 0.9;
+            const genre = state.trackGenre;
+            const vol = (parseFloat(document.getElementById('drumVolumeSlider').value) || 0.7) * 0.85;
             const beat = bi.beatIndex;
             const subIdx = bi.subIndex;
             const sub = state.subdivision;
 
-            const isDownbeat = (subIdx === 0);
-            const isOffbeat = (sub === 2 && subIdx === 1) || (sub === 4 && subIdx === 2) || (sub > 4 && subIdx === Math.floor(sub/2));
-
+            // 1. ROCK / HEAVY METAL: Duplo Bumbo em semicolcheias, pratos abertos e crash no início
             if (genre === 'rock' || genre === 'custom') {
-                if (isDownbeat && (beat === 0 || beat === 2)) playKick(time, vol);
-                if (isDownbeat && (beat === 1 || beat === 3)) playSnare(time, vol * 0.95);
-                if (isDownbeat || isOffbeat) playHiHat(time, vol * 0.45);
+                // Semicolcheias de bumbo correndo no Metal (BPMs mais altos)
+                if (subIdx === 0 && (beat === 0 || beat === 2)) playKick(time, vol, 1.3);
+                if (subIdx === 2 && (beat === 0 || beat === 1 || beat === 2 || beat === 3)) playKick(time, vol * 0.8, 1.1); // Double bass rápido
+                
+                // Caixa pesada nos contratempos reais (2 e 4)
+                if (subIdx === 0 && (beat === 1 || beat === 3)) playSnare(time, vol * 1.1, false);
+                
+                // Condução/Prato aberto agressivo
+                if (subIdx === 0) {
+                    playHiHat(time, vol * 0.5, beat === 0); // Crash simulado abrindo o filtro no beat 1
+                } else if (subIdx === 2) {
+                    playHiHat(time, vol * 0.35, false);
+                }
             } 
+            // 2. BALADA ARPEJADA: Side-stick macio, condução limpa e bumbo bem marcado e espaçado
             else if (genre === 'balada') {
-                if (isDownbeat && beat === 0) playKick(time, vol * 0.9);
-                if (isOffbeat && beat === 2) playKick(time, vol * 0.5);
-                if (isDownbeat && (beat === 1 || beat === 3)) playSnare(time, vol * 0.7);
-                if (isDownbeat) playHiHat(time, vol * 0.4);
+                if (subIdx === 0 && beat === 0) playKick(time, vol * 1.1, 0.9);
+                if (subIdx === 2 && beat === 2) playKick(time, vol * 0.6, 0.8);
+                
+                // Usa som de aro de caixa (Rimshot sutil) para dar ambiência de estúdio
+                if (subIdx === 0 && (beat === 1 || beat === 3)) playSnare(time, vol * 0.8, true);
+                
+                // Condução constante em colcheias lineares
+                if (subIdx === 0 || (sub === 4 && subIdx === 2) || (sub === 2 && subIdx === 1)) {
+                    playHiHat(time, vol * 0.4, false);
+                }
             } 
+            // 3. AMBIENT JAZZ / FUSION: Swing de prato tercinado, bumbo leve ("feathering") e caixas fantasma
             else if (genre === 'jazz') {
-                if (sub === 3) {
-                    if (subIdx === 0 || subIdx === 2) playHiHat(time, vol * 0.45);
-                    if (isDownbeat && beat === 0) playKick(time, vol * 0.45);
-                } else {
-                    if (isDownbeat) {
-                        playHiHat(time, vol * 0.5);
-                        if (beat === 0) playKick(time, vol * 0.45);
-                    }
-                    if (isOffbeat && (beat === 1 || beat === 3)) {
-                        playHiHat(time, vol * 0.4);
-                    }
+                // Prato de condução (Ride) fazendo o padrão de Swing Clássico: Ta---ta-Ta---ta-Ta
+                // Se estiver em subdivisão de tercina (3), encaixa organicamente. Se não, emulados nos ticks
+                const isRideBeat = (subIdx === 0) || (sub === 3 && subIdx === 2) || (sub === 4 && subIdx === 3);
+                if (isRideBeat) {
+                    playHiHat(time, vol * 0.6, true); // Ride metálico
                 }
-                if (isDownbeat && beat === 3) playSnare(time, vol * 0.35);
+                
+                // Bumbo Jazzístico sutil e randómico ("Feathering")
+                if (subIdx === 0 && beat === 0) playKick(time, vol * 0.5, 0.6);
+                if (subIdx === 0 && beat === 2 && Math.random() > 0.5) playKick(time, vol * 0.4, 0.6);
+                
+                // Condução de caixa síncopada (Ghost notes nos contratempos)
+                if (subIdx === 0 && beat === 3) {
+                    playSnare(time, vol * 0.6, false);
+                } else if (subIdx !== 0 && Math.random() > 0.75) {
+                    playSnare(time, vol * 0.22, false); // Ghost note super leve
+                }
             } 
+            // 4. BLUES SHUFFLE: Swing estrito baseado na pulsação em colcheia de tercina (1º e 3º termo)
             else if (genre === 'blues') {
-                if (sub === 3) {
-                    if (isDownbeat && (beat === 0 || beat === 2)) playKick(time, vol * 0.95);
-                    if (isDownbeat && (beat === 1 || beat === 3)) playSnare(time, vol * 0.85);
-                    if (subIdx === 0 || subIdx === 2) playHiHat(time, vol * 0.5);
-                } else {
-                    if (isDownbeat && (beat === 0 || beat === 2)) playKick(time, vol);
-                    if (isDownbeat && (beat === 1 || beat === 3)) playSnare(time, vol * 0.9);
-                    if (isDownbeat || isOffbeat) playHiHat(time, vol * 0.45);
+                // O Blues exige pulsação tercinada (Subdivisão 3 ativa ou simulada no motor)
+                const isShuffleHiHat = (subIdx === 0) || (sub === 3 && subIdx === 2) || (subIdx === Math.floor(sub * 0.66));
+                if (isShuffleHiHat) {
+                    playHiHat(time, vol * 0.45, false);
                 }
+
+                // Bumbo e Caixa cravados no pulso do Blues
+                if (subIdx === 0 && (beat === 0 || beat === 2)) playKick(time, vol, 1.0);
+                if (subIdx === 0 && (beat === 1 || beat === 3)) playSnare(time, vol * 0.9, false);
+                if (subIdx === 0 && beat === 2 && Math.random() > 0.6) playKick(time, vol * 0.7, 0.9);
             }
         }
 
@@ -1001,7 +973,6 @@
             });
         }
 
-        // Determinar o grau romano e nota da escala
         function getNoteIntervalName(note) {
             const scaleNotes = getScaleNotes();
             const scaleObj = SCALES[state.scaleKey];
@@ -1084,7 +1055,7 @@
             display.innerHTML = output;
         }
 
-        // --- ACORDES DIATÓNICOS ---
+        // --- ACORDES DIATÓNICOS ENRIQUECIDOS POR ESTILO ---
         function getDiatonicChords() {
             const scaleNotes = getScaleNotes();
             const baseMidiMap = {
@@ -1098,31 +1069,53 @@
                 const rootIdx = ALL_NOTES.indexOf(note);
                 const thirdNote = scaleNotes[(idx + 2) % scaleNotes.length];
                 const fifthNote = scaleNotes[(idx + 4) % scaleNotes.length];
+                const seventhNote = scaleNotes[(idx + 6) % scaleNotes.length]; // Adicionado para extensões do Jazz e Blues
                 
                 const thirdInterval = (ALL_NOTES.indexOf(thirdNote) - rootIdx + 12) % 12;
                 const fifthInterval = (ALL_NOTES.indexOf(fifthNote) - rootIdx + 12) % 12;
+                const seventhInterval = (ALL_NOTES.indexOf(seventhNote) - rootIdx + 12) % 12;
                 
                 let quality = '';
                 let ext = '';
+                let semitones = [0, 4, 7]; // Padrão tríade maior
+
                 if (thirdInterval === 3) {
                     if (fifthInterval === 6) {
                         quality = 'dim';
                         ext = 'm7b5';
+                        semitones = [0, 3, 6, 10];
                     } else {
                         quality = 'm';
                         ext = 'm7';
+                        semitones = [0, 3, 7, 10];
                     }
                 } else if (thirdInterval === 4) {
                     quality = '';
-                    ext = idx === 4 ? '7' : 'maj7';
+                    if (idx === 4) {
+                        ext = '7'; // Dominante
+                        semitones = [0, 4, 7, 10];
+                    } else {
+                        ext = 'maj7';
+                        semitones = [0, 4, 7, 11];
+                    }
+                }
+
+                // Ajuste dinâmico dependendo do estilo atual para dar a "cor" harmónica certa
+                const currentGenre = state.trackGenre;
+                if (currentGenre === 'jazz') {
+                    // Adiciona a 9ª (intervalo 14) para abrir o voicing jazzístico
+                    semitones = thirdInterval === 3 ? [0, 3, 7, 10, 14] : [0, 4, 7, 11, 14];
+                } else if (currentGenre === 'blues') {
+                    // No Blues clássico, praticamente TODOS os graus viram dominantes (Sétima menor)
+                    semitones = [0, 4, 7, 10];
                 }
 
                 return {
                     num: idx,
                     note: note,
-                    label: note + quality,
+                    label: note + (currentGenre === 'blues' ? '7' : (currentGenre === 'jazz' ? ext : quality)),
                     roman: chordNames[idx] || (note + quality),
-                    semitones: thirdInterval === 3 ? (fifthInterval === 6 ? [0, 3, 6, 10] : [0, 3, 7, 10]) : [0, 4, 7, 11],
+                    semitones: semitones,
                     bass: (baseMidiMap[note] || 48) - 12
                 };
             });
@@ -1274,7 +1267,7 @@
 
                     if (isVoicingNote) {
                         const noteBadge = document.createElement('div');
-                        noteBadge.className = "w-4 h-4 min-[450px]:w-5 min-[450px]:h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 lg:w-8 lg:h-8 rounded-full flex items-center justify-center text-[7px] min-[450px]:text-[9px] sm:text-xs shadow-lg transition transform hover:scale-110 active:scale-95 bg-emerald-500 text-white font-black note-glow-chord ring-2 ring-emerald-300";
+                        noteBadge.className = "w-11/12 h-5 sm:h-6 md:h-7 rounded-md flex items-center justify-center text-[7px] min-[450px]:text-[9px] sm:text-xs shadow-lg transition transform hover:scale-105 active:scale-95 bg-emerald-500 text-white font-black note-glow-chord ring-2 ring-emerald-300";
                         noteBadge.innerText = info.name;
                         fretCell.appendChild(noteBadge);
                     } else if (isInScale) {
@@ -1291,24 +1284,24 @@
                             ? "bg-rose-500 text-white font-black note-glow-root border border-rose-300/55" 
                             : "bg-indigo-600 text-slate-100 font-bold note-glow-scale border border-indigo-400/45";
 
-                        noteBadge.className = `w-4 h-4 min-[450px]:w-5 min-[450px]:h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 lg:w-8 lg:h-8 rounded-full flex items-center justify-center text-[7px] min-[450px]:text-[9px] sm:text-xs shadow-lg transition transform hover:scale-110 active:scale-95 ${classes}`;
+                        noteBadge.className = `w-11/12 h-5 sm:h-6 md:h-7 rounded-md flex items-center justify-center text-[7px] min-[450px]:text-[9px] sm:text-xs shadow-lg transition transform hover:scale-105 active:scale-95 ${classes}`;
                         noteBadge.innerText = displayText;
                         
                         fretCell.appendChild(noteBadge);
                     } else {
                         const ghostNote = document.createElement('div');
-                        ghostNote.className = "w-4 h-4 min-[450px]:w-5 min-[450px]:h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 lg:w-8 lg:h-8 rounded-full flex items-center justify-center text-[7px] min-[450px]:text-[9px] text-slate-500 opacity-0 hover:opacity-100 transition duration-150 bg-slate-800 border border-slate-700";
+                        ghostNote.className = "w-11/12 h-5 sm:h-6 md:h-7 rounded-md flex items-center justify-center text-[7px] min-[450px]:text-[9px] text-slate-500 opacity-0 hover:opacity-100 transition duration-150 bg-slate-800 border border-slate-700";
                         ghostNote.innerText = info.name;
                         fretCell.appendChild(ghostNote);
                     }
 
                     fretCell.addEventListener('click', () => {
                         playMidiNote(info.midi);
-                        const badge = fretCell.querySelector('.rounded-full');
+                        const badge = fretCell.querySelector('.rounded-md');
                         if (badge) {
-                            badge.classList.add('scale-125');
+                            badge.classList.add('scale-105');
                             setTimeout(() => {
-                                badge.classList.remove('scale-125');
+                                badge.classList.remove('scale-105');
                             }, 150);
                         }
                     });
@@ -1387,7 +1380,6 @@
             });
         }
 
-        // --- ACELERAÇÃO GRADUAL ---
         function playBeep(ctx, dest, t, g, freq) {
             const o = ctx.createOscillator(), gn = ctx.createGain();
             o.type = 'square'; o.frequency.value = freq * 0.5; o.connect(gn); gn.connect(dest);
@@ -1397,6 +1389,7 @@
             o.start(t); o.stop(t + 0.06);
         }
 
+        // --- ACELERAÇÃO GRADUAL ---
         function tickProgressiveBPM() {
             if (!state.loopRunning || !state.metroPlaying || !state.progressive.enabled || !state.audioCtx) return;
             const now = state.audioCtx.currentTime;
@@ -1582,8 +1575,7 @@
                     const g = state.audioCtx.createGain();
                     src.buffer = buf;
                     g.gain.value = isSubdivision ? currentActualGain * 0.35 : currentActualGain;
-                    src.connect(g);
-                    g.connect(state.metroGain);
+                    src.connect(g); g.connect(state.metroGain);
                     src.start(finalScheduledTime);
                 } else if (soundTypeToUse === 'woodblock') {
                     playWoodblock(state.audioCtx, state.metroGain, finalScheduledTime, isSubdivision ? currentActualGain * 0.3 : currentActualGain);
@@ -1594,14 +1586,12 @@
                     const g = state.audioCtx.createGain();
                     o.type = 'sine';
                     o.frequency.value = isSubdivision ? baseFreq * 0.65 : baseFreq;
-                    o.connect(g);
-                    g.connect(state.metroGain);
+                    o.connect(g); g.connect(state.metroGain);
                     const clickDur = 0.055;
                     g.gain.setValueAtTime(0.0001, finalScheduledTime);
                     g.gain.exponentialRampToValueAtTime(Math.max(0.0001, isSubdivision ? currentActualGain * 0.4 : currentActualGain), finalScheduledTime + 0.002);
                     g.gain.exponentialRampToValueAtTime(0.0001, finalScheduledTime + clickDur);
-                    o.start(finalScheduledTime);
-                    o.stop(finalScheduledTime + clickDur + 0.02);
+                    o.start(finalScheduledTime); o.stop(finalScheduledTime + clickDur + 0.02);
                 }
             }
 
@@ -1616,12 +1606,102 @@
                     setTimeout(() => flash.style.opacity = '0', 70);
                 }
 
-                if (state.trackPlaying && bi.beatIndex === 0 && bi.subIndex === 0) {
+                // Disparador dinâmico de arranjos de Piano
+                if (state.trackPlaying && bi.subIndex === 0) {
                     const currentChordIdx = bi.measureIndex % state.backingTrackProgression.length;
-                    playChordSynth(state.backingTrackProgression[currentChordIdx], time);
-                    updateActiveChordHighlight(currentChordIdx);
+                    const chord = state.backingTrackProgression[currentChordIdx];
+                    
+                    // Agenda notas de acordo com os pulsos e contratempos do estilo musical
+                    scheduleStylePiano(chord, time, bi.beatIndex);
+                    
+                    if (bi.beatIndex === 0) {
+                        updateActiveChordHighlight(currentChordIdx);
+                    }
                 }
             }, delay);
+        }
+
+        // --- ARRANJADOR DINÂMICO DE ACORDES DE PIANO (Por Estilo) ---
+        function scheduleStylePiano(chordObj, time, beat) {
+            const ctx = state.audioCtx;
+            const genre = state.trackGenre;
+            const gVal = parseFloat(document.getElementById('bandVolumeSlider').value) || 0.6;
+            const beatDuration = 60 / state.bpm;
+
+            // Fazer a limpeza apenas no tempo 1 inicial absoluto
+            if (beat === 0) {
+                fadeActiveChords(time);
+            }
+
+            // 1. METAL / ROCK: Batidas cravadas no tempo, forte presença do baixo em oitavas no tempo 1 e 3
+            if (genre === 'rock' || genre === 'custom') {
+                if (beat === 0 || beat === 2) {
+                    // Fundamental pesada nas oitavas graves
+                    const b1 = playPianoNote(ctx, state.bandGain, chordObj.bass, time, beatDuration * 1.5, gVal * 1.0);
+                    const b2 = playPianoNote(ctx, state.bandGain, chordObj.bass + 12, time, beatDuration * 1.5, gVal * 0.8);
+                    state.backingTrackOscillators.push(...b1.oscillators.map(o => ({osc:o, gainNode:b1.noteGain})));
+                    state.backingTrackOscillators.push(...b2.oscillators.map(o => ({osc:o, gainNode:b2.noteGain})));
+                }
+                // Acordes secos nos tempos estruturais
+                if (beat === 0 || beat === 1 || beat === 2 || beat === 3) {
+                    chordObj.notes.forEach((midi, i) => {
+                        const nRes = playPianoNote(ctx, state.bandGain, midi, time, beatDuration * 0.8, gVal * 0.4);
+                        state.backingTrackOscillators.push(...nRes.oscillators.map(o => ({osc:o, gainNode:nRes.noteGain})));
+                    });
+                }
+            }
+            // 2. BALADA CLÁSSICA: Dedilhado arpejado fluido ao longo de todo o compasso
+            else if (genre === 'balada') {
+                if (beat === 0) {
+                    const bassRes = playPianoNote(ctx, state.bandGain, chordObj.bass, time, beatDuration * 3.8, gVal * 0.9);
+                    state.backingTrackOscillators.push(...bassRes.oscillators.map(o => ({osc:o, gainNode:bassRes.noteGain})));
+                }
+                // Distribui as notas do acorde uma em cada tempo (Arpejo ascendente e descendente)
+                const noteIndex = beat % chordObj.notes.length;
+                const midiNote = chordObj.notes[noteIndex];
+                const arpRes = playPianoNote(ctx, state.bandGain, midiNote, time, beatDuration * 1.8, gVal * 0.45);
+                state.backingTrackOscillators.push(...arpRes.oscillators.map(o => ({osc:o, gainNode:arpRes.noteGain})));
+            }
+            // 3. JAZZ / FUSION: Síncopas, antecipações e voicings com extensões abertas no contratempo
+            else if (genre === 'jazz') {
+                // Toca o baixo apenas no tempo 1 de forma flutuante e redonda
+                if (beat === 0) {
+                    const bassRes = playPianoNote(ctx, state.bandGain, chordObj.bass, time, beatDuration * 4, gVal * 0.7);
+                    state.backingTrackOscillators.push(...bassRes.oscillators.map(o => ({osc:o, gainNode:bassRes.noteGain})));
+                }
+                // Ritmo "Comping" clássico do Jazz: toca no tempo 1 e logo a seguir no contratempo (Beat 1.5)
+                if (beat === 0 || beat === 2) {
+                    chordObj.notes.forEach((midi, i) => {
+                        // Toca no tempo cheio
+                        const n1 = playPianoNote(ctx, state.bandGain, midi, time, beatDuration * 1.2, gVal * 0.38);
+                        state.backingTrackOscillators.push(...n1.oscillators.map(o => ({osc:o, gainNode:n1.noteGain})));
+                        
+                        // Antecipação jazzística sincopada (micro atraso/avanço harmónico)
+                        const syncTime = time + (beatDuration * 0.5);
+                        const n2 = playPianoNote(ctx, state.bandGain, midi + 12, syncTime, beatDuration * 0.6, gVal * 0.25);
+                        state.backingTrackOscillators.push(...n2.oscillators.map(o => ({osc:o, gainNode:n2.noteGain})));
+                    });
+                }
+            }
+            // 4. BLUES SHUFFLE: Linha de Baixo andante ("Walking Bass") marcando os graus da escala
+            else if (genre === 'blues') {
+                // Monta uma linha de walking bass clássica baseada na tônica e graus do acorde
+                let walkingMidi = chordObj.bass;
+                if (beat === 1) walkingMidi = chordObj.bass + 4; // Terça
+                if (beat === 2) walkingMidi = chordObj.bass + 7; // Quinta
+                if (beat === 3) walkingMidi = chordObj.bass + 9; // Sexta cromática
+
+                const bassRes = playPianoNote(ctx, state.bandGain, walkingMidi, time, beatDuration * 0.9, gVal * 0.85);
+                state.backingTrackOscillators.push(...bassRes.oscillators.map(o => ({osc:o, gainNode:bassRes.noteGain})));
+
+                // O Acorde faz o balanço "chugging" clássico nos tempos 1 e 3
+                if (beat === 0 || beat === 2) {
+                    chordObj.notes.forEach((midi) => {
+                        const chordRes = playPianoNote(ctx, state.bandGain, midi, time, beatDuration * 0.6, gVal * 0.35);
+                        state.backingTrackOscillators.push(...chordRes.oscillators.map(o => ({osc:o, gainNode:chordRes.noteGain})));
+                    });
+                }
+            }
         }
 
         function nextNote() {
@@ -1812,7 +1892,7 @@
 
         function buildBackingTrackProgression() {
             const chords = getDiatonicChords();
-            const genre = document.getElementById('trackGenre').value;
+            const genre = state.trackGenre;
             
             let progression = [];
 
@@ -1832,8 +1912,10 @@
                 let degrees = [0, 4, 5, 3]; 
 
                 if (genre === 'blues') {
+                    // Progressão padrão clássica de Blues de 12 compassos (I - IV - V)
                     degrees = [0, 0, 0, 0, 3, 3, 0, 0, 4, 3, 0, 4]; 
                 } else if (genre === 'jazz') {
+                    // Progressão clássica II - V - I - VI jazzística
                     degrees = [1, 4, 0, 5]; 
                 } else if (genre === 'rock') {
                     degrees = isMinor ? [0, 5, 2, 6] : [0, 4, 5, 3];
@@ -1859,8 +1941,8 @@
             const container = document.getElementById('chordProgressionContainer');
             container.innerHTML = '';
             
-            const genre = document.getElementById('trackGenre').value;
-            container.className = genre === 'blues' ? "grid grid-cols-4 gap-1 text-center" : "grid grid-cols-4 gap-1.5 text-center";
+            const genre = state.trackGenre;
+            container.className = genre === 'blues' ? "grid grid-cols-6 gap-1 text-center" : "grid grid-cols-4 gap-1.5 text-center";
             
             state.backingTrackProgression.forEach((chord, idx) => {
                 const card = document.createElement('div');
@@ -1868,8 +1950,8 @@
                 card.className = "flex flex-col items-center justify-center p-2 rounded-lg border border-slate-800 bg-slate-950/45 text-center transition-all duration-200 select-none cursor-pointer hover:border-indigo-500/50";
                 
                 card.innerHTML = `
-                    <span class="text-[11px] sm:text-xs font-black text-slate-200">${chord.name}</span>
-                    <span class="text-[8px] text-slate-500 font-mono">Bar ${idx + 1}</span>
+                    <span class="text-[10px] min-[400px]:text-xs font-black text-slate-200">${chord.name}</span>
+                    <span class="text-[8px] text-slate-500 font-mono">Comp. ${idx + 1}</span>
                 `;
                 
                 card.addEventListener('click', () => {
@@ -1877,7 +1959,8 @@
                     if (state.audioCtx.state === 'suspended') {
                         state.audioCtx.resume();
                     }
-                    playChordSynth(chord, state.audioCtx.currentTime);
+                    fadeActiveChords(state.audioCtx.currentTime);
+                    scheduleStylePiano(chord, state.audioCtx.currentTime, 0);
                 });
                 
                 container.appendChild(card);
@@ -1889,7 +1972,6 @@
             const freq = midiToFreq(midi);
             const now = startTime;
 
-            // Nó de controlo do volume principal da nota
             const noteGain = ctx.createGain();
             noteGain.connect(destination);
 
@@ -1899,11 +1981,9 @@
             noteGain.gain.setValueAtTime(targetVol, now + duration - 0.15);
             noteGain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
 
-            // Filtro dinâmico por nota (Ataque brilhante e decaimento quente e amadeirado)
             const filter = ctx.createBiquadFilter();
             filter.type = 'lowpass';
             
-            // Grand Piano vs Acústico
             const isGrand = state.pianoTimbre === 'grand';
             const filterStart = isGrand ? freq * 5.5 : freq * 3.8;
             const filterEnd = isGrand ? freq * 1.4 : freq * 1.05;
@@ -1914,7 +1994,6 @@
             filter.Q.setValueAtTime(1.2, now);
             filter.connect(noteGain);
 
-            // Simulação de 3 Cordas (Uníssono Físico com Beating Natural)
             const osc1 = ctx.createOscillator();
             const osc1Gain = ctx.createGain();
             osc1.type = 'sine';
@@ -1922,18 +2001,16 @@
             osc1.detune.setValueAtTime(-1.8, now); 
             osc1Gain.gain.setValueAtTime(0.38, now);
             osc1Gain.gain.exponentialRampToValueAtTime(0.0001, now + duration * 1.5 * decayScale);
-            osc1.connect(osc1Gain);
-            osc1Gain.connect(filter);
+            osc1.connect(osc1Gain); osc1Gain.connect(filter);
 
             const osc2 = ctx.createOscillator();
             const osc2Gain = ctx.createGain();
-            osc2.type = 'triangle'; // Traz o corpo amadeirado e quente
+            osc2.type = 'triangle'; 
             osc2.frequency.setValueAtTime(freq, now);
             osc2.detune.setValueAtTime(0.2, now); 
             osc2Gain.gain.setValueAtTime(0.22, now);
             osc2Gain.gain.exponentialRampToValueAtTime(0.0001, now + duration * 1.25 * decayScale);
-            osc2.connect(osc2Gain);
-            osc2Gain.connect(filter);
+            osc2.connect(osc2Gain); osc2Gain.connect(filter);
 
             const osc3 = ctx.createOscillator();
             const osc3Gain = ctx.createGain();
@@ -1942,18 +2019,12 @@
             osc3.detune.setValueAtTime(1.8, now); 
             osc3Gain.gain.setValueAtTime(0.38, now);
             osc3Gain.gain.exponentialRampToValueAtTime(0.0001, now + duration * 1.5 * decayScale);
-            osc3.connect(osc3Gain);
-            osc3Gain.connect(filter);
+            osc3.connect(osc3Gain); osc3Gain.connect(filter);
 
-            // Harmónicos Superiores com decaimento exponencial rápido
             const harmonics = isGrand ? [
-                [2.0, 0.28, 0.7],  // 2ª oitava
-                [3.0, 0.15, 0.45], // Quinta
-                [4.0, 0.08, 0.25], // Oitava superior
-                [5.0, 0.04, 0.15]  // Brilho agudo
+                [2.0, 0.28, 0.7], [3.0, 0.15, 0.45], [4.0, 0.08, 0.25], [5.0, 0.04, 0.15]
             ] : [
-                [2.0, 0.22, 0.5],  // Oitava equilibrada
-                [3.0, 0.08, 0.3]   // Quinta discreta
+                [2.0, 0.22, 0.5], [3.0, 0.08, 0.3]
             ];
 
             const oscillators = [osc1, osc2, osc3];
@@ -1961,97 +2032,42 @@
             harmonics.forEach(([mult, amp, decayMult]) => {
                 const osc = ctx.createOscillator();
                 const oscGain = ctx.createGain();
-
                 osc.type = 'sine';
                 osc.frequency.setValueAtTime(freq * mult, now);
                 osc.detune.setValueAtTime((Math.random() * 4 - 2), now);
-
                 oscGain.gain.setValueAtTime(amp * velocity * 0.3, now);
                 oscGain.gain.exponentialRampToValueAtTime(0.0001, now + (duration * decayMult * decayScale));
-
-                osc.connect(oscGain);
-                oscGain.connect(filter);
-
-                osc.start(now);
-                osc.stop(now + duration * decayScale * 1.5);
-
+                osc.connect(oscGain); oscGain.connect(filter);
+                osc.start(now); osc.stop(now + duration * decayScale * 1.5);
                 oscillators.push(osc);
             });
 
-            // Simulador de Ressonância da Tábua Harmónica (Feedback Comb Filter simplificado)
             const boardGain = ctx.createGain();
             boardGain.gain.setValueAtTime(0.25, now);
-            
-            const delay1 = ctx.createDelay();
-            delay1.delayTime.setValueAtTime(0.0011, now); // Simulação de reflexão acústica 1
-            const delay2 = ctx.createDelay();
-            delay2.delayTime.setValueAtTime(0.0019, now); // Simulação de reflexão acústica 2
-            
+            const delay1 = ctx.createDelay(); delay1.delayTime.setValueAtTime(0.0011, now);
+            const delay2 = ctx.createDelay(); delay2.delayTime.setValueAtTime(0.0019, now);
             const resFilter = ctx.createBiquadFilter();
-            resFilter.type = 'bandpass';
-            resFilter.frequency.setValueAtTime(320, now); // Região de ressonância da madeira
-            resFilter.Q.setValueAtTime(1.4, now);
+            resFilter.type = 'bandpass'; resFilter.frequency.setValueAtTime(320, now); resFilter.Q.setValueAtTime(1.4, now);
 
-            noteGain.connect(delay1);
-            delay1.connect(resFilter);
-            resFilter.connect(delay2);
-            delay2.connect(boardGain);
+            noteGain.connect(delay1); delay1.connect(resFilter); resFilter.connect(delay2); delay2.connect(boardGain);
             boardGain.connect(destination);
 
-            // Ataque Físico do Martelo (Triângulo rápido + Thump de baixa frequência)
             const hammer = ctx.createOscillator();
             const hammerGain = ctx.createGain();
             hammer.type = 'triangle';
             hammer.frequency.setValueAtTime(isGrand ? 160 : 120, now);
             hammer.frequency.exponentialRampToValueAtTime(45, now + 0.02);
-
             hammerGain.gain.setValueAtTime((isGrand ? 0.35 : 0.22) * velocity, now);
             hammerGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.025);
+            hammer.connect(hammerGain); hammerGain.connect(noteGain);
             
-            hammer.connect(hammerGain);
-            hammerGain.connect(noteGain);
-            
-            hammer.start(now);
-            hammer.stop(now + 0.04);
-            
-            osc1.start(now);
-            osc2.start(now);
-            osc3.start(now);
+            hammer.start(now); hammer.stop(now + 0.04);
+            osc1.start(now); osc2.start(now); osc3.start(now);
             
             const stopTime = now + duration * decayScale * 1.6;
-            osc1.stop(stopTime);
-            osc2.stop(stopTime);
-            osc3.stop(stopTime);
+            osc1.stop(stopTime); osc2.stop(stopTime); osc3.stop(stopTime);
 
             return { noteGain, oscillators: [...oscillators, hammer] };
-        }
-
-        // --- RENDERIZADOR DE ÁUDIO DO ACOMPANHAMENTO ---
-        function playChordSynth(chordObj, startTime) {
-            initAudio();
-            const ctx = state.audioCtx;
-            
-            fadeActiveChords(startTime);
-            
-            const gVal = parseFloat(document.getElementById('bandVolumeSlider').value) || 0.6;
-            const measureDuration = (60 / state.bpm) * state.timeSignature[0];
-            const activeTrackNodes = [];
-
-            // 1. Linha de Baixo Acústica (Nota fundamental profunda do Piano)
-            if (chordObj.bass) {
-                const bassResult = playPianoNote(ctx, state.bandGain, chordObj.bass, startTime, measureDuration, gVal * 0.9);
-                activeTrackNodes.push(...bassResult.oscillators.map(o => ({ osc: o, gainNode: bassResult.noteGain })));
-            }
-            
-            // 2. Acordes dedilhados de Piano (Com atraso de martelada realística)
-            chordObj.notes.forEach((midi, idx) => {
-                const strumDelay = idx * 0.025; // Simulação de dedilhado físico
-                const noteTime = startTime + strumDelay;
-                const noteResult = playPianoNote(ctx, state.bandGain, midi, noteTime, measureDuration - strumDelay, gVal * 0.42);
-                activeTrackNodes.push(...noteResult.oscillators.map(o => ({ osc: o, gainNode: noteResult.noteGain })));
-            });
-
-            state.backingTrackOscillators = activeTrackNodes;
         }
 
         function fadeActiveChords(targetTime) {
@@ -2059,8 +2075,8 @@
                 try {
                     item.gainNode.gain.cancelScheduledValues(targetTime);
                     item.gainNode.gain.setValueAtTime(item.gainNode.gain.value, targetTime);
-                    item.gainNode.gain.linearRampToValueAtTime(0.0001, targetTime + 0.08);
-                    item.osc.stop(targetTime + 0.12);
+                    item.gainNode.gain.linearRampToValueAtTime(0.0001, targetTime + 0.04);
+                    item.osc.stop(targetTime + 0.06);
                 } catch (e) {}
             });
             state.backingTrackOscillators = [];
@@ -2282,13 +2298,36 @@
                 }
             });
 
+            // GESTOR DE ALTERAÇÃO DE GÊNEROS COM INTELIGÊNCIA DE BPM SUGERIDO
             document.getElementById('trackGenre').addEventListener('change', (e) => {
+                state.trackGenre = e.target.value;
                 const editor = document.getElementById('customProgressionEditor');
-                if (e.target.value === 'custom') {
+                
+                if (state.trackGenre === 'custom') {
                     editor.classList.remove('hidden');
                 } else {
                     editor.classList.add('hidden');
                 }
+
+                // Configura dinamicamente andamentos ideais reais para cada vertente de treino
+                if (state.trackGenre === 'rock') {
+                    state.bpm = 140; state.subdivision = 1; // Metal/Rock rápido e reto
+                    document.getElementById('subdivision').value = "1";
+                } else if (state.trackGenre === 'balada') {
+                    state.bpm = 74; state.subdivision = 1; // Balada cadenciada lenta
+                    document.getElementById('subdivision').value = "1";
+                } else if (state.trackGenre === 'jazz') {
+                    state.bpm = 115; state.subdivision = 1; // Swing andante intermediário
+                    document.getElementById('subdivision').value = "1";
+                } else if (state.trackGenre === 'blues') {
+                    state.bpm = 90; state.subdivision = 3; // Força subdivisão em tercinas para o Shuffle funcionar perfeitamente
+                    document.getElementById('subdivision').value = "3";
+                }
+
+                document.getElementById('bpmInput').value = state.bpm;
+                
+                // Reconstrói a escala e progressão aplicando os timbres e voicings corretos
+                getDiatonicChords();
                 buildBackingTrackProgression();
             });
 
@@ -2308,7 +2347,6 @@
                 state.humanize.ms = parseInt(e.target.value);
             });
 
-            // Capturar evento de alteração do Timbre do Piano
             document.getElementById('pianoTimbre').addEventListener('change', (e) => {
                 state.pianoTimbre = e.target.value;
             });
@@ -2347,6 +2385,7 @@
             state.bpm = parseInt(document.getElementById('bpmInput').value) || 120;
             state.timeSignature = parseTS(document.getElementById('timeSignature').value);
             state.subdivision = parseInt(document.getElementById('subdivision').value) || 1;
+            state.trackGenre = document.getElementById('trackGenre').value;
             
             populateChordDictionaryUI();
             renderRootSelector();
