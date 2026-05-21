@@ -812,44 +812,44 @@
             oscGain.gain.setValueAtTime(vol * (isRimshot ? 0.35 : 0.6), time);
             oscGain.gain.exponentialRampToValueAtTime(0.001, time + 0.07);
 
-            const noise = state.audioCtx.createBufferSource();
+            const shadow = state.audioCtx.createBufferSource();
             const noiseFilter = state.audioCtx.createBiquadFilter();
             const noiseGain = state.audioCtx.createGain();
             
-            noise.buffer = state.noiseBuffer;
+            shadow.buffer = state.noiseBuffer;
             noiseFilter.type = 'highpass';
             noiseFilter.frequency.setValueAtTime(isRimshot ? 2200 : 1350, time);
 
-            noise.connect(noiseFilter); noiseFilter.connect(noiseGain); noiseGain.connect(state.drumGain);
+            shadow.connect(noiseFilter); noiseFilter.connect(noiseGain); noiseGain.connect(state.drumGain);
 
             noiseGain.gain.setValueAtTime(0, time);
             noiseGain.gain.linearRampToValueAtTime(vol * (isRimshot ? 0.45 : 0.85), time + 0.004);
             noiseGain.gain.exponentialRampToValueAtTime(0.001, time + (isRimshot ? 0.11 : 0.22));
 
-            osc.start(time); noise.start(time);
-            osc.stop(time + 0.12); noise.stop(time + 0.24);
+            osc.start(time); shadow.start(time);
+            osc.stop(time + 0.12); shadow.stop(time + 0.24);
         }
 
         // --- PRATO DE CHOQUE ---
         function playHiHat(time, vol, isOpened = false) {
             if (!state.audioCtx || !state.noiseBuffer) return;
             
-            const noise = state.audioCtx.createBufferSource();
+            const shadow = state.audioCtx.createBufferSource();
             const filter = state.audioCtx.createBiquadFilter();
             const gain = state.audioCtx.createGain();
             
-            noise.buffer = state.noiseBuffer;
+            shadow.buffer = state.noiseBuffer;
             filter.type = 'highpass';
             filter.frequency.setValueAtTime(isOpened ? 6200 : 8500, time);
 
-            noise.connect(filter); filter.connect(gain); gain.connect(state.drumGain);
+            shadow.connect(filter); filter.connect(gain); gain.connect(state.drumGain);
 
             const duration = isOpened ? 0.28 : 0.045;
             gain.gain.setValueAtTime(0, time);
             gain.gain.linearRampToValueAtTime(vol * 0.4, time + 0.002);
             gain.gain.exponentialRampToValueAtTime(0.001, time + duration);
 
-            noise.start(time); noise.stop(time + duration + 0.02);
+            shadow.start(time); shadow.stop(time + duration + 0.02);
         }
 
         // --- SEQUENCIADOR DE GROOVES REAIS POR ESTILO ---
@@ -988,6 +988,7 @@
             return '';
         }
 
+        // Obter nota física de corda + traste
         function getNoteAt(stringIdx, fret) {
             const tuning = TUNINGS[state.tuningKey];
             const baseMidi = tuning.midi[stringIdx];
@@ -1206,9 +1207,11 @@
             const numFrets = 25; 
             const fretsArray = Array.from({length: numFrets}, (_, i) => i);
 
+            // Marcações internas normais do braço
             const inlaysSingle = [3, 5, 7, 9, 15, 17, 19, 21];
             const inlaysDouble = [12, 24];
 
+            // 1. Números das casas (Cabeçalho do braço)
             const trasteHeaderGrid = document.createElement('div');
             trasteHeaderGrid.className = "grid w-full relative h-6 border-b border-slate-800 bg-slate-950/65 text-[9px] sm:text-[11px] text-slate-400 font-mono font-bold";
             trasteHeaderGrid.style.gridTemplateColumns = `repeat(${numFrets}, minmax(0, 1fr))`;
@@ -1225,9 +1228,10 @@
             });
             fretboard.appendChild(trasteHeaderGrid);
 
+            // 2. Renderizar as 7 Cordas da Guitarra
             tuning.notes.forEach((tuningNote, stringIdx) => {
                 const stringRow = document.createElement('div');
-                stringRow.className = "grid w-full relative h-7 sm:h-9 md:h-11 items-center border-b border-slate-800/30 last:border-0";
+                stringRow.className = "grid w-full relative h-7 sm:h-9 md:h-11 items-center border-b border-slate-800/30";
                 stringRow.style.gridTemplateColumns = `repeat(${numFrets}, minmax(0, 1fr))`;
 
                 const stringGauge = stringIdx + 1; 
@@ -1313,6 +1317,40 @@
 
                 fretboard.appendChild(stringRow); 
             });
+
+            // 3. Linha de Marcação Inferior (Bolinhas abaixo da 7ª corda)
+            const markerRow = document.createElement('div');
+            markerRow.className = "grid w-full relative h-6 items-center bg-slate-950/50 border-t border-slate-800/60";
+            markerRow.style.gridTemplateColumns = `repeat(${numFrets}, minmax(0, 1fr))`;
+
+            const bottomInlays = [3, 5, 7, 9, 12, 15, 17, 19, 21, 24];
+
+            fretsArray.forEach(fret => {
+                const markerCell = document.createElement('div');
+                markerCell.className = "relative h-full flex items-center justify-center border-r border-slate-700/40";
+                
+                if (fret === 0) {
+                    markerCell.style.borderRight = "4px solid #64748b";
+                }
+
+                if (bottomInlays.includes(fret)) {
+                    const dot = document.createElement('div');
+                    // Casas 12 e 24 ganham bolinhas duplas com brilho azul metálico para destaque natural
+                    if (fret === 12 || fret === 24) {
+                        dot.className = "flex gap-1 justify-center items-center";
+                        dot.innerHTML = `
+                            <div class="w-1.5 h-1.5 rounded-full bg-indigo-400 shadow-[0_0_6px_rgba(99,102,241,0.8)]"></div>
+                            <div class="w-1.5 h-1.5 rounded-full bg-indigo-400 shadow-[0_0_6px_rgba(99,102,241,0.8)]"></div>
+                        `;
+                    } else {
+                        // Casas ímpares padrão recebem bolinha cinza discreta
+                        dot.className = "w-1.5 h-1.5 rounded-full bg-slate-500 shadow-[0_0_4px_rgba(255,255,255,0.3)]";
+                    }
+                    markerCell.appendChild(dot);
+                }
+                markerRow.appendChild(markerCell);
+            });
+            fretboard.appendChild(markerRow);
         }
 
         // --- MANTER ECRÃ ATIVO ---
