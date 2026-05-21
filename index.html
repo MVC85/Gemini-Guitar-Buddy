@@ -143,7 +143,7 @@
                 <label for="scaleSelector" class="block text-xs font-semibold text-slate-400 flex items-center gap-1.5">
                     <i data-lucide="activity" class="w-3.5 h-3.5 text-indigo-400"></i> ESCALA / MODO
                 </label>
-                <select id="scaleSelector" class="w-full bg-slate-900 border border-slate-700 rounded-lg py-1.5 px-3 text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium text-xs sm:text-sm">
+                <select id="scaleSelector" class="w-full bg-slate-900 border border-slate-700 rounded-lg py-1.5 px-3 text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-550 font-medium text-xs sm:text-sm">
                     <optgroup label="Escalas Comuns">
                         <option value="major" selected>Maior Natural (Jónio)</option>
                         <option value="minor">Menor Natural (Eólio)</option>
@@ -548,6 +548,25 @@
             </section>
         </div>
 
+        <!-- Módulo de Material de Apoio e Backing Tracks -->
+        <section class="bg-slate-900 border border-slate-800 rounded-xl p-4 sm:p-5 shadow-xl space-y-4">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-slate-800 pb-3">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="folder-open" class="w-5 h-5 text-indigo-455"></i>
+                    <h3 class="text-base font-bold text-slate-200">MATERIAL DE APOIO & BACKING TRACKS</h3>
+                </div>
+                <a href="https://drive.google.com/drive/folders/1L1417w8z0ZHur2xeTqlWpVI_ZLSmh09x?usp=sharing" target="_blank" rel="noopener noreferrer" class="flex items-center gap-1.5 text-xs font-bold text-indigo-300 bg-indigo-950/40 hover:bg-indigo-900/30 border border-indigo-700/55 px-3 py-1.5 rounded-lg transition shadow-sm">
+                    <i data-lucide="external-link" class="w-3.5 h-3.5"></i> Abrir no Google Drive
+                </a>
+            </div>
+            
+            <!-- Fundo alterado para branco (bg-white) para garantir total visibilidade do texto escuro nativo do Google Drive -->
+            <div class="relative w-full rounded-lg overflow-hidden border border-slate-250 bg-white" style="height: 400px;">
+                <!-- Link com parâmetros extras de ordenação alfabética (&sort=name&desc=false) e visual de lista (#list) -->
+                <iframe src="https://drive.google.com/embeddedfolderview?id=1L1417w8z0ZHur2xeTqlWpVI_ZLSmh09x&sort=name&desc=false#list" class="w-full h-full border-0" allow="autoplay" sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"></iframe>
+            </div>
+        </section>
+
     </main>
 
     <footer class="border-t border-slate-800 py-4 bg-slate-950 px-4 text-center">
@@ -780,6 +799,7 @@
             osc.start(time); osc.stop(time + 0.2);
         }
 
+        // --- SÍNTESE DO TIMBRE DA TAROLA (SNARE) ---
         function playSnare(time, vol, isRimshot = false) {
             if (!state.audioCtx || !state.noiseBuffer) return;
             
@@ -810,6 +830,7 @@
             osc.stop(time + 0.12); noise.stop(time + 0.24);
         }
 
+        // --- PRATO DE CHOQUE ---
         function playHiHat(time, vol, isOpened = false) {
             if (!state.audioCtx || !state.noiseBuffer) return;
             
@@ -1290,7 +1311,7 @@
                     stringRow.appendChild(fretCell);
                 });
 
-                fretboard.appendChild(stringRow); // Correção feita aqui: Alterado de stringRow.appendChild(fretCell) para fretboard.appendChild(stringRow)
+                fretboard.appendChild(stringRow); 
             });
         }
 
@@ -1814,7 +1835,7 @@
             state.metroPlaying ? stopMetronome() : startMetronome();
         }
 
-        // --- SISTEMA DE GERAÇÃO E ATUALIZAÇÃO DA BACKING TRACK ---
+        // --- SISTEMA GERAÇÃO DA BACKING TRACK ---
         function renderDiatonicChordsSelector() {
             const chords = getDiatonicChords();
             const container = document.getElementById('customChordsContainer');
@@ -1999,7 +2020,7 @@
                 oscGain.gain.setValueAtTime(amp * velocity * 0.3, now);
                 oscGain.gain.exponentialRampToValueAtTime(0.0001, now + (duration * decayMult * decayScale));
                 osc.connect(oscGain); oscGain.connect(filter);
-                osc.start(now); osc.stop(now + duration * decayScale * 1.5);
+                osc.start(now); osc.stop(now + duration * decayMult * decayScale * 1.5);
                 oscillators.push(osc);
             });
 
@@ -2091,7 +2112,7 @@
             });
         }
 
-        // --- PREENCHIMENTO DE ELEMENTOS DO DICIONÁRIO ---
+        // --- PREENCHIMENTO DO SELETOR DO DICIONÁRIO ---
         function populateChordDictionaryUI() {
             const rootSelect = document.getElementById('chordDictRoot');
             rootSelect.innerHTML = '';
@@ -2103,7 +2124,7 @@
             });
         }
 
-        // --- ARRASTO DE BPM ---
+        // --- ARRASTE DO BPM ---
         function setupBpmDragAndScroll() {
             const input = document.getElementById('bpmInput');
             let dragging = false;
@@ -2151,7 +2172,7 @@
             });
         }
 
-        // --- ASSOCIAÇÃO DE EVENTOS DE INTERFACE ---
+        // --- ASSOCIAÇÃO DE EVENTOS ---
         function setupEventBindings() {
             document.getElementById('scaleSelector').addEventListener('change', (e) => {
                 state.scaleKey = e.target.value;
