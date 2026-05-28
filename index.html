@@ -304,18 +304,18 @@
                         <div class="bg-slate-950/20 p-2.5 rounded-lg border border-slate-800/80 space-y-3">
                             <div class="space-y-1">
                                 <span class="block text-[9px] font-bold text-slate-400 tracking-wider flex justify-between items-center">
-                                    <span>VOLUME DO PIANO</span>
+                                    <span>VOLUME DO INSTRUMENTO</span>
                                     <span class="flex items-center gap-1.5">
-                                        <span class="text-[8px] text-slate-500 font-mono">TIMBRE:</span>
+                                        <span class="text-[8px] text-slate-500 font-mono">TEXTURA:</span>
                                         <select id="pianoTimbre" class="bg-slate-950 border border-slate-800 rounded py-0.5 px-1.5 text-[8px] text-indigo-400 font-semibold focus:outline-none focus:ring-1 focus:ring-indigo-550">
-                                            <option value="acoustic" selected>Acústico</option>
-                                            <option value="grand">Grand Piano</option>
+                                            <option value="acoustic" selected>Orgânico/Padrão</option>
+                                            <option value="grand">Vintage/Aveludado</option>
                                         </select>
                                     </span>
                                 </span>
                                 <div class="flex items-center gap-2">
                                     <i data-lucide="volume-1" class="w-3.5 h-3.5 text-slate-500"></i>
-                                    <input type="range" id="bandVolumeSlider" min="0" max="1" step="0.05" value="0.6" class="flex-1 accent-indigo-500 bg-slate-800 h-1 rounded-lg cursor-pointer"/>
+                                    <input type="range" id="bandVolumeSlider" min="0" max="1" step="0.05" value="0.60" class="flex-1 accent-indigo-500 bg-slate-800 h-1 rounded-lg cursor-pointer"/>
                                     <i data-lucide="volume-2" class="w-3.5 h-3.5 text-indigo-400"></i>
                                 </div>
                             </div>
@@ -323,7 +323,7 @@
                             <div class="space-y-1">
                                 <span class="block text-[9px] font-bold text-slate-400 tracking-wider flex justify-between">
                                     <span>VOLUME DA BATERIA (SINTETIZADA)</span>
-                                    <span class="text-rose-400 text-[8px] tracking-wide font-mono">GROOVE PERSONALIZADO</span>
+                                    <span class="text-rose-400 text-[8px] tracking-wide font-mono">GROOVE DINÂMICO</span>
                                 </span>
                                 <div class="flex items-center gap-2">
                                     <i data-lucide="volume-1" class="w-3.5 h-3.5 text-slate-500"></i>
@@ -342,7 +342,7 @@
                 </div>
                 
                 <div class="text-[9px] text-slate-500 italic text-center">
-                    A Bateria e o acompanhamento do Piano mudam totalmente de dinâmica e timbre dependendo do estilo escolhido!
+                    A Bateria e o acompanhamento de acordes mudam totalmente de dinâmica, timbre e swing conforme o estilo!
                 </div>
             </section>
 
@@ -678,6 +678,9 @@
             bandGain: null,
             drumGain: null,
             noiseBuffer: null,
+            distortionNode: null, // Saturação do Órgão de Rock/Metal
+            chorusDelayNode: null, // Linha de atraso para o Chorus espacial
+            chorusLfo: null, // LFO do Chorus
             
             // Metrônomo Config
             metroPlaying: false,
@@ -738,7 +741,37 @@
                 state.drumGain.gain.value = parseFloat(document.getElementById('drumVolumeSlider').value) || 0.7;
                 state.drumGain.connect(state.audioCtx.destination);
 
-                // --- Efeito Delay Stereo/Espacial para a Banda ---
+                // --- Efeito Chorus Analógico Estéreo em Tempo Real ---
+                const chorusGain = state.audioCtx.createGain();
+                chorusGain.gain.value = 0.45; // Mistura do efeito
+
+                state.chorusDelayNode = state.audioCtx.createDelay(0.1);
+                state.chorusDelayNode.delayTime.value = 0.025; // Atraso base (25ms)
+
+                // LFO para oscilar o atraso (Gera largura tridimensional)
+                state.chorusLfo = state.audioCtx.createOscillator();
+                state.chorusLfo.type = 'sine';
+                state.chorusLfo.frequency.value = 1.6; // Velocidade do chorus
+
+                const lfoGain = state.audioCtx.createGain();
+                lfoGain.gain.value = 0.003; // Profundidade da variação (3ms)
+
+                state.chorusLfo.connect(lfoGain);
+                lfoGain.connect(state.chorusDelayNode.delayTime);
+                state.chorusLfo.start();
+
+                // Conectar sinal limpo e sinal modulado (Chorus)
+                state.bandGain.connect(state.audioCtx.destination); // Canal limpo
+                state.bandGain.connect(state.chorusDelayNode);
+                state.chorusDelayNode.connect(chorusGain);
+                chorusGain.connect(state.audioCtx.destination); // Canal molhado
+
+                // --- Nó de Distorção Real (Waveshaper) para Órgão Rock/Metal ---
+                state.distortionNode = state.audioCtx.createWaveShaper();
+                state.distortionNode.curve = makeDistortionCurve(65);
+                state.distortionNode.oversample = '4x';
+
+                // --- Delay Stereo Adicional para Espacialidade ---
                 const delayNode = state.audioCtx.createDelay(1.5);
                 const delayFeedback = state.audioCtx.createGain();
                 const delayFilter = state.audioCtx.createBiquadFilter();
@@ -746,13 +779,13 @@
                 const delayWetGain = state.audioCtx.createGain();
 
                 delayNode.delayTime.value = 0.375; 
-                delayFeedback.gain.value = 0.38;   
+                delayFeedback.gain.value = 0.28;   
                 
                 delayFilter.type = 'lowpass';
-                delayFilter.frequency.value = 850; 
+                delayFilter.frequency.value = 950; 
 
                 delayDryGain.gain.value = 1.0;
-                delayWetGain.gain.value = 0.35;    
+                delayWetGain.gain.value = 0.25;    
 
                 delayNode.connect(delayFilter);
                 delayFilter.connect(delayFeedback);
@@ -762,11 +795,24 @@
                 state.bandGain.connect(delayNode);
 
                 delayDryGain.connect(state.audioCtx.destination);
-                delayNode.connect(delayWetGain);
+                node = delayNode.connect(delayWetGain);
                 delayWetGain.connect(state.audioCtx.destination);
 
                 generateNoiseBuffer();
             }
+        }
+
+        // Função para gerar curva de saturação harmônica
+        function makeDistortionCurve(amount) {
+            const k = typeof amount === 'number' ? amount : 50;
+            const n_samples = 44100;
+            const curve = new Float32Array(n_samples);
+            const deg = Math.PI / 180;
+            for (let i = 0 ; i < n_samples; ++i ) {
+                const x = (i * 2) / n_samples - 1;
+                curve[i] = (3 + k) * x * 20 * deg / (Math.PI + k * Math.abs(x));
+            }
+            return curve;
         }
 
         // --- GERADOR DE RUÍDO BRANCO ---
@@ -780,7 +826,7 @@
             }
         }
 
-        // --- SÍNTESE EM TEMPO REAL DE BATERIA AVANÇADA (Sons Distintos por Estilo) ---
+        // --- SÍNTESE FISICAMENTE MODELADA DE BATERIA ---
         function playKick(time, vol, weight = 1.0) {
             if (!state.audioCtx) return;
             const osc = state.audioCtx.createOscillator();
@@ -788,71 +834,113 @@
             osc.connect(gain); gain.connect(state.drumGain);
 
             osc.type = 'sine';
-            const startFreq = weight > 1.2 ? 160 : (weight < 0.8 ? 110 : 140);
-            osc.frequency.setValueAtTime(startFreq, time);
-            osc.frequency.exponentialRampToValueAtTime(38, time + 0.14);
+            // Variação de frequência profunda (Punchy bass transient + decaimento sub)
+            osc.frequency.setValueAtTime(165 * weight, time);
+            osc.frequency.exponentialRampToValueAtTime(42, time + 0.11);
+
+            // Clique inicial da batedeira na pele do bumbo
+            const clickOsc = state.audioCtx.createOscillator();
+            const clickGain = state.audioCtx.createGain();
+            clickOsc.type = 'triangle';
+            clickOsc.frequency.setValueAtTime(450, time);
+            clickOsc.frequency.exponentialRampToValueAtTime(120, time + 0.015);
+            
+            clickOsc.connect(clickGain);
+            clickGain.connect(state.drumGain);
+            clickGain.gain.setValueAtTime(vol * 0.45, time);
+            clickGain.gain.exponentialRampToValueAtTime(0.001, time + 0.02);
 
             gain.gain.setValueAtTime(0, time);
-            gain.gain.linearRampToValueAtTime(vol * 1.35 * weight, time + 0.004);
-            gain.gain.exponentialRampToValueAtTime(0.001, time + 0.18);
+            gain.gain.linearRampToValueAtTime(vol * 1.5 * weight, time + 0.003);
+            gain.gain.exponentialRampToValueAtTime(0.001, time + 0.22);
 
-            osc.start(time); osc.stop(time + 0.2);
+            osc.start(time); osc.stop(time + 0.25);
+            clickOsc.start(time); clickOsc.stop(time + 0.03);
         }
 
-        // --- SÍNTESE DO TIMBRE DA TAROLA (SNARE) ---
+        // ... [A lógica interna de sintetização continua intacta] ...
         function playSnare(time, vol, isRimshot = false) {
             if (!state.audioCtx || !state.noiseBuffer) return;
             
+            // Corpo físico da tarola (Tone)
             const osc = state.audioCtx.createOscillator();
             const oscGain = state.audioCtx.createGain();
             osc.connect(oscGain); oscGain.connect(state.drumGain);
             
             osc.type = 'triangle';
-            osc.frequency.setValueAtTime(isRimshot ? 330 : 185, time);
-            oscGain.gain.setValueAtTime(vol * (isRimshot ? 0.35 : 0.6), time);
-            oscGain.gain.exponentialRampToValueAtTime(0.001, time + 0.07);
+            osc.frequency.setValueAtTime(isRimshot ? 340 : 180, time);
+            osc.frequency.exponentialRampToValueAtTime(125, time + 0.06);
+            oscGain.gain.setValueAtTime(vol * (isRimshot ? 0.4 : 0.65), time);
+            oscGain.gain.exponentialRampToValueAtTime(0.001, time + 0.08);
 
-            const shadow = state.audioCtx.createBufferSource();
+            // Som de esteira (Noise Snare Component)
+            const noise = state.audioCtx.createBufferSource();
             const noiseFilter = state.audioCtx.createBiquadFilter();
             const noiseGain = state.audioCtx.createGain();
             
-            shadow.buffer = state.noiseBuffer;
-            noiseFilter.type = 'highpass';
-            noiseFilter.frequency.setValueAtTime(isRimshot ? 2200 : 1350, time);
+            noise.buffer = state.noiseBuffer;
+            noiseFilter.type = 'bandpass';
+            noiseFilter.frequency.setValueAtTime(isRimshot ? 2100 : (state.trackGenre === 'rock' ? 1450 : 1100), time);
+            noiseFilter.Q.setValueAtTime(1.8, time);
 
-            shadow.connect(noiseFilter); noiseFilter.connect(noiseGain); noiseGain.connect(state.drumGain);
+            noise.connect(noiseFilter); noiseFilter.connect(noiseGain); noiseGain.connect(state.drumGain);
 
             noiseGain.gain.setValueAtTime(0, time);
-            noiseGain.gain.linearRampToValueAtTime(vol * (isRimshot ? 0.45 : 0.85), time + 0.004);
-            noiseGain.gain.exponentialRampToValueAtTime(0.001, time + (isRimshot ? 0.11 : 0.22));
+            noiseGain.gain.linearRampToValueAtTime(vol * (isRimshot ? 0.5 : 0.95), time + 0.003);
+            noiseGain.gain.exponentialRampToValueAtTime(0.001, time + (isRimshot ? 0.12 : 0.24));
 
-            osc.start(time); shadow.start(time);
-            osc.stop(time + 0.12); shadow.stop(time + 0.24);
+            osc.start(time); noise.start(time);
+            osc.stop(time + 0.1); noise.stop(time + 0.26);
         }
 
-        // --- PRATO DE CHOQUE ---
         function playHiHat(time, vol, isOpened = false) {
             if (!state.audioCtx || !state.noiseBuffer) return;
             
-            const shadow = state.audioCtx.createBufferSource();
+            const noise = state.audioCtx.createBufferSource();
             const filter = state.audioCtx.createBiquadFilter();
             const gain = state.audioCtx.createGain();
             
-            shadow.buffer = state.noiseBuffer;
+            noise.buffer = state.noiseBuffer;
             filter.type = 'highpass';
-            filter.frequency.setValueAtTime(isOpened ? 6200 : 8500, time);
+            filter.frequency.setValueAtTime(isOpened ? 7200 : 9800, time);
 
-            shadow.connect(filter); filter.connect(gain); gain.connect(state.drumGain);
+            noise.connect(filter); filter.connect(gain); gain.connect(state.drumGain);
 
-            const duration = isOpened ? 0.28 : 0.045;
+            const duration = isOpened ? 0.32 : 0.035;
             gain.gain.setValueAtTime(0, time);
-            gain.gain.linearRampToValueAtTime(vol * 0.4, time + 0.002);
+            gain.gain.linearRampToValueAtTime(vol * 0.45, time + 0.002);
             gain.gain.exponentialRampToValueAtTime(0.001, time + duration);
 
-            shadow.start(time); shadow.stop(time + duration + 0.02);
+            noise.start(time); noise.stop(time + duration + 0.02);
         }
 
-        // --- SEQUENCIADOR DE GROOVES REAIS POR ESTILO ---
+        function playRideCymbal(time, vol, hasBell = false) {
+            if (!state.audioCtx) return;
+            const freqs = [350, 840, 2200, 5400, 8900];
+            const sources = [];
+            const filter = state.audioCtx.createBiquadFilter();
+            filter.type = 'highpass';
+            filter.frequency.value = hasBell ? 1800 : 3200;
+
+            const gain = state.audioCtx.createGain();
+            gain.gain.setValueAtTime(0, time);
+            gain.gain.linearRampToValueAtTime(vol * 0.35, time + 0.004);
+            gain.gain.exponentialRampToValueAtTime(0.001, time + (hasBell ? 0.6 : 0.42));
+
+            freqs.forEach((freq, idx) => {
+                const osc = state.audioCtx.createOscillator();
+                osc.type = idx % 2 === 0 ? 'sine' : 'triangle';
+                osc.frequency.value = freq;
+                osc.connect(filter);
+                osc.start(time);
+                osc.stop(time + 0.75);
+                sources.push(osc);
+            });
+
+            filter.connect(gain);
+            gain.connect(state.drumGain);
+        }
+
         function scheduleDrums(time, bi) {
             if (!state.trackPlaying) return;
             const genre = state.trackGenre;
@@ -861,52 +949,54 @@
             const subIdx = bi.subIndex;
             const sub = state.subdivision;
 
+            let swingOffset = 0;
+            if ((genre === 'jazz' || genre === 'blues') && subIdx === 1) {
+                swingOffset = (60 / state.bpm) * 0.08; 
+            }
+            const activeTime = time + swingOffset;
+
             if (genre === 'rock' || genre === 'custom') {
-                if (subIdx === 0 && (beat === 0 || beat === 2)) playKick(time, vol, 1.3);
-                if (subIdx === 2 && (beat === 0 || beat === 1 || beat === 2 || beat === 3)) playKick(time, vol * 0.8, 1.1);
-                
-                if (subIdx === 0 && (beat === 1 || beat === 3)) playSnare(time, vol * 1.1, false);
-                
+                if (subIdx === 0 && (beat === 0 || beat === 2)) playKick(activeTime, vol * 1.1, 1.25);
+                if (subIdx === 2 && beat === 2 && Math.random() > 0.5) playKick(activeTime, vol * 0.6, 1.0);
+                if (subIdx === 0 && (beat === 1 || beat === 3)) playSnare(activeTime, vol * 1.2, false);
+                if (subIdx === 3 && beat === 3 && Math.random() > 0.7) playSnare(activeTime, vol * 0.4, true);
                 if (subIdx === 0) {
-                    playHiHat(time, vol * 0.5, beat === 0);
+                    playHiHat(activeTime, vol * 0.5, beat === 0);
                 } else if (subIdx === 2) {
-                    playHiHat(time, vol * 0.35, false);
+                    playHiHat(activeTime, vol * 0.3, false);
                 }
             } 
             else if (genre === 'balada') {
-                if (subIdx === 0 && beat === 0) playKick(time, vol * 1.1, 0.9);
-                if (subIdx === 2 && beat === 2) playKick(time, vol * 0.6, 0.8);
-                
-                if (subIdx === 0 && (beat === 1 || beat === 3)) playSnare(time, vol * 0.8, true);
-                
-                if (subIdx === 0 || (sub === 4 && subIdx === 2) || (sub === 2 && subIdx === 1)) {
-                    playHiHat(time, vol * 0.4, false);
+                if (subIdx === 0 && beat === 0) playKick(activeTime, vol * 1.2, 0.95);
+                if (subIdx === 2 && beat === 2) playKick(activeTime, vol * 0.75, 0.85);
+                if (subIdx === 0 && (beat === 1 || beat === 3)) playSnare(activeTime, vol * 0.85, true);
+                if (subIdx === 0 || subIdx === 2) {
+                    playHiHat(activeTime, vol * 0.35, beat === 3 && subIdx === 2);
                 }
             } 
             else if (genre === 'jazz') {
-                const isRideBeat = (subIdx === 0) || (sub === 3 && subIdx === 2) || (sub === 4 && subIdx === 3);
-                if (isRideBeat) {
-                    playHiHat(time, vol * 0.6, true);
+                if (subIdx === 0) {
+                    playRideCymbal(activeTime, vol * 0.7, beat === 0);
+                } else if (subIdx === 2 && (beat === 1 || beat === 3)) {
+                    playRideCymbal(activeTime, vol * 0.48, false);
                 }
-                
-                if (subIdx === 0 && beat === 0) playKick(time, vol * 0.5, 0.6);
-                if (subIdx === 0 && beat === 2 && Math.random() > 0.5) playKick(time, vol * 0.4, 0.6);
-                
-                if (subIdx === 0 && beat === 3) {
-                    playSnare(time, vol * 0.6, false);
-                } else if (subIdx !== 0 && Math.random() > 0.75) {
-                    playSnare(time, vol * 0.22, false);
+                if (subIdx === 0 && (beat === 1 || beat === 3)) {
+                    playHiHat(activeTime, vol * 0.55, false);
+                }
+                if (subIdx === 0 && beat === 0) playKick(activeTime, vol * 0.35, 0.7);
+                if (subIdx === 0 && beat === 2 && Math.random() > 0.65) playKick(activeTime, vol * 0.25, 0.6);
+                if (subIdx === 1 && Math.random() > 0.85) {
+                    playSnare(activeTime, vol * 0.22, false);
                 }
             } 
             else if (genre === 'blues') {
-                const isShuffleHiHat = (subIdx === 0) || (sub === 3 && subIdx === 2) || (subIdx === Math.floor(sub * 0.66));
+                const isShuffleHiHat = (subIdx === 0) || (subIdx === 2);
                 if (isShuffleHiHat) {
-                    playHiHat(time, vol * 0.45, false);
+                    playHiHat(activeTime, vol * 0.45, subIdx === 2 && beat === 3);
                 }
-
-                if (subIdx === 0 && (beat === 0 || beat === 2)) playKick(time, vol, 1.0);
-                if (subIdx === 0 && (beat === 1 || beat === 3)) playSnare(time, vol * 0.9, false);
-                if (subIdx === 0 && beat === 2 && Math.random() > 0.6) playKick(time, vol * 0.7, 0.9);
+                if (subIdx === 0 && (beat === 0 || beat === 2)) playKick(activeTime, vol * 1.05, 1.0);
+                if (subIdx === 0 && (beat === 1 || beat === 3)) playSnare(activeTime, vol * 1.1, false);
+                if (subIdx === 2 && beat === 1 && Math.random() > 0.6) playKick(activeTime, vol * 0.5, 0.9);
             }
         }
 
@@ -959,7 +1049,6 @@
             carrier.stop(now + 1.7);
         }
 
-        // --- UTILITÁRIOS ---
         function playMidiNote(midiNumber) {
             const freq = midiToFreq(midiNumber);
             playGuitarTone(freq);
@@ -988,16 +1077,12 @@
             return '';
         }
 
-        // Obter nota física de corda + traste
         function getNoteAt(stringIdx, fret) {
             const tuning = TUNINGS[state.tuningKey];
             const baseMidi = tuning.midi[stringIdx];
-            
             const currentMidi = baseMidi + fret;
-            const noteName = ALL_NOTES[currentMidi % 12];
-            
             return {
-                name: noteName,
+                name: ALL_NOTES[currentMidi % 12],
                 midi: currentMidi
             };
         }
@@ -1009,9 +1094,8 @@
             let R = (rootIdx - bIdx + 12) % 12;
 
             let voicing = [null, null, null, null, null, null, null]; 
-
-            voicing[6] = R;       // Corda 7 (B)
-            voicing[5] = null;    // Corda 6 (E) abafada
+            voicing[6] = R;       
+            voicing[5] = null;    
 
             if (type === 'maj') {
                 voicing[4] = R + 2; 
@@ -1038,15 +1122,12 @@
                 voicing[3] = R;
                 voicing[2] = R;
             }
-
             return voicing;
         }
 
-        // Exibe dedilhado no braço virtual
         function displayVoicingOnFretboard() {
             const root = document.getElementById('chordDictRoot').value;
             const type = document.getElementById('chordDictType').value;
-            
             state.activeVoicing = calculateVoicing7String(root, type);
             renderFretboard();
 
@@ -1062,14 +1143,13 @@
             display.innerHTML = output;
         }
 
-        // --- ACORDES DIATÓNICOS ENRIQUECIDOS POR ESTILO ---
+        // --- ACORDES DIATÓNICOS ENRIQUECIDOS ---
         function getDiatonicChords() {
             const scaleNotes = getScaleNotes();
             const baseMidiMap = {
                 'C': 48, 'C#': 49, 'D': 50, 'D#': 51, 'E': 52, 'F': 53,
                 'F#': 54, 'G': 55, 'G#': 56, 'A': 57, 'A#': 58, 'B': 59
             };
-
             const chordNames = ["I", "ii", "iii", "IV", "V", "vi", "vii°"];
 
             return scaleNotes.map((note, idx) => {
@@ -1080,7 +1160,6 @@
                 
                 const thirdInterval = (ALL_NOTES.indexOf(thirdNote) - rootIdx + 12) % 12;
                 const fifthInterval = (ALL_NOTES.indexOf(fifthNote) - rootIdx + 12) % 12;
-                const seventhInterval = (ALL_NOTES.indexOf(seventhNote) - rootIdx + 12) % 12;
                 
                 let quality = '';
                 let ext = '';
@@ -1151,7 +1230,6 @@
                         requestWakeLock();
                     }
                 });
-                
                 container.appendChild(btn);
             });
         }
@@ -1190,7 +1268,6 @@
                     if (targetMidi < 40) targetMidi += 12;
                     playMidiNote(targetMidi);
                 });
-
                 notesContainer.appendChild(noteBlock);
             });
 
@@ -1208,22 +1285,26 @@
             const numFrets = 25; 
             const fretsArray = Array.from({length: numFrets}, (_, i) => i);
 
-            // Marcações internas do braço (Inlays)
             const inlaysSingle = [3, 5, 7, 9, 15, 17, 19, 21];
             const inlaysDouble = [12, 24];
 
-            // 1. Números das casas (Cabeçalho do braço)
+            // 1. Números das casas (Cabeçalho do braço) com destaque apenas em Negrito (sem cor vermelha ou roxo)
             const trasteHeaderGrid = document.createElement('div');
-            trasteHeaderGrid.className = "grid w-full relative h-6 border-b border-slate-800 bg-slate-950/65 text-[9px] sm:text-[11px] text-slate-400 font-mono font-bold";
+            trasteHeaderGrid.className = "grid w-full relative h-6 border-b border-slate-800 bg-slate-950/65 text-[9px] sm:text-[11px] font-mono";
             trasteHeaderGrid.style.gridTemplateColumns = `repeat(${numFrets}, minmax(0, 1fr))`;
             
+            const highlightFrets = [3, 5, 7, 9, 12, 15, 17, 19, 21, 24];
+
             fretsArray.forEach(f => {
                 const numBox = document.createElement('div');
-                numBox.className = "flex items-center justify-center border-r border-slate-800/40";
                 numBox.innerText = f === 0 ? "Nut" : f;
                 
-                if (f === 12 || f === 24) {
-                    numBox.classList.add("text-indigo-400", "bg-indigo-950/20");
+                if (highlightFrets.includes(f)) {
+                    // Modificado para ficar apenas em negrito e com cor clara padrão, sem cores adicionais (ex. vermelho ou lilás)
+                    numBox.className = "flex items-center justify-center border-r border-slate-800/40 font-black text-slate-100 bg-slate-900/30";
+                } else {
+                    // Casas sem marcação permanecem apagadas e discretas
+                    numBox.className = "flex items-center justify-center border-r border-slate-800/40 font-normal text-slate-500 opacity-60";
                 }
                 trasteHeaderGrid.appendChild(numBox);
             });
@@ -1251,14 +1332,12 @@
                         fretCell.style.borderRight = "4px solid #64748b";
                     }
 
-                    // MARCAÇÃO DO BRAÇO (Bolinhas): Mantidas maiores para visibilidade no braço virtual
                     if (inlaysSingle.includes(fret) && stringIdx === 3) {
                         const inlayDot = document.createElement('div');
                         inlayDot.className = "absolute w-3.5 h-3.5 rounded-full bg-slate-300/65 border border-slate-500/30 shadow-[0_0_6px_rgba(255,255,255,0.15)] pointer-events-none";
                         fretCell.appendChild(inlayDot);
                     }
                     
-                    // MARCAÇÃO DO BRAÇO DUPLA (Casas 12 e 24): Mantidas no tamanho maior com brilho azul
                     if (inlaysDouble.includes(fret) && (stringIdx === 2 || stringIdx === 4)) {
                         const inlayDot = document.createElement('div');
                         inlayDot.className = "absolute w-3 h-3 rounded-full bg-indigo-400/75 border border-indigo-450/30 shadow-[0_0_8px_rgba(99,102,241,0.5)] pointer-events-none";
@@ -1314,10 +1393,8 @@
                             }, 150);
                         }
                     });
-
                     stringRow.appendChild(fretCell);
                 });
-
                 fretboard.appendChild(stringRow); 
             });
 
@@ -1338,7 +1415,6 @@
 
                 if (bottomInlays.includes(fret)) {
                     const dot = document.createElement('div');
-                    // Casas 12 e 24 (Bolinhas duplas): DESFEITO - Retornando para w-1.5 discreto e harmônico
                     if (fret === 12 || fret === 24) {
                         dot.className = "flex gap-1 justify-center items-center";
                         dot.innerHTML = `
@@ -1346,7 +1422,6 @@
                             <div class="w-1.5 h-1.5 rounded-full bg-indigo-400 shadow-[0_0_6px_rgba(99,102,241,0.8)]"></div>
                         `;
                     } else {
-                        // Casas ímpares padrão (Bolinha simples): DESFEITO - Retornando para w-1.5 cinza
                         dot.className = "w-1.5 h-1.5 rounded-full bg-slate-500 shadow-[0_0_4px_rgba(255,255,255,0.3)]";
                     }
                     markerCell.appendChild(dot);
@@ -1656,7 +1731,7 @@
             }, delay);
         }
 
-        // --- ARRANJADOR DINÂMICO DE ACORDES DE PIANO (Por Estilo) ---
+        // --- ARRANJADOR DINÂMICO DE ACORDES DE INSTRUMENTO (Por Estilo) ---
         function scheduleStylePiano(chordObj, time, beat) {
             const ctx = state.audioCtx;
             const genre = state.trackGenre;
@@ -1667,42 +1742,43 @@
                 fadeActiveChords(time);
             }
 
+            const destNode = (genre === 'rock') ? state.distortionNode : state.bandGain;
+            if (genre === 'rock' && state.distortionNode.numberOfInputs === 0) {
+                state.distortionNode.connect(state.bandGain);
+            }
+
             if (genre === 'rock' || genre === 'custom') {
                 if (beat === 0 || beat === 2) {
-                    const b1 = playPianoNote(ctx, state.bandGain, chordObj.bass, time, beatDuration * 1.5, gVal * 1.0);
-                    const b2 = playPianoNote(ctx, state.bandGain, chordObj.bass + 12, time, beatDuration * 1.5, gVal * 0.8);
+                    const b1 = playOrganNote(ctx, destNode, chordObj.bass, time, beatDuration * 1.5, gVal * 0.85);
                     state.backingTrackOscillators.push(...b1.oscillators.map(o => ({osc:o, gainNode:b1.noteGain})));
-                    state.backingTrackOscillators.push(...b2.oscillators.map(o => ({osc:o, gainNode:b2.noteGain})));
                 }
-                if (beat === 0 || beat === 1 || beat === 2 || beat === 3) {
-                    chordObj.notes.forEach((midi, i) => {
-                        const nRes = playPianoNote(ctx, state.bandGain, midi, time, beatDuration * 0.8, gVal * 0.4);
-                        state.backingTrackOscillators.push(...nRes.oscillators.map(o => ({osc:o, gainNode:nRes.noteGain})));
-                    });
-                }
+                chordObj.notes.forEach((midi, i) => {
+                    const nRes = playOrganNote(ctx, destNode, midi, time, beatDuration * 0.9, gVal * 0.33);
+                    state.backingTrackOscillators.push(...nRes.oscillators.map(o => ({osc:o, gainNode:nRes.noteGain})));
+                });
             }
             else if (genre === 'balada') {
                 if (beat === 0) {
-                    const bassRes = playPianoNote(ctx, state.bandGain, chordObj.bass, time, beatDuration * 3.8, gVal * 0.9);
+                    const bassRes = playRhodesNote(ctx, destNode, chordObj.bass, time, beatDuration * 3.8, gVal * 0.9);
                     state.backingTrackOscillators.push(...bassRes.oscillators.map(o => ({osc:o, gainNode:bassRes.noteGain})));
                 }
                 const noteIndex = beat % chordObj.notes.length;
                 const midiNote = chordObj.notes[noteIndex];
-                const arpRes = playPianoNote(ctx, state.bandGain, midiNote, time, beatDuration * 1.8, gVal * 0.45);
+                const arpRes = playRhodesNote(ctx, destNode, midiNote, time, beatDuration * 1.9, gVal * 0.52);
                 state.backingTrackOscillators.push(...arpRes.oscillators.map(o => ({osc:o, gainNode:arpRes.noteGain})));
             }
             else if (genre === 'jazz') {
                 if (beat === 0) {
-                    const bassRes = playPianoNote(ctx, state.bandGain, chordObj.bass, time, beatDuration * 4, gVal * 0.7);
+                    const bassRes = playRhodesNote(ctx, destNode, chordObj.bass, time, beatDuration * 3.9, gVal * 0.65);
                     state.backingTrackOscillators.push(...bassRes.oscillators.map(o => ({osc:o, gainNode:bassRes.noteGain})));
                 }
                 if (beat === 0 || beat === 2) {
                     chordObj.notes.forEach((midi, i) => {
-                        const n1 = playPianoNote(ctx, state.bandGain, midi, time, beatDuration * 1.2, gVal * 0.38);
+                        const n1 = playRhodesNote(ctx, destNode, midi, time, beatDuration * 1.6, gVal * 0.35);
                         state.backingTrackOscillators.push(...n1.oscillators.map(o => ({osc:o, gainNode:n1.noteGain})));
                         
-                        const syncTime = time + (beatDuration * 0.5);
-                        const n2 = playPianoNote(ctx, state.bandGain, midi + 12, syncTime, beatDuration * 0.6, gVal * 0.25);
+                        const syncTime = time + (beatDuration * 0.66); 
+                        const n2 = playRhodesNote(ctx, destNode, midi + 12, syncTime, beatDuration * 0.5, gVal * 0.2);
                         state.backingTrackOscillators.push(...n2.oscillators.map(o => ({osc:o, gainNode:n2.noteGain})));
                     });
                 }
@@ -1713,12 +1789,12 @@
                 if (beat === 2) walkingMidi = chordObj.bass + 7; 
                 if (beat === 3) walkingMidi = chordObj.bass + 9; 
 
-                const bassRes = playPianoNote(ctx, state.bandGain, walkingMidi, time, beatDuration * 0.9, gVal * 0.85);
+                const bassRes = playOrganNote(ctx, destNode, walkingMidi, time, beatDuration * 0.85, gVal * 0.8);
                 state.backingTrackOscillators.push(...bassRes.oscillators.map(o => ({osc:o, gainNode:bassRes.noteGain})));
 
                 if (beat === 0 || beat === 2) {
                     chordObj.notes.forEach((midi) => {
-                        const chordRes = playPianoNote(ctx, state.bandGain, midi, time, beatDuration * 0.6, gVal * 0.35);
+                        const chordRes = playOrganNote(ctx, destNode, midi, time, beatDuration * 0.65, gVal * 0.3);
                         state.backingTrackOscillators.push(...chordRes.oscillators.map(o => ({osc:o, gainNode:chordRes.noteGain})));
                     });
                 }
@@ -1782,7 +1858,6 @@
             document.getElementById('pendulumLine').style.transform = `translateX(-50%) rotate(${angle.toFixed(2)}deg)`;
         }
 
-        // --- SISTEMA UNIFICADO DE LOOP DE ÁUDIO ---
         function updateLoopState() {
             initAudio();
             const shouldRun = state.metroPlaying || state.trackPlaying;
@@ -1817,7 +1892,6 @@
             }
         }
 
-        // --- CONTROLE DE START / STOP DO METRÔNOMO ---
         function startMetronome() {
             if (state.metroPlaying) return;
             state.metroPlaying = true;
@@ -1872,7 +1946,6 @@
             state.metroPlaying ? stopMetronome() : startMetronome();
         }
 
-        // --- SISTEMA GERAÇÃO DA BACKING TRACK ---
         function renderDiatonicChordsSelector() {
             const chords = getDiatonicChords();
             const container = document.getElementById('customChordsContainer');
@@ -1981,112 +2054,103 @@
                     fadeActiveChords(state.audioCtx.currentTime);
                     scheduleStylePiano(chord, state.audioCtx.currentTime, 0);
                 });
-                
                 container.appendChild(card);
             });
         }
 
-        // --- SINTETIZADOR DE TIMBRE DE PIANO PURO & ENCORPADO ---
-        function playPianoNote(ctx, destination, midi, startTime, duration, velocity = 0.8) {
+        function playRhodesNote(ctx, destination, midi, startTime, duration, velocity = 0.8) {
             const freq = midiToFreq(midi);
             const now = startTime;
 
             const noteGain = ctx.createGain();
             noteGain.connect(destination);
 
-            const targetVol = Math.pow(velocity, 1.4) * 0.75;
+            const targetVol = Math.pow(velocity, 1.25) * 0.42;
             noteGain.gain.setValueAtTime(0, now);
-            noteGain.gain.linearRampToValueAtTime(targetVol, now + 0.005);
-            noteGain.gain.setValueAtTime(targetVol, now + duration - 0.15);
+            noteGain.gain.linearRampToValueAtTime(targetVol, now + 0.006);
+            noteGain.gain.setValueAtTime(targetVol, now + duration - 0.1);
             noteGain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
 
             const filter = ctx.createBiquadFilter();
             filter.type = 'lowpass';
             
             const isGrand = state.pianoTimbre === 'grand';
-            const filterStart = isGrand ? freq * 5.5 : freq * 3.8;
-            const filterEnd = isGrand ? freq * 1.4 : freq * 1.05;
-            const decayScale = isGrand ? 1.75 : 1.15;
+            const filterStart = isGrand ? freq * 4.8 : freq * 3.4;
+            const filterEnd = isGrand ? freq * 1.5 : freq * 1.1;
 
             filter.frequency.setValueAtTime(filterStart, now);
-            filter.frequency.exponentialRampToValueAtTime(filterEnd, now + 0.35);
-            filter.Q.setValueAtTime(1.2, now);
+            filter.frequency.exponentialRampToValueAtTime(filterEnd, now + 0.4);
+            filter.Q.setValueAtTime(1.1, now);
             filter.connect(noteGain);
 
             const osc1 = ctx.createOscillator();
             const osc1Gain = ctx.createGain();
             osc1.type = 'sine';
             osc1.frequency.setValueAtTime(freq, now);
-            osc1.detune.setValueAtTime(-1.8, now); 
-            osc1Gain.gain.setValueAtTime(0.38, now);
-            osc1Gain.gain.exponentialRampToValueAtTime(0.0001, now + duration * 1.5 * decayScale);
+            osc1.detune.setValueAtTime(-1.5, now);
+            osc1Gain.gain.setValueAtTime(0.45, now);
+            osc1Gain.gain.exponentialRampToValueAtTime(0.0001, now + duration * 1.6);
             osc1.connect(osc1Gain); osc1Gain.connect(filter);
 
             const osc2 = ctx.createOscillator();
             const osc2Gain = ctx.createGain();
             osc2.type = 'triangle'; 
             osc2.frequency.setValueAtTime(freq, now);
-            osc2.detune.setValueAtTime(0.2, now); 
-            osc2Gain.gain.setValueAtTime(0.22, now);
-            osc2Gain.gain.exponentialRampToValueAtTime(0.0001, now + duration * 1.25 * decayScale);
+            osc2.detune.setValueAtTime(1.5, now);
+            osc2Gain.gain.setValueAtTime(0.28, now);
+            osc2Gain.gain.exponentialRampToValueAtTime(0.0001, now + duration * 1.15);
             osc2.connect(osc2Gain); osc2Gain.connect(filter);
 
             const osc3 = ctx.createOscillator();
             const osc3Gain = ctx.createGain();
             osc3.type = 'sine';
-            osc3.frequency.setValueAtTime(freq, now);
-            osc3.detune.setValueAtTime(1.8, now); 
-            osc3Gain.gain.setValueAtTime(0.38, now);
-            osc3Gain.gain.exponentialRampToValueAtTime(0.0001, now + duration * 1.5 * decayScale);
+            osc3.frequency.setValueAtTime(freq * 3.0, now);
+            osc3Gain.gain.setValueAtTime(0.08 * velocity, now);
+            osc3Gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.15);
             osc3.connect(osc3Gain); osc3Gain.connect(filter);
 
-            const harmonics = isGrand ? [
-                [2.0, 0.28, 0.7], [3.0, 0.15, 0.45], [4.0, 0.08, 0.25], [5.0, 0.04, 0.15]
-            ] : [
-                [2.0, 0.22, 0.5], [3.0, 0.08, 0.3]
-            ];
+            osc1.start(now); osc2.start(now); osc3.start(now);
+            const stopTime = now + duration * 1.7;
+            osc1.stop(stopTime); osc2.stop(stopTime); osc3.stop(stopTime);
 
-            const oscillators = [osc1, osc2, osc3];
+            return { noteGain, oscillators: [osc1, osc2, osc3] };
+        }
 
-            harmonics.forEach(([mult, amp, decayMult]) => {
+        function playOrganNote(ctx, destination, midi, startTime, duration, velocity = 0.8) {
+            const freq = midiToFreq(midi);
+            const now = startTime;
+
+            const noteGain = ctx.createGain();
+            noteGain.connect(destination);
+
+            const targetVol = Math.pow(velocity, 1.2) * 0.35;
+            noteGain.gain.setValueAtTime(0, now);
+            noteGain.gain.linearRampToValueAtTime(targetVol, now + 0.015);
+            noteGain.gain.setValueAtTime(targetVol, now + duration - 0.05);
+            noteGain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+
+            const drawbarRatios = [1.0, 2.0, 1.5, 3.0, 4.0];
+            const drawbarGains = [0.45, 0.25, 0.18, 0.10, 0.08];
+            const oscillators = [];
+
+            drawbarRatios.forEach((ratio, idx) => {
                 const osc = ctx.createOscillator();
                 const oscGain = ctx.createGain();
+                
                 osc.type = 'sine';
-                osc.frequency.setValueAtTime(freq * mult, now);
-                osc.detune.setValueAtTime((Math.random() * 4 - 2), now);
-                oscGain.gain.setValueAtTime(amp * velocity * 0.3, now);
-                oscGain.gain.exponentialRampToValueAtTime(0.0001, now + (duration * decayMult * decayScale));
-                osc.connect(oscGain); oscGain.connect(filter);
-                osc.start(now); osc.stop(now + duration * decayMult * decayScale * 1.5);
+                osc.frequency.setValueAtTime(freq * ratio, now);
+                osc.detune.setValueAtTime(Math.sin(now * 38) * 4.5, now); 
+                
+                oscGain.gain.setValueAtTime(drawbarGains[idx], now);
+                osc.connect(oscGain);
+                oscGain.connect(noteGain);
+                
+                osc.start(now);
+                osc.stop(now + duration + 0.05);
                 oscillators.push(osc);
             });
 
-            const boardGain = ctx.createGain();
-            boardGain.gain.setValueAtTime(0.25, now);
-            const delay1 = ctx.createDelay(); delay1.delayTime.setValueAtTime(0.0011, now);
-            const delay2 = ctx.createDelay(); delay2.delayTime.setValueAtTime(0.0019, now);
-            const resFilter = ctx.createBiquadFilter();
-            resFilter.type = 'bandpass'; resFilter.frequency.setValueAtTime(320, now); resFilter.Q.setValueAtTime(1.4, now);
-
-            noteGain.connect(delay1); delay1.connect(resFilter); resFilter.connect(delay2); delay2.connect(boardGain);
-            boardGain.connect(destination);
-
-            const hammer = ctx.createOscillator();
-            const hammerGain = ctx.createGain();
-            hammer.type = 'triangle';
-            hammer.frequency.setValueAtTime(isGrand ? 160 : 120, now);
-            hammer.frequency.exponentialRampToValueAtTime(45, now + 0.02);
-            hammerGain.gain.setValueAtTime((isGrand ? 0.35 : 0.22) * velocity, now);
-            hammerGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.025);
-            hammer.connect(hammerGain); hammerGain.connect(noteGain);
-            
-            hammer.start(now); hammer.stop(now + 0.04);
-            osc1.start(now); osc2.start(now); osc3.start(now);
-            
-            const stopTime = now + duration * decayScale * 1.6;
-            osc1.stop(stopTime); osc2.stop(stopTime); osc3.stop(stopTime);
-
-            return { noteGain, oscillators: [...oscillators, hammer] };
+            return { noteGain, oscillators };
         }
 
         function fadeActiveChords(targetTime) {
@@ -2149,7 +2213,6 @@
             });
         }
 
-        // --- PREENCHIMENTO DO SELETOR DO DICIONÁRIO ---
         function populateChordDictionaryUI() {
             const rootSelect = document.getElementById('chordDictRoot');
             rootSelect.innerHTML = '';
@@ -2161,7 +2224,6 @@
             });
         }
 
-        // --- ARRASTE DO BPM ---
         function setupBpmDragAndScroll() {
             const input = document.getElementById('bpmInput');
             let dragging = false;
@@ -2209,7 +2271,6 @@
             });
         }
 
-        // --- ASSOCIAÇÃO DE EVENTOS ---
         function setupEventBindings() {
             document.getElementById('scaleSelector').addEventListener('change', (e) => {
                 state.scaleKey = e.target.value;
@@ -2337,12 +2398,11 @@
                     state.bpm = 115; state.subdivision = 1; 
                     document.getElementById('subdivision').value = "1";
                 } else if (state.trackGenre === 'blues') {
-                    state.bpm = 90; state.subdivision = 3; 
-                    document.getElementById('subdivision').value = "3";
+                    state.bpm = 90; state.subdivision = 2; 
+                    document.getElementById('subdivision').value = "2";
                 }
 
                 document.getElementById('bpmInput').value = state.bpm;
-                
                 getDiatonicChords();
                 buildBackingTrackProgression();
             });
@@ -2386,7 +2446,6 @@
             });
         }
 
-        // --- LOOP DE ATUALIZAÇÕES CONTÍNUAS ---
         setInterval(() => {
             if (state.loopRunning) {
                 if (state.metroPlaying && state.progressive.enabled) tickProgressiveBPM();
@@ -2394,7 +2453,6 @@
             }
         }, 100);
 
-        // --- INICIALIZAÇÃO GERAL ---
         window.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons();
             
