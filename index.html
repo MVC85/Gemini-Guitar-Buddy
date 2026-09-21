@@ -578,6 +578,38 @@
 
         const PENDULUM_MAX = 35; 
 
+        // --- STREAMING_CHUNK:Setting up URL State Management... ---
+        function updateURLHash() {
+            // Formata a URL (ex: #7/C%23/major) - Note que sustenidos (#) são codificados como %23 para não quebrar a URL
+            const hash = `#${state.numStrings}/${encodeURIComponent(state.rootNote)}/${state.scaleKey}`;
+            history.replaceState(null, null, hash);
+        }
+
+        function applyStateFromHash() {
+            if (window.location.hash) {
+                const parts = window.location.hash.substring(1).split('/');
+                if (parts.length === 3) {
+                    const parsedStrings = parseInt(parts[0], 10);
+                    if (parsedStrings === 6 || parsedStrings === 7) state.numStrings = parsedStrings;
+                    
+                    const parsedRoot = decodeURIComponent(parts[1]);
+                    if (ALL_NOTES.includes(parsedRoot)) state.rootNote = parsedRoot;
+                    
+                    const parsedScale = parts[2];
+                    if (SCALES[parsedScale]) state.scaleKey = parsedScale;
+                }
+            }
+        }
+
+        function updateStringBtns() {
+            const btn6 = document.getElementById('btn6Strings');
+            const btn7 = document.getElementById('btn7Strings');
+            if (btn6 && btn7) {
+                btn6.className = state.numStrings === 6 ? "px-2 py-0.5 text-[10px] rounded font-bold border bg-indigo-600 border-indigo-500 text-white transition" : "px-2 py-0.5 text-[10px] rounded font-bold border border-slate-700 bg-slate-800 text-slate-400 hover:bg-slate-755 transition";
+                btn7.className = state.numStrings === 7 ? "px-2 py-0.5 text-[10px] rounded font-bold border bg-indigo-600 border-indigo-500 text-white transition" : "px-2 py-0.5 text-[10px] rounded font-bold border border-slate-700 bg-slate-800 text-slate-400 hover:bg-slate-755 transition";
+            }
+        }
+
         // --- STREAMING_CHUNK:Setting up Audio Synthesis and new Drum Envelopes... ---
         function initAudio() {
             if (!state.audioCtx) {
@@ -1148,6 +1180,7 @@
                 
                 btn.addEventListener('click', () => {
                     state.rootNote = note;
+                    updateURLHash(); // Atualiza a URL quando a Tônica muda
                     renderRootSelector(); updateScaleInfo(); renderFretboard(); 
                     if (!state.wakeLock && ('wakeLock' in navigator)) requestWakeLock();
                 });
@@ -1465,7 +1498,12 @@
         }
 
         function setupEventBindings() {
-            document.getElementById('scaleSelector').addEventListener('change', (e) => { state.scaleKey = e.target.value; updateScaleInfo(); renderFretboard(); });
+            document.getElementById('scaleSelector').addEventListener('change', (e) => { 
+                state.scaleKey = e.target.value; 
+                updateURLHash(); // Atualiza a URL quando a Escala muda
+                updateScaleInfo(); 
+                renderFretboard(); 
+            });
 
             const btnViewNotes = document.getElementById('viewNoteNames'); const btnViewIntervals = document.getElementById('viewIntervals'); const btnViewFrets = document.getElementById('viewFrets');
             function updateViewModeStyle() {
@@ -1483,16 +1521,12 @@
             const btn6 = document.getElementById('btn6Strings');
             const btn7 = document.getElementById('btn7Strings');
             
-            function updateStringBtns() {
-                btn6.className = state.numStrings === 6 ? "px-2 py-0.5 text-[10px] rounded font-bold border bg-indigo-600 border-indigo-500 text-white transition" : "px-2 py-0.5 text-[10px] rounded font-bold border border-slate-700 bg-slate-800 text-slate-400 hover:bg-slate-755 transition";
-                btn7.className = state.numStrings === 7 ? "px-2 py-0.5 text-[10px] rounded font-bold border bg-indigo-600 border-indigo-500 text-white transition" : "px-2 py-0.5 text-[10px] rounded font-bold border border-slate-700 bg-slate-800 text-slate-400 hover:bg-slate-755 transition";
-            }
-            
             btn6.addEventListener('click', () => { 
                 state.numStrings = 6; 
                 state.activeVoicing = null; // reseta voicing ao mudar cordas
                 document.getElementById('voicingDisplay').classList.add('hidden');
                 updateStringBtns(); 
+                updateURLHash(); // Atualiza a URL quando a quantidade de cordas muda
                 renderFretboard(); 
             });
             btn7.addEventListener('click', () => { 
@@ -1500,6 +1534,7 @@
                 state.activeVoicing = null; // reseta voicing ao mudar cordas
                 document.getElementById('voicingDisplay').classList.add('hidden');
                 updateStringBtns(); 
+                updateURLHash(); // Atualiza a URL quando a quantidade de cordas muda
                 renderFretboard(); 
             });
 
@@ -1552,6 +1587,15 @@
 
         window.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons();
+            
+            // Lê o estado da URL e atualiza a interface inicial (Ex: #6/D/minorPentatonic)
+            applyStateFromHash();
+            updateURLHash(); // Força a barra de endereços a exibir o estado mesmo que a pessoa acesse limpo
+            
+            // Sincroniza a UI com as variáveis de estado carregadas
+            document.getElementById('scaleSelector').value = state.scaleKey;
+            updateStringBtns();
+            
             state.bpm = parseInt(document.getElementById('bpmInput').value) || 120;
             state.timeSignature = parseTS(document.getElementById('timeSignature').value);
             state.subdivision = parseInt(document.getElementById('subdivision').value) || 1;
