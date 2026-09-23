@@ -189,13 +189,23 @@
                         Casas
                     </button>
                 </div>
-                <div class="flex items-center justify-between mt-1 pt-1 border-t border-slate-800/60">
+                <div class="flex flex-row flex-wrap items-center justify-between gap-2 mt-2 pt-2 border-t border-slate-800/60">
                     <div class="flex gap-1 items-center">
                         <span class="text-[9px] text-slate-500 font-bold">CORDAS:</span>
                         <button id="btn6Strings" class="px-2 py-0.5 text-[10px] rounded font-bold border border-slate-700 bg-slate-800 text-slate-400 hover:bg-slate-755 transition">6</button>
                         <button id="btn7Strings" class="px-2 py-0.5 text-[10px] rounded font-bold border bg-indigo-600 border-indigo-500 text-white transition">7</button>
                     </div>
-                    <label class="flex items-center gap-1.5 text-[10px] text-slate-450 cursor-pointer select-none font-semibold hover:text-indigo-400 transition">
+                    <div class="flex gap-1 items-center">
+                        <span class="text-[9px] text-slate-500 font-bold">CASAS:</span>
+                        <select id="fretCountSelector" class="bg-slate-900 border border-slate-700 text-slate-300 text-[10px] rounded px-1 py-0.5 focus:outline-none focus:border-indigo-500">
+                            <option value="12">12</option>
+                            <option value="15">15</option>
+                            <option value="21">21</option>
+                            <option value="22">22</option>
+                            <option value="24" selected>24</option>
+                        </select>
+                    </div>
+                    <label class="flex items-center gap-1.5 text-[10px] text-slate-450 cursor-pointer select-none font-semibold hover:text-indigo-400 transition whitespace-nowrap">
                         <input type="checkbox" id="colorDegreesToggle" class="accent-indigo-500 rounded"/>
                         Cores por Grau
                     </label>
@@ -539,6 +549,7 @@
 
         let state = {
             numStrings: 7, // Nova propriedade do estado: Alterna entre 6 e 7
+            numFrets: 24,
             rootNote: 'C',
             scaleKey: 'major',
             tuningKey: 'standard',
@@ -743,7 +754,7 @@
             const tuning = TUNINGS[state.tuningKey];
             const scaleNotes = getScaleNotes();
             
-            const numFrets = 25; 
+            const numFrets = state.numFrets + 1; 
             const fretsArray = Array.from({length: numFrets}, (_, i) => i);
             const inlaysSingle = [3, 5, 7, 9, 15, 17, 19, 21];
             const inlaysDouble = [12, 24];
@@ -1536,6 +1547,11 @@
                 updateStringBtns(); 
                 updateURLHash(); // Atualiza a URL quando a quantidade de cordas muda
                 renderFretboard(); 
+            });
+
+            document.getElementById('fretCountSelector').addEventListener('change', (e) => {
+                state.numFrets = parseInt(e.target.value, 10);
+                renderFretboard();
             });
 
             document.getElementById('colorDegreesToggle').addEventListener('change', (e) => { state.colorDegrees = e.target.checked; renderFretboard(); });
