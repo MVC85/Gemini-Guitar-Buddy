@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GUITAR BUDDY - 7-String Guitar Pro</title>
+    <title>GUITAR BUDDY</title>
     <!-- Favicon do site -->
     <link class="rounded-md" rel="icon" type="image/png" href="favicon.png">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -109,6 +109,27 @@
             background: #6366f1;
             opacity: 0;
             transition: opacity 0.05s;
+        }
+
+        .caged-shape-btn {
+            padding: 0.35rem 0;
+            border-radius: 0.45rem;
+            border: 1px solid #334155;
+            background: #0f172a;
+            color: #94a3b8;
+            font-size: 0.72rem;
+            font-weight: 800;
+            transition: all 0.15s ease;
+        }
+        .caged-shape-btn:hover {
+            background: #1e293b;
+            color: #e2e8f0;
+        }
+        .caged-shape-btn.active {
+            background: #059669;
+            border-color: #34d399;
+            color: #ffffff;
+            box-shadow: 0 0 10px rgba(16,185,129,0.20);
         }
 
         /* Braço: espaçamento proporcional das casas e experiência móvel */
@@ -428,11 +449,13 @@
                     <i data-lucide="activity" class="w-3.5 h-3.5 text-indigo-400"></i> ESCALA / MODO
                 </label>
                 <select id="scaleSelector" class="w-full bg-slate-900 border border-slate-700 rounded-lg py-1.5 px-3 text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium text-xs sm:text-sm">
-                    <optgroup label="Escalas Comuns">
+                    <optgroup label="Fundamentais">
                         <option value="major" selected>Maior Natural (Jônio)</option>
                         <option value="minor">Menor Natural (Eólio)</option>
-                        <option value="majorPentatonic">Pentatónica Maior</option>
-                        <option value="minorPentatonic">Pentatónica Menor</option>
+                    </optgroup>
+                    <optgroup label="Pentatônicas & Blues">
+                        <option value="majorPentatonic">Pentatônica Maior</option>
+                        <option value="minorPentatonic">Pentatônica Menor</option>
                         <option value="blues">Blues</option>
                     </optgroup>
                     <optgroup label="Modos Gregos">
@@ -442,9 +465,28 @@
                         <option value="mixolydian">Mixolídio</option>
                         <option value="locrian">Lócrio</option>
                     </optgroup>
-                    <optgroup label="Menores Especiais">
-                        <option value="harmonicMinor">Menor Harmónica</option>
-                        <option value="melodicMinor">Menor Melódica</option>
+                    <optgroup label="Menores & Harmônicas">
+                        <option value="harmonicMinor">Menor Harmônica</option>
+                        <option value="melodicMinor">Menor Melódica (ascendente)</option>
+                        <option value="harmonicMajor">Maior Harmônica</option>
+                        <option value="neapolitanMinor">Menor Napolitana</option>
+                    </optgroup>
+                    <optgroup label="Melódica — Modos Jazz">
+                        <option value="lydianDominant">Lídio Dominante</option>
+                        <option value="mixolydianB6">Mixolídio ♭6</option>
+                        <option value="dorianB2">Dórico ♭2</option>
+                        <option value="phrygianDominant">Frígio Dominante</option>
+                        <option value="altered">Alterada (Superlócria)</option>
+                    </optgroup>
+                    <optgroup label="Simétricas">
+                        <option value="wholeTone">Tons Inteiros</option>
+                        <option value="diminishedWH">Diminuta (Tom–Semitom)</option>
+                        <option value="diminishedHW">Diminuta (Semitom–Tom)</option>
+                        <option value="chromatic">Cromática</option>
+                    </optgroup>
+                    <optgroup label="Exóticas">
+                        <option value="doubleHarmonic">Duplo Harmônica</option>
+                        <option value="hungarianMinor">Húngara Menor</option>
                     </optgroup>
                 </select>
             </div>
@@ -516,7 +558,7 @@
 
                     <div class="border-t border-slate-800 pt-4 space-y-3">
                         <h4 class="text-xs font-bold text-emerald-400 tracking-wider flex items-center gap-1.5">
-                            <i data-lucide="book-open" class="w-3.5 h-3.5"></i> DICIONÁRIO DE ACORDES
+                            <i data-lucide="book-open" class="w-3.5 h-3.5"></i> DICIONÁRIO DE ACORDES · CAGED
                         </h4>
                         <div class="grid grid-cols-2 gap-2">
                             <div>
@@ -539,6 +581,20 @@
                                     <option value="minMaj7">Menor (mMaj7)</option>
                                 </select>
                             </div>
+                        </div>
+                        <div class="bg-slate-950/40 border border-slate-800 rounded-lg p-2.5 space-y-2">
+                            <div class="flex items-center justify-between">
+                                <span class="text-[9px] font-bold text-slate-400 tracking-wider">FORMAS CAGED</span>
+                                <span id="cagedPositionLabel" class="text-[9px] text-emerald-400 font-mono">Forma E</span>
+                            </div>
+                            <div class="grid grid-cols-5 gap-1" id="cagedShapeSelector">
+                                <button class="caged-shape-btn" data-shape="C">C</button>
+                                <button class="caged-shape-btn" data-shape="A">A</button>
+                                <button class="caged-shape-btn" data-shape="G">G</button>
+                                <button class="caged-shape-btn active" data-shape="E">E</button>
+                                <button class="caged-shape-btn" data-shape="D">D</button>
+                            </div>
+                            <div id="cagedHint" class="text-[9px] text-slate-500 leading-relaxed">As cinco formas são transpostas automaticamente para a tonalidade escolhida.</div>
                         </div>
                         <div class="flex gap-1.5">
                             <button id="btnShowVoicing" class="flex-1 bg-emerald-600/30 hover:bg-emerald-700/40 border border-emerald-500/30 text-emerald-300 text-xs font-bold py-1.5 px-3 rounded transition flex items-center justify-center gap-1.5">
@@ -807,18 +863,31 @@
         const ALL_NOTES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
         
         const SCALES = {
-            major: { name: "Maior Natural (Jônio)", intervals: [0, 2, 4, 5, 7, 9, 11], names: ["I", "II", "III", "IV", "V", "VI", "VII"], formula: "T - T - ST - T - T - T - ST" },
-            minor: { name: "Menor Natural (Eólio)", intervals: [0, 2, 3, 5, 7, 8, 10], names: ["I", "II", "♭III", "IV", "V", "♭VI", "♭VII"], formula: "T - ST - T - T - ST - T - T" },
-            majorPentatonic: { name: "Pentatónica Maior", intervals: [0, 2, 4, 7, 9], names: ["I", "II", "III", "V", "VI"], formula: "T - T - 1.5T - T - 1.5T" },
-            minorPentatonic: { name: "Pentatónica Menor", intervals: [0, 3, 5, 7, 10], names: ["I", "♭III", "IV", "V", "♭VII"], formula: "1.5T - T - T - 1.5T - T" },
-            blues: { name: "Blues", intervals: [0, 3, 5, 6, 7, 10], names: ["I", "♭III", "IV", "♭V", "V", "♭VII"], formula: "1.5T - T - ST - ST - 1.5T - T" },
-            dorian: { name: "Dórico", intervals: [0, 2, 3, 5, 7, 9, 10], names: ["I", "II", "♭III", "IV", "V", "VI", "♭VII"], formula: "T - ST - T - T - T - ST - T" },
-            phrygian: { name: "Frígio", intervals: [0, 1, 3, 5, 7, 8, 10], names: ["I", "♭II", "♭III", "IV", "V", "♭VI", "♭VII"], formula: "ST - T - T - T - ST - T - T" },
-            lydian: { name: "Lídio", intervals: [0, 2, 4, 6, 7, 9, 11], names: ["I", "II", "III", "♯IV", "V", "VI", "VII"], formula: "T - T - T - ST - T - T - ST" },
-            mixolydian: { name: "Mixolídio", intervals: [0, 2, 4, 5, 7, 9, 10], names: ["I", "II", "III", "IV", "V", "VI", "♭VII"], formula: "T - T - ST - T - T - ST - T" },
-            locrian: { name: "Lócrio", intervals: [0, 1, 3, 5, 6, 8, 10], names: ["I", "♭II", "♭III", "IV", "♭V", "♭VI", "♭VII"], formula: "ST - T - T - ST - T - T - T" },
-            harmonicMinor: { name: "Menor Harmónica", intervals: [0, 2, 3, 5, 7, 8, 11], names: ["I", "II", "♭III", "IV", "V", "♭VI", "VII"], formula: "T - ST - T - T - ST - 1.5T - ST" },
-            melodicMinor: { name: "Menor Melódica", intervals: [0, 2, 3, 5, 7, 9, 11], names: ["I", "II", "♭III", "IV", "V", "VI", "VII"], formula: "T - ST - T - T - T - T - ST" }
+            major: { name: "Maior Natural (Jônio)", intervals: [0,2,4,5,7,9,11], names: ["I","II","III","IV","V","VI","VII"], formula: "T - T - ST - T - T - T - ST" },
+            minor: { name: "Menor Natural (Eólio)", intervals: [0,2,3,5,7,8,10], names: ["I","II","♭III","IV","V","♭VI","♭VII"], formula: "T - ST - T - T - ST - T - T" },
+            majorPentatonic: { name: "Pentatônica Maior", intervals: [0,2,4,7,9], names: ["I","II","III","V","VI"], formula: "T - T - 1.5T - T - 1.5T" },
+            minorPentatonic: { name: "Pentatônica Menor", intervals: [0,3,5,7,10], names: ["I","♭III","IV","V","♭VII"], formula: "1.5T - T - T - 1.5T - T" },
+            blues: { name: "Blues", intervals: [0,3,5,6,7,10], names: ["I","♭III","IV","♭V","V","♭VII"], formula: "1.5T - T - ST - ST - 1.5T - T" },
+            dorian: { name: "Dórico", intervals: [0,2,3,5,7,9,10], names: ["I","II","♭III","IV","V","VI","♭VII"], formula: "T - ST - T - T - T - ST - T" },
+            phrygian: { name: "Frígio", intervals: [0,1,3,5,7,8,10], names: ["I","♭II","♭III","IV","V","♭VI","♭VII"], formula: "ST - T - T - T - ST - T - T" },
+            lydian: { name: "Lídio", intervals: [0,2,4,6,7,9,11], names: ["I","II","III","♯IV","V","VI","VII"], formula: "T - T - T - ST - T - T - ST" },
+            mixolydian: { name: "Mixolídio", intervals: [0,2,4,5,7,9,10], names: ["I","II","III","IV","V","VI","♭VII"], formula: "T - T - ST - T - T - ST - T" },
+            locrian: { name: "Lócrio", intervals: [0,1,3,5,6,8,10], names: ["I","♭II","♭III","IV","♭V","♭VI","♭VII"], formula: "ST - T - T - ST - T - T - T" },
+            harmonicMinor: { name: "Menor Harmônica", intervals: [0,2,3,5,7,8,11], names: ["I","II","♭III","IV","V","♭VI","VII"], formula: "T - ST - T - T - ST - 1.5T - ST" },
+            melodicMinor: { name: "Menor Melódica (ascendente)", intervals: [0,2,3,5,7,9,11], names: ["I","II","♭III","IV","V","VI","VII"], formula: "T - ST - T - T - T - T - ST" },
+            harmonicMajor: { name: "Maior Harmônica", intervals: [0,2,4,5,7,8,11], names: ["I","II","III","IV","V","♭VI","VII"], formula: "T - T - ST - T - ST - 1.5T - ST" },
+            neapolitanMinor: { name: "Menor Napolitana", intervals: [0,1,3,5,7,8,11], names: ["I","♭II","♭III","IV","V","♭VI","VII"], formula: "ST - T - T - T - ST - 1.5T - ST" },
+            lydianDominant: { name: "Lídio Dominante", intervals: [0,2,4,6,7,9,10], names: ["I","II","III","♯IV","V","VI","♭VII"], formula: "T - T - T - ST - T - ST - T" },
+            mixolydianB6: { name: "Mixolídio ♭6", intervals: [0,2,4,5,7,8,10], names: ["I","II","III","IV","V","♭VI","♭VII"], formula: "T - T - ST - T - ST - T - T" },
+            dorianB2: { name: "Dórico ♭2", intervals: [0,1,3,5,7,9,10], names: ["I","♭II","♭III","IV","V","VI","♭VII"], formula: "ST - T - T - T - T - ST - T" },
+            phrygianDominant: { name: "Frígio Dominante", intervals: [0,1,4,5,7,8,10], names: ["I","♭II","III","IV","V","♭VI","♭VII"], formula: "ST - 1.5T - ST - T - ST - T - T" },
+            altered: { name: "Alterada (Superlócria)", intervals: [0,1,3,4,6,8,10], names: ["I","♭II","♯II","III","♭V","♯V","♭VII"], formula: "ST - T - ST - T - T - ST - T" },
+            wholeTone: { name: "Tons Inteiros", intervals: [0,2,4,6,8,10], names: ["I","II","III","♯IV","♯V","♯VI"], formula: "T - T - T - T - T - T" },
+            diminishedWH: { name: "Diminuta (Tom–Semitom)", intervals: [0,2,3,5,6,8,9,11], names: ["I","II","♭III","IV","♭V","♭VI","VI","VII"], formula: "T - ST - T - ST - T - ST - T - ST" },
+            diminishedHW: { name: "Diminuta (Semitom–Tom)", intervals: [0,1,3,4,6,7,9,10], names: ["I","♭II","♭III","III","♯IV","V","VI","♭VII"], formula: "ST - T - ST - T - ST - T - ST - T" },
+            chromatic: { name: "Cromática", intervals: [0,1,2,3,4,5,6,7,8,9,10,11], names: ["I","♭II","II","♭III","III","IV","♯IV","V","♭VI","VI","♭VII","VII"], formula: "12 semitons" },
+            doubleHarmonic: { name: "Duplo Harmônica", intervals: [0,1,4,5,7,8,11], names: ["I","♭II","III","IV","V","♭VI","VII"], formula: "ST - 1.5T - ST - T - ST - 1.5T - ST" },
+            hungarianMinor: { name: "Húngara Menor", intervals: [0,2,3,6,7,8,11], names: ["I","II","♭III","♯IV","V","♭VI","VII"], formula: "T - ST - 1.5T - ST - ST - 1.5T - ST" }
         };
 
         const TUNINGS = {
@@ -980,73 +1049,137 @@
             };
         }
 
+        const CAGED_SHAPES = {
+            maj: {
+                C: { frets: [0,1,0,2,3,null], anchorString: 4, anchorFret: 3 },
+                A: { frets: [0,2,2,2,0,null], anchorString: 4, anchorFret: 0 },
+                G: { frets: [3,0,0,0,2,3], anchorString: 5, anchorFret: 3 },
+                E: { frets: [0,0,1,2,2,0], anchorString: 5, anchorFret: 0 },
+                D: { frets: [2,3,2,0,null,null], anchorString: 3, anchorFret: 0 }
+            },
+            min: {
+                C: { frets: [3,4,5,5,3,null], anchorString: 4, anchorFret: 3 },
+                A: { frets: [0,1,2,2,0,null], anchorString: 4, anchorFret: 0 },
+                G: { frets: [3,3,3,5,5,3], anchorString: 5, anchorFret: 3 },
+                E: { frets: [0,0,0,2,2,0], anchorString: 5, anchorFret: 0 },
+                D: { frets: [1,3,2,0,null,null], anchorString: 3, anchorFret: 0 }
+            },
+            dom7: {
+                C: { frets: [0,1,3,2,3,null], anchorString: 4, anchorFret: 3 },
+                A: { frets: [0,2,0,2,0,null], anchorString: 4, anchorFret: 0 },
+                G: { frets: [1,0,0,0,2,3], anchorString: 5, anchorFret: 3 },
+                E: { frets: [0,0,1,0,2,0], anchorString: 5, anchorFret: 0 },
+                D: { frets: [2,1,2,0,null,null], anchorString: 3, anchorFret: 0 }
+            },
+            maj7: {
+                C: { frets: [0,0,0,2,3,null], anchorString: 4, anchorFret: 3 },
+                A: { frets: [0,2,1,2,0,null], anchorString: 4, anchorFret: 0 },
+                G: { frets: [2,0,0,0,2,3], anchorString: 5, anchorFret: 3 },
+                E: { frets: [0,0,1,1,2,0], anchorString: 5, anchorFret: 0 },
+                D: { frets: [2,2,2,0,null,null], anchorString: 3, anchorFret: 0 }
+            },
+            min7: {
+                C: { frets: [3,4,3,5,3,null], anchorString: 4, anchorFret: 3 },
+                A: { frets: [0,1,0,2,0,null], anchorString: 4, anchorFret: 0 },
+                G: { frets: [3,3,3,3,5,3], anchorString: 5, anchorFret: 3 },
+                E: { frets: [0,3,0,2,2,0], anchorString: 5, anchorFret: 0 },
+                D: { frets: [1,1,2,0,null,null], anchorString: 3, anchorFret: 0 }
+            }
+        };
+
+        const CAGED_FORM_ORDER = ['C','A','G','E','D'];
+        const CAGED_TYPE_NAMES = { maj:'Maior', min:'Menor', dom7:'Dominante 7', maj7:'Maj7', min7:'m7' };
+
+        function getOpenMidiForString(stringIdx) {
+            return TUNINGS[state.tuningKey].midi[stringIdx];
+        }
+
+        function transposeCagedShape(root, type, shapeKey) {
+            const shapeSet = CAGED_SHAPES[type];
+            if (!shapeSet || !shapeSet[shapeKey]) return null;
+            const shape = shapeSet[shapeKey];
+            const rootPitch = ALL_NOTES.indexOf(root);
+            const openPitch = getOpenMidiForString(shape.anchorString) % 12;
+            let targetRootFret = (rootPitch - openPitch + 12) % 12;
+            let shift = targetRootFret - shape.anchorFret;
+
+            while (shape.frets.some(f => f !== null && f + shift < 0)) {
+                shift += 12;
+            }
+            while (shape.frets.some(f => f !== null && f + shift > 24)) {
+                shift -= 12;
+            }
+
+            const frets = shape.frets.map(f => f === null ? null : f + shift);
+            if (frets.some(f => f !== null && (f < 0 || f > 24))) return null;
+
+            return { frets, shift, rootFret: targetRootFret + (shape.anchorFret ? shift - (targetRootFret - shape.anchorFret) : shift) };
+        }
+
+        function calculateCagedVoicing(root, type, shapeKey) {
+            const transposed = transposeCagedShape(root, type, shapeKey);
+            if (!transposed) return null;
+            const is7 = state.numStrings === 7;
+            const frets = [...transposed.frets];
+            if (is7) frets.push(null); // 7ª corda grave (B) não pertence à forma CAGED de 6 cordas.
+            return { frets, shift: transposed.shift };
+        }
+
         function calculateVoicing(root, type) {
-            const rootIdx = ALL_NOTES.indexOf(root);
             const is7String = state.numStrings === 7;
             const bIdx = ALL_NOTES.indexOf(is7String ? 'B' : 'E');
-            
-            // Calculo da distância da fundamental para a corda mais grave (B para 7, E para 6)
-            let R = (rootIdx - bIdx + 12) % 12;
-
-            let voicing = is7String 
-                ? [null, null, null, null, null, null, null] 
-                : [null, null, null, null, null, null]; 
-            
+            const R = (ALL_NOTES.indexOf(root) - bIdx + 12) % 12;
+            const voicing = is7String ? [null,null,null,null,null,null,null] : [null,null,null,null,null,null];
             const bassIndex = is7String ? 6 : 5;
-            voicing[bassIndex] = R;       
-            voicing[bassIndex - 1] = null; // Abafa a 5ª/A (em 6C) ou 6ª/E (em 7C)
-
-            const off = is7String ? 1 : 0; // Deslocamento de index
-
-            if (type === 'maj') {
-                voicing[4+off] = R + 2; 
-                voicing[3+off] = R + 2; 
-                voicing[2+off] = R + 1; 
-            } else if (type === 'min') {
-                voicing[4+off] = R + 2;
-                voicing[3+off] = R + 2;
-                voicing[2+off] = R;
-            } else if (type === 'dom7') {
-                voicing[4+off] = R + 2;
-                voicing[3+off] = R;
-                voicing[2+off] = R + 1;
-            } else if (type === 'maj7') {
-                voicing[4+off] = R + 2;
-                voicing[3+off] = R + 1;
-                voicing[2+off] = R + 1;
-            } else if (type === 'min7') {
-                voicing[4+off] = R + 2;
-                voicing[3+off] = R;
-                voicing[2+off] = R;
-            } else if (type === 'm7b5') {
-                voicing[4+off] = R + 1;
-                voicing[3+off] = R;
-                voicing[2+off] = R;
-            }
+            voicing[bassIndex] = R;
+            voicing[bassIndex - 1] = null;
+            const off = is7String ? 1 : 0;
+            if (type === 'maj') { voicing[4+off]=R+2; voicing[3+off]=R+2; voicing[2+off]=R+1; }
+            else if (type === 'min') { voicing[4+off]=R+2; voicing[3+off]=R+2; voicing[2+off]=R; }
+            else if (type === 'dom7') { voicing[4+off]=R+2; voicing[3+off]=R; voicing[2+off]=R+1; }
+            else if (type === 'maj7') { voicing[4+off]=R+2; voicing[3+off]=R+1; voicing[2+off]=R+1; }
+            else if (type === 'min7') { voicing[4+off]=R+2; voicing[3+off]=R; voicing[2+off]=R; }
+            else if (type === 'm7b5') { voicing[4+off]=R+1; voicing[3+off]=R; voicing[2+off]=R; }
             return voicing;
         }
 
-        function displayVoicingOnFretboard() {
+        function getActiveCagedShape() {
+            const selected = document.querySelector('.caged-shape-btn.active');
+            return selected ? selected.dataset.shape : 'E';
+        }
+
+        function displayVoicingOnFretboard(shapeOverride = null) {
             const root = document.getElementById('chordDictRoot').value;
             const type = document.getElementById('chordDictType').value;
-            state.activeVoicing = calculateVoicing(root, type);
+            const shape = shapeOverride || getActiveCagedShape();
+            let caged = calculateCagedVoicing(root, type, shape);
+            let usingCaged = !!caged;
+
+            if (!caged) {
+                state.activeVoicing = calculateVoicing(root, type);
+            } else {
+                state.activeVoicing = caged.frets;
+            }
             renderFretboard();
 
             const display = document.getElementById('voicingDisplay');
             display.classList.remove('hidden');
-
-            const labels7 = ['1ª (E)', '2ª (B)', '3ª (G)', '4ª (D)', '5ª (A)', '6ª (E)', '7ª (B)'];
-            const labels6 = ['1ª (E)', '2ª (B)', '3ª (G)', '4ª (D)', '5ª (A)', '6ª (E)'];
+            const labels7 = ['1ª (E)','2ª (B)','3ª (G)','4ª (D)','5ª (A)','6ª (E)','7ª (B)'];
+            const labels6 = ['1ª (E)','2ª (B)','3ª (G)','4ª (D)','5ª (A)','6ª (E)'];
             const labels = state.numStrings === 7 ? labels7 : labels6;
-
             const typeNames = { maj:'', min:'m', dom7:'7', maj7:'maj7', min7:'m7', m7b5:'m7b5', dim:'dim', aug:'aug', dim7:'dim7', minMaj7:'mMaj7' };
-            let output = `<strong class="text-emerald-400">Dedilhado ${root}${typeNames[type] || type}:</strong><br>`;
+            const suffix = typeNames[type] ?? type;
+            const title = usingCaged ? `${root}${suffix} · Forma ${shape}` : `${root}${suffix}`;
+            let output = `<strong class="text-emerald-400">${title}</strong><br>`;
+            if (usingCaged) output += `<span class="text-slate-500">Sistema CAGED · forma transposta</span><br>`;
             for (let i = state.numStrings - 1; i >= 0; i--) {
-                const traste = state.activeVoicing[i];
-                output += `${labels[i]}: <span class="font-bold text-slate-100">${traste === null ? '✕ (Abafar)' : traste}</span><br>`;
+                const fret = state.activeVoicing[i];
+                output += `${labels[i]}: <span class="font-bold text-slate-100">${fret === null ? '✕ (Abafar)' : fret}</span><br>`;
             }
             display.innerHTML = output;
+            document.getElementById('cagedPositionLabel').textContent = usingCaged ? `Forma ${shape}` : 'Voicing';
         }
+
 
         // --- STREAMING_CHUNK:Dynamic Fretboard rendering... ---
         function getIntervalColorAndGlow(intervalName, isRoot) {
@@ -1524,7 +1657,7 @@
                 btn.addEventListener('click', () => {
                     state.rootNote = note;
                     updateURLHash(); // Atualiza a URL quando a Tônica muda
-                    renderRootSelector(); updateScaleInfo(); renderFretboard(); 
+                    renderRootSelector(); updateScaleInfo(); renderFretboard(); document.getElementById('chordDictRoot').value = state.rootNote; 
                     if (!state.wakeLock && ('wakeLock' in navigator)) requestWakeLock();
                 });
                 container.appendChild(btn);
@@ -1867,7 +2000,7 @@
         function applyPresetState(p) {
             if (!p) return;
             state.numStrings = p.numStrings === 6 ? 6 : 7;
-            state.numFrets = [12,15,21,22,24].includes(p.numFrets) ? p.numFrets : 24;
+            state.numFrets = [21,22,24].includes(p.numFrets) ? p.numFrets : 24;
             state.rootNote = ALL_NOTES.includes(p.rootNote) ? p.rootNote : 'C';
             state.scaleKey = SCALES[p.scaleKey] ? p.scaleKey : 'major';
             state.viewMode = ['notes','intervals','frets'].includes(p.viewMode) ? p.viewMode : 'frets';
@@ -1973,6 +2106,20 @@
             applyTheme(saved, false);
         }
 
+        function updateCagedShapeStyle() {
+            const type = document.getElementById('chordDictType').value;
+            const supported = !!CAGED_SHAPES[type];
+            document.querySelectorAll('.caged-shape-btn').forEach(btn => {
+                const active = btn.classList.contains('active');
+                btn.disabled = !supported;
+                btn.className = `caged-shape-btn ${active && supported ? 'active' : ''} ${supported ? '' : 'opacity-40 cursor-not-allowed'}`;
+            });
+            const hint = document.getElementById('cagedHint');
+            hint.textContent = supported
+                ? 'As cinco formas são transpostas automaticamente para a tonalidade escolhida.'
+                : 'O sistema CAGED está disponível aqui para Maior, Menor, Dominante 7, Maj7 e m7. Use “Ver no Braço” para o voicing tradicional nos demais tipos.';
+        }
+
         function setupEventBindings() {
             document.getElementById('themeSelector').addEventListener('change', (e) => applyTheme(e.target.value));
             document.getElementById('scaleSelector').addEventListener('change', (e) => { 
@@ -2037,7 +2184,16 @@
                 renderFretboard();
             });
 
-            document.getElementById('btnShowVoicing').addEventListener('click', displayVoicingOnFretboard);
+            document.getElementById('btnShowVoicing').addEventListener('click', () => displayVoicingOnFretboard());
+            document.getElementById('chordDictType').addEventListener('change', () => { updateCagedShapeStyle(); });
+            document.querySelectorAll('.caged-shape-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    if (btn.disabled) return;
+                    document.querySelectorAll('.caged-shape-btn').forEach(x => x.classList.remove('active'));
+                    btn.classList.add('active');
+                    displayVoicingOnFretboard(btn.dataset.shape);
+                });
+            });
             document.getElementById('btnClearVoicing').addEventListener('click', () => { state.activeVoicing = null; document.getElementById('voicingDisplay').classList.add('hidden'); renderFretboard(); });
             document.getElementById('increaseBpm').addEventListener('click', () => { state.bpm = Math.min(400, state.bpm + 1); document.getElementById('bpmInput').value = state.bpm; });
             document.getElementById('decreaseBpm').addEventListener('click', () => { state.bpm = Math.max(20, state.bpm - 1); document.getElementById('bpmInput').value = state.bpm; });
@@ -2092,6 +2248,8 @@
             state.subdivision = parseInt(document.getElementById('subdivision').value) || 1;
             
             populateChordDictionaryUI();
+            document.getElementById('chordDictRoot').value = state.rootNote;
+            updateCagedShapeStyle();
             renderRootSelector();
             buildAccents();
             updateScaleInfo();
