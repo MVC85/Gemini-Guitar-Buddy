@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-PT">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -103,12 +103,25 @@
             -webkit-appearance: none;
         }
 
-        /* Flash do Metrónomo */
+        /* Flash do Metrônomo */
         #beatFlash {
             position: fixed; inset: 0; pointer-events: none; z-index: 999;
             background: #6366f1;
             opacity: 0;
             transition: opacity 0.05s;
+        }
+
+        /* Braço: espaçamento proporcional das casas e experiência móvel */
+        #fretboardContainer { overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-gutter: stable; }
+        #fretboard { min-width: 1100px; }
+        #fretboard:fullscreen {
+            width: 100vw;
+            min-width: 0;
+            min-height: 100vh;
+            height: 100vh;
+            overflow: auto;
+            padding: 1rem;
+            background: #020617;
         }
     </style>
 </head>
@@ -127,10 +140,10 @@
             
             <div class="flex flex-wrap gap-2 justify-center">
                 <div id="silBadge" class="hidden font-mono text-xs bg-red-950/40 border border-red-700/50 text-red-400 px-2 py-1 rounded-md tracking-wider">SILÊNCIO</div>
-                <button id="btnToggleWakeLock" class="flex items-center gap-2 bg-slate-800 hover:bg-slate-755 text-slate-200 py-1.5 px-3 rounded-lg border border-slate-700 transition text-xs font-semibold">
-                    <i data-lucide="sun" class="w-3.5 h-3.5"></i> Tela Ativa: <span id="wakeLockStatus" class="font-bold text-slate-450">Não</span>
+                <button id="btnToggleWakeLock" class="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-slate-200 py-1.5 px-3 rounded-lg border border-slate-700 transition text-xs font-semibold">
+                    <i data-lucide="sun" class="w-3.5 h-3.5"></i> Tela Ativa: <span id="wakeLockStatus" class="font-bold text-slate-400">Não</span>
                 </button>
-                <button id="btnToggleFullscreen" class="flex items-center gap-2 bg-slate-800 hover:bg-slate-755 text-slate-200 py-1.5 px-3 rounded-lg border border-slate-700 transition text-xs font-semibold">
+                <button id="btnToggleFullscreen" class="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-slate-200 py-1.5 px-3 rounded-lg border border-slate-700 transition text-xs font-semibold">
                     <i data-lucide="maximize" class="w-3.5 h-3.5"></i> Tela Inteira
                 </button>
             </div>
@@ -139,7 +152,7 @@
 
     <main class="w-full mx-auto p-2 sm:p-4 flex-grow space-y-4">
         
-        <section class="grid grid-cols-1 md:grid-cols-12 gap-3 bg-slate-900 p-3.5 rounded-xl border border-slate-800 shadow-xl items-end">
+        <section class="grid grid-cols-1 md:grid-cols-12 gap-3 bg-slate-900 p-3.5 rounded-xl border border-slate-800 shadow-xl items-start">
             <div class="md:col-span-5 space-y-1.5">
                 <label class="block text-xs font-semibold text-slate-400 flex items-center gap-1.5">
                     <i data-lucide="key" class="w-3.5 h-3.5 text-indigo-400"></i> TOM FUNDAMENTAL
@@ -152,9 +165,9 @@
                 <label for="scaleSelector" class="block text-xs font-semibold text-slate-400 flex items-center gap-1.5">
                     <i data-lucide="activity" class="w-3.5 h-3.5 text-indigo-400"></i> ESCALA / MODO
                 </label>
-                <select id="scaleSelector" class="w-full bg-slate-900 border border-slate-700 rounded-lg py-1.5 px-3 text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-550 font-medium text-xs sm:text-sm">
+                <select id="scaleSelector" class="w-full bg-slate-900 border border-slate-700 rounded-lg py-1.5 px-3 text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium text-xs sm:text-sm">
                     <optgroup label="Escalas Comuns">
-                        <option value="major" selected>Maior Natural (Jónio)</option>
+                        <option value="major" selected>Maior Natural (Jônio)</option>
                         <option value="minor">Menor Natural (Eólio)</option>
                         <option value="majorPentatonic">Pentatónica Maior</option>
                         <option value="minorPentatonic">Pentatónica Menor</option>
@@ -179,10 +192,10 @@
                     <i data-lucide="eye" class="w-3.5 h-3.5 text-indigo-400"></i> EXIBIÇÃO NO BRAÇO
                 </label>
                 <div class="grid grid-cols-3 gap-1">
-                    <button id="viewNoteNames" class="py-1.5 px-1 text-center rounded-lg text-xs font-bold border border-slate-700 bg-slate-800 text-slate-400 hover:bg-slate-755 transition">
+                    <button id="viewNoteNames" class="py-1.5 px-1 text-center rounded-lg text-xs font-bold border border-slate-700 bg-slate-800 text-slate-400 hover:bg-slate-700 transition">
                         Notas
                     </button>
-                    <button id="viewIntervals" class="py-1.5 px-1 text-center rounded-lg text-xs font-bold border border-slate-700 bg-slate-800 text-slate-400 hover:bg-slate-755 transition">
+                    <button id="viewIntervals" class="py-1.5 px-1 text-center rounded-lg text-xs font-bold border border-slate-700 bg-slate-800 text-slate-400 hover:bg-slate-700 transition">
                         Graus
                     </button>
                     <button id="viewFrets" class="py-1.5 px-1 text-center rounded-lg text-xs font-bold border bg-indigo-600 border-indigo-500 text-white transition">
@@ -192,20 +205,18 @@
                 <div class="flex flex-row flex-wrap items-center justify-between gap-2 mt-2 pt-2 border-t border-slate-800/60">
                     <div class="flex gap-1 items-center">
                         <span class="text-[9px] text-slate-500 font-bold">CORDAS:</span>
-                        <button id="btn6Strings" class="px-2 py-0.5 text-[10px] rounded font-bold border border-slate-700 bg-slate-800 text-slate-400 hover:bg-slate-755 transition">6</button>
+                        <button id="btn6Strings" class="px-2 py-0.5 text-[10px] rounded font-bold border border-slate-700 bg-slate-800 text-slate-400 hover:bg-slate-700 transition">6</button>
                         <button id="btn7Strings" class="px-2 py-0.5 text-[10px] rounded font-bold border bg-indigo-600 border-indigo-500 text-white transition">7</button>
                     </div>
                     <div class="flex gap-1 items-center">
                         <span class="text-[9px] text-slate-500 font-bold">CASAS:</span>
                         <select id="fretCountSelector" class="bg-slate-900 border border-slate-700 text-slate-300 text-[10px] rounded px-1 py-0.5 focus:outline-none focus:border-indigo-500">
-                            <option value="12">12</option>
-                            <option value="15">15</option>
                             <option value="21">21</option>
                             <option value="22">22</option>
                             <option value="24" selected>24</option>
                         </select>
                     </div>
-                    <label class="flex items-center gap-1.5 text-[10px] text-slate-450 cursor-pointer select-none font-semibold hover:text-indigo-400 transition whitespace-nowrap">
+                    <label class="flex items-center gap-1.5 text-[10px] text-slate-400 cursor-pointer select-none font-semibold hover:text-indigo-400 transition whitespace-nowrap">
                         <input type="checkbox" id="colorDegreesToggle" class="accent-indigo-500 rounded"/>
                         Cores por Grau
                     </label>
@@ -220,9 +231,9 @@
                 </h2>
             </div>
 
-            <div class="w-full overflow-hidden pb-2 pt-1">
+            <div class="w-full overflow-x-auto overflow-y-hidden pb-2 pt-1">
                 <div class="relative w-full select-none" id="fretboardContainer">
-                    <div id="fretboard" class="relative bg-amber-950/15 border-t border-b border-slate-700/60 rounded overflow-hidden">
+                    <div id="fretboard" class="relative bg-amber-950/15 border-t border-b border-slate-700/60 rounded overflow-hidden min-w-[1100px]">
                         </div>
                 </div>
             </div>
@@ -248,30 +259,34 @@
                         <div class="grid grid-cols-2 gap-2">
                             <div>
                                 <label class="block text-[9px] text-slate-400 font-bold mb-1">RAIZ</label>
-                                <select id="chordDictRoot" class="w-full bg-slate-950 border border-slate-755 rounded py-1 px-1.5 text-xs text-slate-300 focus:outline-none focus:ring-1 focus:ring-emerald-500">
+                                <select id="chordDictRoot" class="w-full bg-slate-950 border border-slate-700 rounded py-1 px-1.5 text-xs text-slate-300 focus:outline-none focus:ring-1 focus:ring-emerald-500">
                                     </select>
                             </div>
                             <div>
                                 <label class="block text-[9px] text-slate-400 font-bold mb-1">TIPO</label>
-                                <select id="chordDictType" class="w-full bg-slate-950 border border-slate-755 rounded py-1 px-1.5 text-xs text-slate-300 focus:outline-none focus:ring-1 focus:ring-emerald-500">
+                                <select id="chordDictType" class="w-full bg-slate-950 border border-slate-700 rounded py-1 px-1.5 text-xs text-slate-300 focus:outline-none focus:ring-1 focus:ring-emerald-500">
                                     <option value="maj" selected>Maior (Tríade)</option>
                                     <option value="min">Menor (Tríade)</option>
                                     <option value="dom7">Dominante (7)</option>
                                     <option value="maj7">Sétima Maior (Maj7)</option>
                                     <option value="min7">Sétima Menor (m7)</option>
                                     <option value="m7b5">Meio-Diminuto (m7b5)</option>
+                                    <option value="dim">Diminuto</option>
+                                    <option value="aug">Aumentado</option>
+                                    <option value="dim7">Diminuto (dim7)</option>
+                                    <option value="minMaj7">Menor (mMaj7)</option>
                                 </select>
                             </div>
                         </div>
                         <div class="flex gap-1.5">
-                            <button id="btnShowVoicing" class="flex-1 bg-emerald-750/30 hover:bg-emerald-700/40 border border-emerald-500/30 text-emerald-300 text-xs font-bold py-1.5 px-3 rounded transition flex items-center justify-center gap-1.5">
+                            <button id="btnShowVoicing" class="flex-1 bg-emerald-600/30 hover:bg-emerald-700/40 border border-emerald-500/30 text-emerald-300 text-xs font-bold py-1.5 px-3 rounded transition flex items-center justify-center gap-1.5">
                                 <i data-lucide="eye" class="w-3.5 h-3.5"></i> Ver no Braço
                             </button>
-                            <button id="btnClearVoicing" class="bg-slate-800 hover:bg-slate-755 border border-slate-700 text-slate-400 text-xs py-1.5 px-2.5 rounded transition" title="Limpar Dedilhado">
+                            <button id="btnClearVoicing" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-400 text-xs py-1.5 px-2.5 rounded transition" title="Limpar Dedilhado">
                                 <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
                             </button>
                         </div>
-                        <div id="voicingDisplay" class="text-[10px] bg-slate-950/40 p-2.5 rounded border border-slate-850 text-slate-400 font-mono hidden">
+                        <div id="voicingDisplay" class="text-[10px] bg-slate-950/40 p-2.5 rounded border border-slate-900 text-slate-400 font-mono hidden">
                             </div>
                     </div>
                 </div>
@@ -306,13 +321,13 @@
                         <div>
                             <span class="text-[10px] tracking-widest text-slate-400 font-bold block mb-1">BATIDAS POR MINUTO</span>
                             <div class="flex items-center justify-center md:justify-start gap-1">
-                                <button class="bg-slate-800 hover:bg-slate-755 text-slate-300 font-mono text-xs px-2 py-1 rounded" id="decreaseBpm10" title="−10">−10</button>
-                                <button class="bg-slate-800 hover:bg-slate-755 text-slate-300 text-xs px-2.5 py-1 rounded" id="decreaseBpm" title="−1">−</button>
+                                <button class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-mono text-xs px-2 py-1 rounded" id="decreaseBpm10" title="−10">−10</button>
+                                <button class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs px-2.5 py-1 rounded" id="decreaseBpm" title="−1">−</button>
                                 
-                                <input id="bpmInput" type="number" min="20" max="400" step="1" value="120" class="bg-transparent border-b border-slate-700 text-3xl font-black text-indigo-400 w-16 text-center focus:outline-none focus:border-indigo-550 font-mono" title="Arraste verticalmente ou use scroll para ajustar"/>
+                                <input id="bpmInput" type="number" min="20" max="400" step="1" value="120" class="bg-transparent border-b border-slate-700 text-3xl font-black text-indigo-400 w-16 text-center focus:outline-none focus:border-indigo-500 font-mono" title="Arraste verticalmente ou use scroll para ajustar"/>
                                 
-                                <button class="bg-slate-800 hover:bg-slate-755 text-slate-300 text-xs px-2.5 py-1 rounded" id="increaseBpm" title="+1">+</button>
-                                <button class="bg-slate-800 hover:bg-slate-755 text-slate-300 font-mono text-xs px-2 py-1 rounded" id="increaseBpm10" title="+10">+10</button>
+                                <button class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs px-2.5 py-1 rounded" id="increaseBpm" title="+1">+</button>
+                                <button class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-mono text-xs px-2 py-1 rounded" id="increaseBpm10" title="+10">+10</button>
                             </div>
                             <span class="text-[8px] tracking-wider text-slate-500 block mt-1">ARRANSTE · SCROLL · DIGITE</span>
                         </div>
@@ -330,7 +345,7 @@
                             <button id="toggleBtn" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 px-4 rounded-lg transition tracking-wider text-sm flex items-center justify-center gap-2">
                                 <i data-lucide="play" class="w-4 h-4"></i> START
                             </button>
-                            <button id="tapBtn" class="bg-slate-800 hover:bg-slate-755 text-slate-300 border border-slate-700 py-2.5 px-3 rounded-lg transition text-xs font-mono font-bold tracking-wider">
+                            <button id="tapBtn" class="bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 py-2.5 px-3 rounded-lg transition text-xs font-mono font-bold tracking-wider">
                                 TAP [T]
                             </button>
                         </div>
@@ -348,6 +363,8 @@
                                     <option value="6/8">6 / 8</option>
                                     <option value="7/8">7 / 8</option>
                                     <option value="5/4">5 / 4</option>
+                                    <option value="9/8">9 / 8</option>
+                                    <option value="12/8">12 / 8</option>
                                 </select>
                             </div>
                             <div>
@@ -360,6 +377,14 @@
                                     <option value="6">Sextinas (6)</option>
                                 </select>
                             </div>
+                        </div>
+                        <div class="col-span-2 bg-slate-950/20 p-2 rounded-lg border border-slate-800/80">
+                            <div class="flex items-center justify-between">
+                                <span class="text-[9px] font-bold text-slate-400 tracking-wider">SWING</span>
+                                <span id="swingLabel" class="text-[10px] font-mono text-indigo-400">50%</span>
+                            </div>
+                            <input type="range" id="swingSlider" min="50" max="75" step="1" value="50" class="w-full accent-indigo-500 mt-1 cursor-pointer" />
+                            <span class="text-[8px] text-slate-500">50% = reto · 66% ≈ tercina</span>
                         </div>
                     </div>
                 </div>
@@ -383,9 +408,9 @@
                         <span class="block text-[9px] font-bold text-slate-400 tracking-wider">TIMBRE DO CLIQUE</span>
                         <div class="grid grid-cols-4 gap-1 text-[9px] font-mono">
                             <button class="sound-chip active bg-indigo-950/40 border border-indigo-700/50 text-indigo-300 px-1 py-1 rounded" data-sound="sine">Sine</button>
-                            <button class="sound-chip bg-slate-850 border border-slate-700 text-slate-400 px-1 py-1 rounded hover:bg-slate-755 transition" data-sound="click">Seco</button>
-                            <button class="sound-chip bg-slate-850 border border-slate-700 text-slate-400 px-1 py-1 rounded hover:bg-slate-755 transition" data-sound="woodblock">Wood</button>
-                            <button class="sound-chip bg-slate-850 border border-slate-700 text-slate-400 px-1 py-1 rounded hover:bg-slate-755 transition" data-sound="beep">Beep</button>
+                            <button class="sound-chip bg-slate-900 border border-slate-700 text-slate-400 px-1 py-1 rounded hover:bg-slate-700 transition" data-sound="click">Seco</button>
+                            <button class="sound-chip bg-slate-900 border border-slate-700 text-slate-400 px-1 py-1 rounded hover:bg-slate-700 transition" data-sound="woodblock">Wood</button>
+                            <button class="sound-chip bg-slate-900 border border-slate-700 text-slate-400 px-1 py-1 rounded hover:bg-slate-700 transition" data-sound="beep">Beep</button>
                         </div>
                     </div>
                 </div>
@@ -393,13 +418,13 @@
                 <details class="bg-slate-950/40 border border-slate-800 rounded-lg group">
                     <summary class="flex items-center justify-between p-2.5 cursor-pointer text-xs font-semibold text-slate-400 hover:text-slate-200 select-none">
                         <span class="flex items-center gap-1.5">
-                            <i data-lucide="settings-2" class="w-3.5 h-3.5 text-indigo-455"></i> Treinos Avançados (Silêncio & Aceleração)
+                            <i data-lucide="settings-2" class="w-3.5 h-3.5 text-indigo-400"></i> Treinos Avançados (Silêncio & Aceleração)
                         </span>
                         <i data-lucide="chevron-down" class="w-3.5 h-3.5 transition group-open:rotate-180"></i>
                     </summary>
                     <div class="p-3 border-t border-slate-800 space-y-3 text-xs">
                         
-                        <div class="bg-slate-900/40 p-2.5 rounded border border-slate-850 space-y-2">
+                        <div class="bg-slate-900/40 p-2.5 rounded border border-slate-900 space-y-2">
                             <div class="flex items-center justify-between">
                                 <label class="flex items-center gap-2 font-bold text-[10px] text-slate-300 tracking-wide cursor-pointer">
                                     <input type="checkbox" id="progressiveToggle" class="accent-indigo-500 rounded"/>
@@ -423,15 +448,15 @@
                             </div>
                         </div>
 
-                        <div class="bg-slate-900/40 p-2.5 rounded border border-slate-850 space-y-2">
+                        <div class="bg-slate-900/40 p-2.5 rounded border border-slate-900 space-y-2">
                             <span class="block font-bold text-[10px] text-slate-300 tracking-wide">TREINO DE MEMÓRIA RÍTMICA (MODO SILÊNCIO)</span>
                             <div class="grid grid-cols-6 gap-1 text-[10px] text-center font-semibold">
                                 <button class="sil-chip active bg-red-950/10 border border-red-900/10 text-slate-500 py-1 rounded" data-mode="none">Off</button>
-                                <button class="sil-chip bg-slate-850 border border-slate-800 text-slate-400 py-1 rounded" data-mode="fixed">Fixo</button>
-                                <button class="sil-chip bg-slate-850 border border-slate-800 text-slate-400 py-1 rounded" data-mode="progressive">Prog.</button>
-                                <button class="sil-chip bg-slate-850 border border-slate-800 text-slate-400 py-1 rounded" data-mode="random">Aleat.</button>
-                                <button class="sil-chip bg-slate-850 border border-slate-800 text-slate-400 py-1 rounded" data-mode="partial">Parcial</button>
-                                <button class="sil-chip bg-slate-850 border border-slate-800 text-slate-400 py-1 rounded" data-mode="fade">Fade</button>
+                                <button class="sil-chip bg-slate-900 border border-slate-800 text-slate-400 py-1 rounded" data-mode="fixed">Fixo</button>
+                                <button class="sil-chip bg-slate-900 border border-slate-800 text-slate-400 py-1 rounded" data-mode="progressive">Prog.</button>
+                                <button class="sil-chip bg-slate-900 border border-slate-800 text-slate-400 py-1 rounded" data-mode="random">Aleat.</button>
+                                <button class="sil-chip bg-slate-900 border border-slate-800 text-slate-400 py-1 rounded" data-mode="partial">Parcial</button>
+                                <button class="sil-chip bg-slate-900 border border-slate-800 text-slate-400 py-1 rounded" data-mode="fade">Fade</button>
                             </div>
                             
                             <div id="silence-params-container" class="hidden grid grid-cols-2 gap-2 text-[10px] border-t border-slate-800/60 pt-2">
@@ -464,7 +489,7 @@
                             </div>
                         </div>
 
-                        <div class="bg-slate-900/40 p-2.5 rounded border border-slate-850 flex items-center justify-between text-[10px]">
+                        <div class="bg-slate-900/40 p-2.5 rounded border border-slate-900 flex items-center justify-between text-[10px]">
                             <label class="flex items-center gap-2 font-bold text-slate-300 tracking-wide cursor-pointer select-none">
                                 <input type="checkbox" id="humanizeToggle" class="accent-indigo-500 rounded"/>
                                 TIMING HUMANO (MICRO ATRASOS DE PALHETA)
@@ -475,15 +500,15 @@
                             </div>
                         </div>
 
-                        <div class="bg-slate-900/40 p-2.5 rounded border border-slate-850 space-y-1.5">
+                        <div class="bg-slate-900/40 p-2.5 rounded border border-slate-900 space-y-1.5">
                             <span class="block font-bold text-[10px] text-slate-300 tracking-wide">PRESETS SALVOS NO SEU DISPOSITIVO</span>
                             <div class="flex gap-2">
-                                <select id="presetSelect" class="flex-1 bg-slate-950 border border-slate-850 rounded px-2 py-1 text-[10px] focus:outline-none">
+                                <select id="presetSelect" class="flex-1 bg-slate-950 border border-slate-900 rounded px-2 py-1 text-[10px] focus:outline-none">
                                     <option value="">— Selecionar —</option>
                                 </select>
-                                <button id="presetLoad" class="bg-slate-800 hover:bg-slate-755 text-slate-300 border border-slate-700 px-3 py-1 rounded text-[10px] font-bold">LOAD</button>
-                                <button id="presetSave" class="bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-300 border border-indigo-550/30 px-3 py-1 rounded text-[10px] font-bold">SAVE</button>
-                                <button id="presetDelete" class="hover:bg-red-900/20 text-slate-450 border border-slate-800 px-2 py-1 rounded text-[10px] hover:border-red-900/40 transition">✕</button>
+                                <button id="presetLoad" class="bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 px-3 py-1 rounded text-[10px] font-bold">LOAD</button>
+                                <button id="presetSave" class="bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-300 border border-indigo-500/30 px-3 py-1 rounded text-[10px] font-bold">SAVE</button>
+                                <button id="presetDelete" class="hover:bg-red-900/20 text-slate-400 border border-slate-800 px-2 py-1 rounded text-[10px] hover:border-red-900/40 transition">✕</button>
                             </div>
                             <div id="presetStatus" class="text-[9px] font-mono font-bold text-emerald-400 text-right h-2"></div>
                         </div>
@@ -497,7 +522,7 @@
         <section class="bg-slate-900 border border-slate-800 rounded-xl p-4 sm:p-5 shadow-xl space-y-4">
             <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-slate-800 pb-3">
                 <div class="flex items-center gap-2">
-                    <i data-lucide="folder-open" class="w-5 h-5 text-indigo-455"></i>
+                    <i data-lucide="folder-open" class="w-5 h-5 text-indigo-400"></i>
                     <h3 class="text-base font-bold text-slate-200">MATERIAL DE APOIO & BACKING TRACKS</h3>
                 </div>
                 <a href="https://drive.google.com/drive/folders/1L1417w8z0ZHur2xeTqlWpVI_ZLSmh09x?usp=sharing" target="_blank" rel="noopener noreferrer" class="flex items-center gap-1.5 text-xs font-bold text-indigo-300 bg-indigo-950/40 hover:bg-indigo-900/30 border border-indigo-700/55 px-3 py-1.5 rounded-lg transition shadow-sm">
@@ -505,7 +530,7 @@
                 </a>
             </div>
             
-            <div class="relative w-full rounded-lg overflow-hidden border border-slate-250 bg-white" style="height: 400px;">
+            <div class="relative w-full rounded-lg overflow-hidden border border-slate-200 bg-white" style="height: 400px;">
                 <iframe src="https://drive.google.com/embeddedfolderview?id=1L1417w8z0ZHur2xeTqlWpVI_ZLSmh09x&sort=name&desc=false#list" class="w-full h-full border-0" allow="autoplay" sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"></iframe>
             </div>
         </section>
@@ -520,7 +545,7 @@
         const ALL_NOTES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
         
         const SCALES = {
-            major: { name: "Maior Natural (Jónio)", intervals: [0, 2, 4, 5, 7, 9, 11], names: ["I", "II", "III", "IV", "V", "VI", "VII"], formula: "T - T - ST - T - T - T - ST" },
+            major: { name: "Maior Natural (Jônio)", intervals: [0, 2, 4, 5, 7, 9, 11], names: ["I", "II", "III", "IV", "V", "VI", "VII"], formula: "T - T - ST - T - T - T - ST" },
             minor: { name: "Menor Natural (Eólio)", intervals: [0, 2, 3, 5, 7, 8, 10], names: ["I", "II", "♭III", "IV", "V", "♭VI", "♭VII"], formula: "T - ST - T - T - ST - T - T" },
             majorPentatonic: { name: "Pentatónica Maior", intervals: [0, 2, 4, 7, 9], names: ["I", "II", "III", "V", "VI"], formula: "T - T - 1.5T - T - 1.5T" },
             minorPentatonic: { name: "Pentatónica Menor", intervals: [0, 3, 5, 7, 10], names: ["I", "♭III", "IV", "V", "♭VII"], formula: "1.5T - T - T - 1.5T - T" },
@@ -567,6 +592,7 @@
             silenceParams: { playMeasures: 3, muteMeasures: 1, randomProb: 30, partialTarget: 2, fadeSeconds: 2 },
             progressive: { enabled: false, start: 100, end: 140, duration: 120 },
             humanize: { enabled: false, ms: 8 },
+             swing: 50,
             
             lookahead: 25.0,
             scheduleAheadTime: 0.1,
@@ -586,24 +612,28 @@
 
         // --- STREAMING_CHUNK:Setting up URL State Management... ---
         function updateURLHash() {
-            // Formata a URL (ex: #7/C%23/major) - Note que sustenidos (#) são codificados como %23 para não quebrar a URL
-            const hash = `#${state.numStrings}/${encodeURIComponent(state.rootNote)}/${state.scaleKey}`;
+            const hash = `#${state.numStrings}/${encodeURIComponent(state.rootNote)}/${state.scaleKey}/${state.numFrets}/${state.viewMode}/${state.colorDegrees ? 1 : 0}`;
             history.replaceState(null, null, hash);
         }
 
         function applyStateFromHash() {
-            if (window.location.hash) {
+            if (!window.location.hash) return;
+            try {
                 const parts = window.location.hash.substring(1).split('/');
-                if (parts.length === 3) {
+                if (parts.length >= 3) {
                     const parsedStrings = parseInt(parts[0], 10);
                     if (parsedStrings === 6 || parsedStrings === 7) state.numStrings = parsedStrings;
-                    
                     const parsedRoot = decodeURIComponent(parts[1]);
                     if (ALL_NOTES.includes(parsedRoot)) state.rootNote = parsedRoot;
-                    
                     const parsedScale = parts[2];
                     if (SCALES[parsedScale]) state.scaleKey = parsedScale;
+                    const parsedFrets = parseInt(parts[3], 10);
+                    if ([12, 15, 21, 22, 24].includes(parsedFrets)) state.numFrets = parsedFrets;
+                    if (['notes', 'intervals', 'frets'].includes(parts[4])) state.viewMode = parts[4];
+                    if (parts[5] === '1' || parts[5] === '0') state.colorDegrees = parts[5] === '1';
                 }
+            } catch (err) {
+                console.warn('Estado da URL inválido:', err);
             }
         }
 
@@ -611,8 +641,8 @@
             const btn6 = document.getElementById('btn6Strings');
             const btn7 = document.getElementById('btn7Strings');
             if (btn6 && btn7) {
-                btn6.className = state.numStrings === 6 ? "px-2 py-0.5 text-[10px] rounded font-bold border bg-indigo-600 border-indigo-500 text-white transition" : "px-2 py-0.5 text-[10px] rounded font-bold border border-slate-700 bg-slate-800 text-slate-400 hover:bg-slate-755 transition";
-                btn7.className = state.numStrings === 7 ? "px-2 py-0.5 text-[10px] rounded font-bold border bg-indigo-600 border-indigo-500 text-white transition" : "px-2 py-0.5 text-[10px] rounded font-bold border border-slate-700 bg-slate-800 text-slate-400 hover:bg-slate-755 transition";
+                btn6.className = state.numStrings === 6 ? "px-2 py-0.5 text-[10px] rounded font-bold border bg-indigo-600 border-indigo-500 text-white transition" : "px-2 py-0.5 text-[10px] rounded font-bold border border-slate-700 bg-slate-800 text-slate-400 hover:bg-slate-700 transition";
+                btn7.className = state.numStrings === 7 ? "px-2 py-0.5 text-[10px] rounded font-bold border bg-indigo-600 border-indigo-500 text-white transition" : "px-2 py-0.5 text-[10px] rounded font-bold border border-slate-700 bg-slate-800 text-slate-400 hover:bg-slate-700 transition";
             }
         }
 
@@ -632,22 +662,49 @@
         }
 
         // --- STREAMING_CHUNK:Scale and Voicing Logic with 6/7 string support... ---
+        const NATURAL_PITCH = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 };
+        const ROMAN_TO_NUMBER = { I: 1, II: 2, III: 3, IV: 4, V: 5, VI: 6, VII: 7 };
+
         function getScaleNotes() {
             const rootIdx = ALL_NOTES.indexOf(state.rootNote);
             const scaleObj = SCALES[state.scaleKey];
-            return scaleObj.intervals.map(interval => {
-                return ALL_NOTES[(rootIdx + interval) % 12];
+            return scaleObj.intervals.map(interval => ALL_NOTES[(rootIdx + interval) % 12]);
+        }
+
+        function getScaleNoteLabels() {
+            const root = state.rootNote;
+            const rootLetterIdx = ['C','D','E','F','G','A','B'].indexOf(root.charAt(0));
+            const rootPitch = ALL_NOTES.indexOf(root);
+            const scale = SCALES[state.scaleKey];
+
+            return scale.names.map((degreeName, idx) => {
+                const roman = degreeName.replace(/^[♭♯b#]+/, '').toUpperCase();
+                const degree = ROMAN_TO_NUMBER[roman] || (idx + 1);
+                const letter = ['C','D','E','F','G','A','B'][(rootLetterIdx + degree - 1) % 7];
+                const targetPitch = (rootPitch + scale.intervals[idx]) % 12;
+                let accidental = targetPitch - NATURAL_PITCH[letter];
+                if (accidental > 6) accidental -= 12;
+                if (accidental < -6) accidental += 12;
+                if (accidental === 0) return letter;
+                if (accidental === 1) return letter + '♯';
+                if (accidental === -1) return letter + '♭';
+                if (accidental === 2) return letter + '𝄪';
+                if (accidental === -2) return letter + '𝄫';
+                return ALL_NOTES[targetPitch];
             });
         }
 
+        function getScalePitchClasses() {
+            const rootIdx = ALL_NOTES.indexOf(state.rootNote);
+            return SCALES[state.scaleKey].intervals.map(interval => (rootIdx + interval) % 12);
+        }
+
         function getNoteIntervalName(note) {
-            const scaleNotes = getScaleNotes();
-            const scaleObj = SCALES[state.scaleKey];
-            const idx = scaleNotes.indexOf(note);
-            if (idx !== -1) {
-                return scaleObj.names[idx];
-            }
-            return '';
+            const pitch = typeof note === 'number' ? note : ALL_NOTES.indexOf(note);
+            const rootIdx = ALL_NOTES.indexOf(state.rootNote);
+            const scale = SCALES[state.scaleKey];
+            const idx = scale.intervals.findIndex(interval => ((rootIdx + interval) % 12) === pitch);
+            return idx !== -1 ? scale.names[idx] : '';
         }
 
         function getNoteAt(stringIdx, fret) {
@@ -719,7 +776,8 @@
             const labels6 = ['1ª (E)', '2ª (B)', '3ª (G)', '4ª (D)', '5ª (A)', '6ª (E)'];
             const labels = state.numStrings === 7 ? labels7 : labels6;
 
-            let output = `<strong class="text-emerald-400">Dedilhado ${root}${type === 'maj' ? '' : type}:</strong><br>`;
+            const typeNames = { maj:'', min:'m', dom7:'7', maj7:'maj7', min7:'m7', m7b5:'m7b5', dim:'dim', aug:'aug', dim7:'dim7', minMaj7:'mMaj7' };
+            let output = `<strong class="text-emerald-400">Dedilhado ${root}${typeNames[type] || type}:</strong><br>`;
             for (let i = state.numStrings - 1; i >= 0; i--) {
                 const traste = state.activeVoicing[i];
                 output += `${labels[i]}: <span class="font-bold text-slate-100">${traste === null ? '✕ (Abafar)' : traste}</span><br>`;
@@ -742,21 +800,35 @@
             return { bg: "bg-indigo-600 border-indigo-400/45 text-slate-100", glow: "note-glow-scale font-bold" };
         }
 
+        function getFretGridTemplate(maxFret) {
+            // Espaçamento suavemente proporcional: as casas mantêm tamanhos
+            // muito próximos, evitando o efeito exagerado de um braço real.
+            const weights = [1.0];
+            const falloff = 180;
+            for (let fret = 1; fret <= maxFret; fret++) {
+                weights.push(Math.pow(2, -fret / falloff));
+            }
+            return weights.map(v => `${v.toFixed(4)}fr`).join(' ');
+        }
+
         function renderFretboard() {
             const fretboard = document.getElementById('fretboard');
             fretboard.innerHTML = '';
 
             const tuning = TUNINGS[state.tuningKey];
             const scaleNotes = getScaleNotes();
+            const scalePitchClasses = getScalePitchClasses();
+            const scaleLabels = getScaleNoteLabels();
             
             const numFrets = state.numFrets + 1; 
             const fretsArray = Array.from({length: numFrets}, (_, i) => i);
             const inlaysSingle = [3, 5, 7, 9, 15, 17, 19, 21];
             const inlaysDouble = [12, 24];
+            const gridTemplate = getFretGridTemplate(state.numFrets);
 
             const trasteHeaderGrid = document.createElement('div');
             trasteHeaderGrid.className = "grid w-full relative h-6 border-b border-slate-800 bg-slate-950/65 text-[9px] sm:text-[11px] font-mono";
-            trasteHeaderGrid.style.gridTemplateColumns = `repeat(${numFrets}, minmax(0, 1fr))`;
+            trasteHeaderGrid.style.gridTemplateColumns = gridTemplate;
             
             const highlightFrets = [3, 5, 7, 9, 12, 15, 17, 19, 21, 24];
             fretsArray.forEach(f => {
@@ -773,7 +845,7 @@
             activeNotes.forEach((tuningNote, stringIdx) => {
                 const stringRow = document.createElement('div');
                 stringRow.className = "grid w-full relative h-7 sm:h-9 md:h-11 items-center border-b border-slate-800/30";
-                stringRow.style.gridTemplateColumns = `repeat(${numFrets}, minmax(0, 1fr))`;
+                stringRow.style.gridTemplateColumns = gridTemplate;
 
                 const stringGauge = stringIdx + 1; 
                 const stringWire = document.createElement('div');
@@ -799,13 +871,15 @@
                     
                     if (inlaysDouble.includes(fret) && (stringIdx === Math.floor(state.numStrings / 3) || stringIdx === Math.floor(state.numStrings * 2 / 3))) {
                         const inlayDot = document.createElement('div');
-                        inlayDot.className = "absolute w-3 h-3 rounded-full bg-indigo-400/75 border border-indigo-450/30 shadow-[0_0_8px_rgba(99,102,241,0.5)] pointer-events-none";
+                        inlayDot.className = "absolute w-3 h-3 rounded-full bg-indigo-400/75 border border-indigo-400/30 shadow-[0_0_8px_rgba(99,102,241,0.5)] pointer-events-none";
                         fretCell.appendChild(inlayDot);
                     }
 
                     const info = getNoteAt(stringIdx, fret);
-                    const isInScale = scaleNotes.includes(info.name);
+                    const isInScale = scalePitchClasses.includes(info.midi % 12);
                     const isRoot = info.name === state.rootNote;
+                    const scaleLabelIndex = scalePitchClasses.indexOf(info.midi % 12);
+                    const scaleDisplayName = scaleLabelIndex >= 0 ? scaleLabels[scaleLabelIndex] : info.name;
 
                     let isVoicingNote = false;
                     if (state.activeVoicing && state.activeVoicing.length > stringIdx && state.activeVoicing[stringIdx] === fret) {
@@ -814,14 +888,14 @@
 
                     if (isVoicingNote) {
                         const noteBadge = document.createElement('div');
-                        noteBadge.className = "w-11/12 h-5 sm:h-6 md:h-7 rounded-md flex items-center justify-center text-[7px] min-[450px]:text-[9px] sm:text-xs shadow-lg transition transform hover:scale-105 active:scale-95 bg-emerald-500 text-white font-black note-glow-chord ring-2 ring-emerald-350";
+                        noteBadge.className = "w-11/12 h-5 sm:h-6 md:h-7 rounded-md flex items-center justify-center text-[7px] min-[450px]:text-[9px] sm:text-xs shadow-lg transition transform hover:scale-105 active:scale-95 bg-emerald-500 text-white font-black note-glow-chord ring-2 ring-emerald-300";
                         noteBadge.innerText = info.name;
                         fretCell.appendChild(noteBadge);
                     } else if (isInScale) {
                         const noteBadge = document.createElement('div');
                         
-                        let displayText = info.name;
-                        const intervalName = getNoteIntervalName(info.name);
+                        let displayText = scaleDisplayName;
+                        const intervalName = getNoteIntervalName(info.midi % 12);
                         
                         if (state.viewMode === 'intervals') {
                             displayText = intervalName;
@@ -856,7 +930,7 @@
 
             const markerRow = document.createElement('div');
             markerRow.className = "grid w-full relative h-6 items-center bg-slate-950/50 border-t border-slate-800/60";
-            markerRow.style.gridTemplateColumns = `repeat(${numFrets}, minmax(0, 1fr))`;
+            markerRow.style.gridTemplateColumns = gridTemplate;
 
             const bottomInlays = [3, 5, 7, 9, 12, 15, 17, 19, 21, 24];
             fretsArray.forEach(fret => {
@@ -1041,7 +1115,7 @@
         function scheduleStylePiano(chordObj, time, beat) {
             const ctx = state.audioCtx;
             const genre = state.trackGenre;
-            const gVal = parseFloat(document.getElementById('bandVolumeSlider').value) || 0.6;
+            const gVal = parseFloat(document.getElementById('metroVolumeSlider').value) || 0.6;
             const beatDuration = 60 / state.bpm;
 
             if (beat === 0) fadeActiveChords(time);
@@ -1182,7 +1256,7 @@
                 btn.innerText = note;
                 
                 const isSelected = state.rootNote === note;
-                btn.className = `py-1 text-center text-xs font-semibold rounded-md border transition ${isSelected ? 'bg-rose-600 border-rose-500 text-white shadow shadow-rose-950/40 font-black' : 'bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-755'}`;
+                btn.className = `py-1 text-center text-xs font-semibold rounded-md border transition ${isSelected ? 'bg-rose-600 border-rose-500 text-white shadow shadow-rose-950/40 font-black' : 'bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700'}`;
                 
                 btn.addEventListener('click', () => {
                     state.rootNote = note;
@@ -1197,7 +1271,8 @@
         function updateScaleInfo() {
             const scale = SCALES[state.scaleKey];
             const scaleNotes = getScaleNotes();
-            
+            const scaleLabels = getScaleNoteLabels();
+
             document.getElementById('scaleInfoTitle').innerText = `${state.rootNote} ${scale.name}`;
             document.getElementById('scaleLength').innerText = scaleNotes.length;
             document.getElementById('scaleFormula').innerText = scale.formula;
@@ -1207,14 +1282,12 @@
             notesContainer.innerHTML = '';
 
             scaleNotes.forEach((note, index) => {
-                const isRoot = note === state.rootNote;
+                const isRoot = index === 0;
                 const intervalName = scale.names[index];
-
+                const displayNote = scaleLabels[index];
                 const noteBlock = document.createElement('div');
                 noteBlock.className = `flex flex-col items-center justify-center w-12 h-14 rounded-lg border text-center cursor-pointer transition transform hover:scale-105 select-none ${isRoot ? 'bg-rose-950/40 border-rose-500/70 text-rose-300' : 'bg-indigo-950/30 border-indigo-500/55 text-indigo-300'}`;
-
-                noteBlock.innerHTML = `<span class="text-sm font-bold">${note}</span><span class="text-[10px] text-slate-400 font-mono">${intervalName}</span>`;
-
+                noteBlock.innerHTML = `<span class="text-sm font-bold">${displayNote}</span><span class="text-[10px] text-slate-400 font-mono">${intervalName}</span>`;
                 noteBlock.addEventListener('click', () => {
                     const noteIdx = ALL_NOTES.indexOf(note);
                     let targetMidi = 60 + (noteIdx - ALL_NOTES.indexOf('C'));
@@ -1224,18 +1297,18 @@
                 notesContainer.appendChild(noteBlock);
             });
         }
-        
+
         async function requestWakeLock() {
             if (!('wakeLock' in navigator)) {
                 const wlStatusText = document.getElementById('wakeLockStatus');
-                wlStatusText.innerText = "Incompatível"; wlStatusText.className = "font-bold text-rose-450"; return;
+                wlStatusText.innerText = "Incompatível"; wlStatusText.className = "font-bold text-rose-400"; return;
             }
             try {
                 state.wakeLock = await navigator.wakeLock.request('screen');
-                const wlStatusText = document.getElementById('wakeLockStatus'); wlStatusText.innerText = "Sim"; wlStatusText.className = "font-bold text-emerald-450";
+                const wlStatusText = document.getElementById('wakeLockStatus'); wlStatusText.innerText = "Sim"; wlStatusText.className = "font-bold text-emerald-400";
                 state.wakeLock.addEventListener('release', () => {
                     if (!state.wakeLock) {
-                        const innerText = document.getElementById('wakeLockStatus'); innerText.innerText = "Não"; innerText.className = "font-bold text-slate-450";
+                        const innerText = document.getElementById('wakeLockStatus'); innerText.innerText = "Não"; innerText.className = "font-bold text-slate-400";
                     }
                 });
             } catch (err) {
@@ -1244,7 +1317,7 @@
         }
         function releaseWakeLock() {
             if (state.wakeLock) {
-                state.wakeLock.release().then(() => { state.wakeLock = null; const wlStatusText = document.getElementById('wakeLockStatus'); wlStatusText.innerText = "Não"; wlStatusText.className = "font-bold text-slate-450"; });
+                state.wakeLock.release().then(() => { state.wakeLock = null; const wlStatusText = document.getElementById('wakeLockStatus'); wlStatusText.innerText = "Não"; wlStatusText.className = "font-bold text-slate-400"; });
             }
         }
 
@@ -1290,7 +1363,15 @@
         }
 
         function buildAccents() {
-            const numBeats = state.timeSignature[0]; state.accents = new Array(numBeats).fill(0); state.accents[0] = 1; renderAccentsUI();
+            const [numBeats, denominator] = state.timeSignature;
+            state.accents = new Array(numBeats).fill(0);
+            const key = `${numBeats}/${denominator}`;
+            const defaults = {
+                '4/4': [0], '3/4': [0], '5/4': [0],
+                '6/8': [0, 3], '7/8': [0, 2, 4], '9/8': [0, 3, 6], '12/8': [0, 3, 6, 9]
+            };
+            (defaults[key] || [0]).forEach(i => { if (i < numBeats) state.accents[i] = 1; });
+            renderAccentsUI();
         }
 
         function renderAccentsUI() {
@@ -1323,7 +1404,7 @@
             const currentMuteCount = mode === 'progressive' ? mute + state.silenceState.progressiveMuteCount : mute;
             const cycleLength = play + currentMuteCount; const pos = currentM % cycleLength;
 
-            if (pos >= play) display.innerHTML = `⏸ SILÊNCIO <strong class="text-rose-450 font-mono">${(pos - play) + 1}/${currentMuteCount}</strong>`;
+            if (pos >= play) display.innerHTML = `⏸ SILÊNCIO <strong class="text-rose-400 font-mono">${(pos - play) + 1}/${currentMuteCount}</strong>`;
             else display.innerHTML = `▸ METRÔNOMO <strong class="text-emerald-400 font-mono">${pos + 1}/${play}</strong>`;
         }
 
@@ -1359,6 +1440,11 @@
                 }
             }
 
+            let swingOffset = 0;
+            if (state.subdivision === 2 && bi.subIndex === 1 && state.swing > 50) {
+                swingOffset = (60 / state.bpm) * ((state.swing / 100) - 0.5);
+            }
+
             let humanizeOffset = 0;
             if (state.humanize.enabled && state.humanize.ms > 0) humanizeOffset = (Math.random() * 2 - 1) * (state.humanize.ms / 1000);
 
@@ -1366,7 +1452,7 @@
             const isSubdivision = bi.subIndex !== 0;
 
             if (state.metroPlaying && shouldPlayClick(bi) && currentActualGain >= 0.002) {
-                const finalScheduledTime = Math.max(time + humanizeOffset, state.audioCtx.currentTime + 0.001);
+                const finalScheduledTime = Math.max(time + swingOffset + humanizeOffset, state.audioCtx.currentTime + 0.001);
                 const baseFreq = accent === 1 ? 1150 : (accent === -1 ? 650 : 850);
                 const soundTypeToUse = isSubdivision ? 'sine' : state.soundType;
 
@@ -1453,9 +1539,9 @@
         function startMetronome() {
             if (state.metroPlaying) return; state.metroPlaying = true;
             const btn = document.getElementById('toggleBtn');
-            btn.innerHTML = '<i data-lucide="square" class="w-4 h-4 text-rose-350"></i> STOP'; btn.className = "flex-1 bg-rose-600 hover:bg-rose-500 text-white font-bold py-2.5 px-4 rounded-lg transition tracking-wider text-sm flex items-center justify-center gap-2";
+            btn.innerHTML = '<i data-lucide="square" class="w-4 h-4 text-rose-300"></i> STOP'; btn.className = "flex-1 bg-rose-600 hover:bg-rose-500 text-white font-bold py-2.5 px-4 rounded-lg transition tracking-wider text-sm flex items-center justify-center gap-2";
             const pill = document.getElementById('statusPill');
-            pill.textContent = "ATIVO"; pill.className = "text-[10px] font-mono border border-emerald-700 text-emerald-450 bg-emerald-950/20 px-2 py-0.5 rounded tracking-wider uppercase";
+            pill.textContent = "ATIVO"; pill.className = "text-[10px] font-mono border border-emerald-700 text-emerald-400 bg-emerald-950/20 px-2 py-0.5 rounded tracking-wider uppercase";
             lucide.createIcons();
             
             state.progressive.enabled = document.getElementById('progressiveToggle').checked;
@@ -1503,6 +1589,109 @@
             input.addEventListener('change', () => { state.bpm = Math.min(400, Math.max(20, parseInt(input.value) || 120)); input.value = state.bpm; });
         }
 
+        function getPresetState() {
+            return {
+                numStrings: state.numStrings, numFrets: state.numFrets, rootNote: state.rootNote,
+                scaleKey: state.scaleKey, tuningKey: state.tuningKey, viewMode: state.viewMode, colorDegrees: state.colorDegrees,
+                metroVolume: parseFloat(document.getElementById('metroVolumeSlider').value) || 0.7,
+                swing: state.swing,
+                bpm: state.bpm, timeSignature: [...state.timeSignature], subdivision: state.subdivision, accents: [...state.accents],
+                soundType: state.soundType, silenceMode: state.silenceMode, silenceParams: { ...state.silenceParams },
+                progressive: { ...state.progressive }, humanize: { ...state.humanize }
+            };
+        }
+
+        function applyPresetState(p) {
+            if (!p) return;
+            state.numStrings = p.numStrings === 6 ? 6 : 7;
+            state.numFrets = [12,15,21,22,24].includes(p.numFrets) ? p.numFrets : 24;
+            state.rootNote = ALL_NOTES.includes(p.rootNote) ? p.rootNote : 'C';
+            state.scaleKey = SCALES[p.scaleKey] ? p.scaleKey : 'major';
+            state.viewMode = ['notes','intervals','frets'].includes(p.viewMode) ? p.viewMode : 'frets';
+            state.colorDegrees = !!p.colorDegrees;
+            state.swing = Math.min(75, Math.max(50, Number(p.swing) || 50));
+            state.bpm = Math.min(400, Math.max(20, Number(p.bpm) || 120));
+            state.timeSignature = Array.isArray(p.timeSignature) && p.timeSignature.length === 2 ? p.timeSignature : [4,4];
+            state.subdivision = [1,2,3,4,6].includes(Number(p.subdivision)) ? Number(p.subdivision) : 1;
+            state.accents = Array.isArray(p.accents) && p.accents.length === state.timeSignature[0] ? [...p.accents] : new Array(state.timeSignature[0]).fill(0);
+            if (!state.accents.length) state.accents = [1]; state.accents[0] = 1;
+            state.soundType = ['sine','click','woodblock','beep'].includes(p.soundType) ? p.soundType : 'sine';
+            state.silenceMode = ['none','fixed','progressive','random','partial','fade'].includes(p.silenceMode) ? p.silenceMode : 'none';
+            state.silenceParams = { ...state.silenceParams, ...(p.silenceParams || {}) };
+            state.progressive = { ...state.progressive, ...(p.progressive || {}) };
+            state.humanize = { ...state.humanize, ...(p.humanize || {}) };
+
+            document.getElementById('scaleSelector').value = state.scaleKey;
+            document.getElementById('fretCountSelector').value = state.numFrets;
+            document.getElementById('colorDegreesToggle').checked = state.colorDegrees;
+            document.getElementById('swingSlider').value = state.swing;
+            document.getElementById('swingLabel').textContent = state.swing + '%';
+            document.getElementById('metroVolumeSlider').value = p.metroVolume != null ? p.metroVolume : document.getElementById('metroVolumeSlider').value;
+            document.getElementById('bpmInput').value = Math.round(state.bpm);
+            document.getElementById('timeSignature').value = `${state.timeSignature[0]}/${state.timeSignature[1]}`;
+            document.getElementById('subdivision').value = state.subdivision;
+            document.getElementById('humanizeMs').value = state.humanize.ms;
+            document.getElementById('humanizeToggle').checked = !!state.humanize.enabled;
+            document.getElementById('progressiveToggle').checked = !!state.progressive.enabled;
+            document.getElementById('bpmStart').value = state.progressive.start;
+            document.getElementById('bpmEnd').value = state.progressive.end;
+            document.getElementById('progressiveDuration').value = state.progressive.duration;
+            document.getElementById('playMeasures').value = state.silenceParams.playMeasures;
+            document.getElementById('muteMeasures').value = state.silenceParams.muteMeasures;
+            document.getElementById('randomProb').value = state.silenceParams.randomProb;
+            document.getElementById('partialTarget').value = state.silenceParams.partialTarget;
+            document.getElementById('fadeSeconds').value = state.silenceParams.fadeSeconds;
+            document.getElementById('humanizeMsLabel').textContent = state.humanize.ms + 'ms';
+
+            updateURLHash(); renderRootSelector(); updateStringBtns(); updateScaleInfo(); renderFretboard(); renderAccentsUI(); updateSilenceVis(state.silenceMode);
+        }
+
+        function refreshPresetList() {
+            const select = document.getElementById('presetSelect');
+            let presets = {};
+            try { presets = JSON.parse(localStorage.getItem('guitarBuddyPresets') || '{}'); } catch (_) {}
+            const current = select.value;
+            select.innerHTML = '<option value="">— Selecionar —</option>';
+            Object.keys(presets).sort((a,b) => a.localeCompare(b, 'pt-BR')).forEach(name => {
+                const opt = document.createElement('option'); opt.value = name; opt.textContent = name; select.appendChild(opt);
+            });
+            if (presets[current]) select.value = current;
+        }
+
+        function savePreset() {
+            const name = prompt('Nome do preset:', `Treino ${state.rootNote} ${SCALES[state.scaleKey].name}`);
+            if (!name || !name.trim()) return;
+            let presets = {};
+            try { presets = JSON.parse(localStorage.getItem('guitarBuddyPresets') || '{}'); } catch (_) {}
+            presets[name.trim()] = getPresetState();
+            localStorage.setItem('guitarBuddyPresets', JSON.stringify(presets));
+            refreshPresetList(); document.getElementById('presetSelect').value = name.trim();
+            document.getElementById('presetStatus').textContent = 'PRESET SALVO';
+            setTimeout(() => document.getElementById('presetStatus').textContent = '', 1800);
+        }
+
+        function loadPreset() {
+            const name = document.getElementById('presetSelect').value;
+            if (!name) return;
+            let presets = {};
+            try { presets = JSON.parse(localStorage.getItem('guitarBuddyPresets') || '{}'); } catch (_) {}
+            if (!presets[name]) return;
+            applyPresetState(presets[name]);
+            document.getElementById('presetStatus').textContent = 'PRESET CARREGADO';
+            setTimeout(() => document.getElementById('presetStatus').textContent = '', 1800);
+        }
+
+        function deletePreset() {
+            const name = document.getElementById('presetSelect').value;
+            if (!name) return;
+            if (!confirm(`Excluir o preset "${name}"?`)) return;
+            let presets = {};
+            try { presets = JSON.parse(localStorage.getItem('guitarBuddyPresets') || '{}'); } catch (_) {}
+            delete presets[name]; localStorage.setItem('guitarBuddyPresets', JSON.stringify(presets));
+            refreshPresetList(); document.getElementById('presetStatus').textContent = 'PRESET EXCLUÍDO';
+            setTimeout(() => document.getElementById('presetStatus').textContent = '', 1800);
+        }
+
         function setupEventBindings() {
             document.getElementById('scaleSelector').addEventListener('change', (e) => { 
                 state.scaleKey = e.target.value; 
@@ -1513,15 +1702,15 @@
 
             const btnViewNotes = document.getElementById('viewNoteNames'); const btnViewIntervals = document.getElementById('viewIntervals'); const btnViewFrets = document.getElementById('viewFrets');
             function updateViewModeStyle() {
-                [btnViewNotes, btnViewIntervals, btnViewFrets].forEach(btn => btn.className = "py-1.5 px-1 text-center rounded-lg text-xs font-bold border border-slate-700 bg-slate-800 text-slate-400 hover:bg-slate-755 transition");
+                [btnViewNotes, btnViewIntervals, btnViewFrets].forEach(btn => btn.className = "py-1.5 px-1 text-center rounded-lg text-xs font-bold border border-slate-700 bg-slate-800 text-slate-400 hover:bg-slate-700 transition");
                 if (state.viewMode === 'notes') btnViewNotes.className = "py-1.5 px-1 text-center rounded-lg text-xs font-bold border bg-indigo-600 border-indigo-500 text-white transition";
                 else if (state.viewMode === 'intervals') btnViewIntervals.className = "py-1.5 px-1 text-center rounded-lg text-xs font-bold border bg-indigo-600 border-indigo-500 text-white transition";
                 else if (state.viewMode === 'frets') btnViewFrets.className = "py-1.5 px-1 text-center rounded-lg text-xs font-bold border bg-indigo-600 border-indigo-500 text-white transition";
             }
 
-            btnViewNotes.addEventListener('click', () => { state.viewMode = 'notes'; updateViewModeStyle(); renderFretboard(); });
-            btnViewIntervals.addEventListener('click', () => { state.viewMode = 'intervals'; updateViewModeStyle(); renderFretboard(); });
-            btnViewFrets.addEventListener('click', () => { state.viewMode = 'frets'; updateViewModeStyle(); renderFretboard(); });
+            btnViewNotes.addEventListener('click', () => { state.viewMode = 'notes'; updateViewModeStyle(); updateURLHash(); renderFretboard(); });
+            btnViewIntervals.addEventListener('click', () => { state.viewMode = 'intervals'; updateViewModeStyle(); updateURLHash(); renderFretboard(); });
+            btnViewFrets.addEventListener('click', () => { state.viewMode = 'frets'; updateViewModeStyle(); updateURLHash(); renderFretboard(); });
 
             // Eventos do Seletor de Cordas
             const btn6 = document.getElementById('btn6Strings');
@@ -1546,20 +1735,23 @@
 
             document.getElementById('fretCountSelector').addEventListener('change', (e) => {
                 state.numFrets = parseInt(e.target.value, 10);
-                renderFretboard();
+                updateURLHash(); renderFretboard();
             });
 
-            document.getElementById('colorDegreesToggle').addEventListener('change', (e) => { state.colorDegrees = e.target.checked; renderFretboard(); });
+            document.getElementById('colorDegreesToggle').addEventListener('change', (e) => { state.colorDegrees = e.target.checked; updateURLHash(); renderFretboard(); });
 
             document.getElementById('btnToggleWakeLock').addEventListener('click', () => { state.wakeLock ? releaseWakeLock() : requestWakeLock(); });
-            const btnToggleFullscreen = document.getElementById('btnToggleFullscreen'); const fretboardSection = document.getElementById('fretboardSection');
+            const btnToggleFullscreen = document.getElementById('btnToggleFullscreen');
+            const fretboard = document.getElementById('fretboard');
             btnToggleFullscreen.addEventListener('click', () => {
-                if (!document.fullscreenElement) { fretboardSection.requestFullscreen().then(() => { btnToggleFullscreen.innerHTML = '<i data-lucide="minimize" class="w-3.5 h-3.5"></i> Sair'; lucide.createIcons(); }).catch(err => console.error(err)); } 
-                else { document.exitFullscreen(); }
+                if (!document.fullscreenElement) fretboard.requestFullscreen().catch(err => console.error('Fullscreen:', err));
+                else document.exitFullscreen();
             });
             document.addEventListener('fullscreenchange', () => {
-                if (document.fullscreenElement) { fretboardSection.classList.add('p-6', 'bg-slate-950'); } 
-                else { fretboardSection.classList.remove('p-6', 'bg-slate-950'); btnToggleFullscreen.innerHTML = '<i data-lucide="maximize" class="w-3.5 h-3.5"></i> Ecrã Inteiro'; lucide.createIcons(); }
+                btnToggleFullscreen.innerHTML = document.fullscreenElement === fretboard
+                    ? '<i data-lucide="minimize" class="w-3.5 h-3.5"></i> Sair'
+                    : '<i data-lucide="maximize" class="w-3.5 h-3.5"></i> Tela Inteira';
+                lucide.createIcons();
                 renderFretboard();
             });
 
@@ -1571,16 +1763,21 @@
             document.getElementById('decreaseBpm10').addEventListener('click', () => { state.bpm = Math.max(20, state.bpm - 10); document.getElementById('bpmInput').value = state.bpm; });
             document.getElementById('toggleBtn').addEventListener('click', toggleMetronome);
             document.getElementById('tapBtn').addEventListener('click', tapTempo);
-            document.getElementById('timeSignature').addEventListener('change', (e) => { state.timeSignature = parseTS(e.target.value); buildAccents(); });
-            document.getElementById('subdivision').addEventListener('change', (e) => { state.subdivision = parseInt(e.target.value); });
+            document.getElementById('timeSignature').addEventListener('change', (e) => { state.timeSignature = parseTS(e.target.value); buildAccents(); updateURLHash(); });
+            document.getElementById('subdivision').addEventListener('change', (e) => { state.subdivision = parseInt(e.target.value); updateURLHash(); });
+            document.getElementById('swingSlider').addEventListener('input', (e) => { state.swing = parseInt(e.target.value); document.getElementById('swingLabel').textContent = state.swing + '%'; });
             document.querySelectorAll('.sound-chip').forEach(chip => {
-                chip.addEventListener('click', () => { document.querySelectorAll('.sound-chip').forEach(x => x.className = "sound-chip bg-slate-850 border border-slate-700 text-slate-400 px-1 py-1 rounded hover:bg-slate-755 transition"); chip.className = "sound-chip active bg-indigo-950/40 border border-indigo-700/50 text-indigo-300 px-1 py-1 rounded"; state.soundType = chip.dataset.sound; });
+                chip.addEventListener('click', () => { document.querySelectorAll('.sound-chip').forEach(x => x.className = "sound-chip bg-slate-900 border border-slate-700 text-slate-400 px-1 py-1 rounded hover:bg-slate-700 transition"); chip.className = "sound-chip active bg-indigo-950/40 border border-indigo-700/50 text-indigo-300 px-1 py-1 rounded"; state.soundType = chip.dataset.sound; });
             });
             document.getElementById('metroVolumeSlider').addEventListener('input', (e) => { if (state.metroGain) state.metroGain.gain.value = parseFloat(e.target.value); });
             document.querySelectorAll('.sil-chip').forEach(chip => {
-                chip.addEventListener('click', () => { document.querySelectorAll('.sil-chip').forEach(x => x.className = "sil-chip bg-slate-850 border border-slate-800 text-slate-400 py-1 rounded hover:bg-slate-755 transition"); chip.className = "sil-chip active bg-red-950/10 border border-red-900/10 text-red-400 py-1 rounded"; state.silenceMode = chip.dataset.mode; updateSilenceVis(chip.dataset.mode); });
+                chip.addEventListener('click', () => { document.querySelectorAll('.sil-chip').forEach(x => x.className = "sil-chip bg-slate-900 border border-slate-800 text-slate-400 py-1 rounded hover:bg-slate-700 transition"); chip.className = "sil-chip active bg-red-950/10 border border-red-900/10 text-red-400 py-1 rounded"; state.silenceMode = chip.dataset.mode; updateSilenceVis(chip.dataset.mode); });
             });
             document.getElementById('humanizeMs').addEventListener('input', (e) => { document.getElementById('humanizeMsLabel').textContent = e.target.value + 'ms'; state.humanize.ms = parseInt(e.target.value); });
+            document.getElementById('presetSave').addEventListener('click', savePreset);
+            document.getElementById('presetLoad').addEventListener('click', loadPreset);
+            document.getElementById('presetDelete').addEventListener('click', deletePreset);
+
             window.addEventListener('keydown', e => {
                 if (e.target.tagName === 'INPUT' && e.target.type !== 'checkbox') return;
                 if (e.code === 'Space') { e.preventDefault(); toggleMetronome(); }
